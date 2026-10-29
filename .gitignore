@@ -1,0 +1,29 @@
+# OpenCode / agent folders
+.opencode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Base de datos local
+*.sqlite3
+*.db
+
+# Tests / cobertura
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# SO / editores
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/

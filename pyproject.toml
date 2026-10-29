@@ -1,0 +1,51 @@
+[project]
+name = "app-conta"
+version = "0.1.0"
+description = "Contabilidad del hogar por sistema de botes (MVP)"
+readme = "README.md"
+authors = [
+    { name = "Javier", email = "javier@local" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "alembic>=1.20.0",
+    "fastapi>=0.143.0",
+    "openpyxl>=3.1.5",
+    "python-multipart>=0.0.32",
+    "sqlalchemy>=2.1.4",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+app-conta = "app_conta.main:run"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# B008: `Depends(...)` en defaults es el patrón idiomático de FastAPI.
+"app_conta/api/*.py" = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=app_conta --cov-report=term-missing --cov-fail-under=0"
+
+[tool.coverage.run]
+source = ["app_conta"]
+omit = ["app_conta/static/*"]
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.0",
+]
