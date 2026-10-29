@@ -44,6 +44,14 @@ export function pintarNav(_rutas) {
           </a>
         `
         ).join("")}
+        <div style="border-top: 1px solid var(--border-subtle); margin: 0.35rem 0;"></div>
+        <a href="/static/manual_arquitectura_app_conta.pdf" target="_blank" download="Manual_Arquitectura_App_Conta.pdf" class="dropdown-item">
+          <span class="dropdown-icon">${icono("importar")}</span>
+          <div class="dropdown-item-info">
+            <span class="dropdown-item-title">📄 Manual Técnico (PDF)</span>
+            <span class="dropdown-item-desc">Descargar guía completa de arquitectura</span>
+          </div>
+        </a>
       </div>
     </div>
   `;
