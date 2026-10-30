@@ -354,8 +354,8 @@ export default vista("inicio", async () => {
           <span class="stat-pill-icon">${icono("prevision")}</span>
           <span class="stat-label">Bote Gastos Anuales</span>
         </div>
-        <span class="stat-value positivo">${importe(dineroPrevision)}</span>
-        <span class="stat-sub">${previsionData?.gastos?.length ? `${previsionData.meses_pagados}/12 meses acumulados` : "Ver previsión &rarr;"}</span>
+        <span class="stat-value ${Number(dineroPrevision) >= 0 ? "positivo" : "negativo"}">${importe(dineroPrevision, Number(dineroPrevision) < 0 ? "negativo" : "")}</span>
+        <span class="stat-sub">${previsionData?.gastos?.length ? `${previsionData.meses_pagados}/12 meses (${Number(dineroPrevision) >= 0 ? "Superávit" : "Déficit"})` : "Ver previsión &rarr;"}</span>
       </a>
 
       <a href="#/deben" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">

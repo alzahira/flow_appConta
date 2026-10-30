@@ -4544,11 +4544,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .fcr-bote {
-  flex: 1.2;
+  flex: 1.1;
+}
+
+.fcr-cuenta {
+  flex: 1.1;
 }
 
 .fcr-concepto {
-  flex: 1.2;
+  flex: 1.1;
 }
 
 .fcr-importe {
@@ -4559,6 +4563,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .fcr-select-bote,
+.fcr-select-cuenta,
 .fcr-input-concepto,
 .fcr-input-importe {
   width: 100%;
@@ -4601,7 +4606,7 @@ input:focus, select:focus, textarea:focus {
   .fila-config-reparto {
     flex-wrap: wrap;
   }
-  .fcr-bote, .fcr-concepto {
+  .fcr-bote, .fcr-cuenta, .fcr-concepto {
     flex: 100%;
   }
   .fcr-importe {

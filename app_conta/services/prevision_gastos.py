@@ -436,4 +436,8 @@ def restablecer_semilla(session: Session, hogar_id: str) -> None:
     for g in gastos:
         session.delete(g)
     session.commit()
+    # Alinear la configuración con los 11 meses pagados que incluye la plantilla del Excel
+    config = obtener_o_crear_config(session, hogar_id)
+    config.meses_pagados = 11
+    session.commit()
     semillar_gastos_si_vacio(session, hogar_id)

@@ -104,3 +104,87 @@ def test_flujo_completo_plantilla_reparto(client):
     r_del = client.delete(f"/api/v1/plantillas-reparto/{plantilla_id}")
     assert r_del.status_code == 204
 
+
+def test_reparto_nomina_a_diferentes_bancos(client):
+    # 1. Crear 2 cuentas bancarias distintas (Caixa y BBVA)
+    r_cta1 = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "Caixa Reparto",
+            "tipo": "banco",
+            "entidad": "CaixaBank",
+            "saldo_inicial": "100.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta1.status_code == 201
+    cta1_id = r_cta1.json()["id"]
+
+    r_cta2 = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "BBVA Reparto",
+            "tipo": "banco",
+            "entidad": "BBVA",
+            "saldo_inicial": "200.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta2.status_code == 201
+    cta2_id = r_cta2.json()["id"]
+
+    # 2. Crear botes
+    r_b = client.post(
+        "/api/v1/botes",
+        json={"nombre": "Bote Viaje Multi-Banco", "tipo": "ahorro", "categoria": "viajes"},
+    )
+    bote_id = r_b.json()["id"]
+
+    # 3. Crear plantilla asignando explícitamente diferentes cuentas destino a las líneas
+    r_p = client.post(
+        "/api/v1/plantillas-reparto",
+        json={
+            "nombre": "Nómina Multi-Banco",
+            "cuenta_id": cta1_id,
+            "importe_estimado": "1500.00",
+            "lineas": [
+                {
+                    "bote_id": None,
+                    "cuenta_id": cta1_id,
+                    "concepto": "Para Caixa gastos",
+                    "importe": "500.00",
+                },
+                {
+                    "bote_id": bote_id,
+                    "cuenta_id": cta2_id,
+                    "concepto": "Para BBVA ahorro viaje",
+                    "importe": "1000.00",
+                },
+            ],
+        },
+    )
+    assert r_p.status_code == 201
+    p_id = r_p.json()["id"]
+    lineas_res = r_p.json()["lineas"]
+    assert lineas_res[0]["cuenta_id"] == cta1_id
+    assert lineas_res[1]["cuenta_id"] == cta2_id
+
+    # 4. Ejecutar el reparto
+    r_ej = client.post(
+        f"/api/v1/plantillas-reparto/{p_id}/ejecutar",
+        json={"fecha": "2026-10-30", "descripcion_general": "Reparto Multi-Banco"},
+    )
+    assert r_ej.status_code == 200
+
+    # 5. Comprobar que Caixa subió en 500 € (100 + 500 = 600)
+    saldo_cta1 = client.get(f"/api/v1/cuentas/{cta1_id}").json()["saldo"]
+    assert saldo_cta1 == "600.00"
+
+    # 6. Comprobar que BBVA subió en 1000 € (200 + 1000 = 1200)
+    saldo_cta2 = client.get(f"/api/v1/cuentas/{cta2_id}").json()["saldo"]
+    assert saldo_cta2 == "1200.00"
+
+    # 7. Comprobar que el bote de viaje recibió los 1000 €
+    saldo_bote = client.get(f"/api/v1/botes/{bote_id}").json()["saldo"]
+    assert saldo_bote == "1000.00"
+

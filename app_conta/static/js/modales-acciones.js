@@ -464,10 +464,24 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
       containerLineas.innerHTML = (plantilla.lineas || [])
         .map(
           (l, i) => `
-        <div class="reparto-line-row" data-index="${i}" data-bote-id="${l.bote_id || ""}">
+        <div class="reparto-line-row" data-index="${i}">
           <div class="reparto-line-info">
             <span class="reparto-line-name">${esc(l.concepto || "Sin concepto")}</span>
-            <span class="reparto-line-bote">${l.bote_nombre ? `📦 ${esc(l.bote_nombre)}` : "🏦 En cuenta libre"}</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+              <span class="reparto-line-bote">${l.bote_nombre ? `📦 ${esc(l.bote_nombre)}` : "🏦 En cuenta libre"}</span>
+              <select class="reparto-line-bank-select" style="font-size: 0.78rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--surface-card); color: var(--text-main);">
+                <option value="">— Banco principal (${esc(plantilla.cuenta_nombre || "Cuenta")}) —</option>
+                ${cuentas
+                  .map(
+                    (c) => `
+                  <option value="${c.id}" ${(l.cuenta_id && l.cuenta_id === c.id) || (!l.cuenta_id && plantilla.cuenta_id === c.id) ? "selected" : ""}>
+                    🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+                  </option>
+                `
+                  )
+                  .join("")}
+              </select>
+            </div>
           </div>
           <div class="reparto-line-input-wrap">
             <input type="number" step="0.01" min="0" class="reparto-line-amount" value="${l.importe}" data-bote-id="${l.bote_id || ""}" data-concepto="${esc(l.concepto || "")}">
@@ -529,13 +543,16 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         const cuentaId = selCuentaNomina.value;
         const fecha = overlay.querySelector("#mn-fecha").value;
 
-        // Recoger líneas con los valores actuales (ajustados por el usuario si procede)
+        // Recoger líneas con los valores actuales y el banco destino elegido
         const lineasPayload = [];
-        containerLineas.querySelectorAll(".reparto-line-amount").forEach((inp) => {
-          const val = String(inp.value || "0").replace(",", ".").trim();
+        containerLineas.querySelectorAll(".reparto-line-row").forEach((row) => {
+          const inp = row.querySelector(".reparto-line-amount");
+          const selBank = row.querySelector(".reparto-line-bank-select");
+          const val = String(inp?.value || "0").replace(",", ".").trim();
           if (parseFloat(val) > 0) {
             lineasPayload.push({
               bote_id: inp.dataset.boteId ? Number(inp.dataset.boteId) : null,
+              cuenta_id: selBank?.value ? Number(selBank.value) : null,
               concepto: inp.dataset.concepto,
               importe: val,
             });
@@ -734,13 +751,14 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
     const containerConfig = overlay.querySelector("#lineas-config-container");
     const btnAddLinea = overlay.querySelector("#btn-add-linea-config");
 
-    function agregarFilaConfig(boteId = "", concepto = "", importeVal = "0.00") {
+    function agregarFilaConfig(boteId = "", cuentaId = "", concepto = "", importeVal = "0.00") {
       const fila = document.createElement("div");
       fila.className = "fila-config-reparto";
       fila.innerHTML = `
         <div class="fcr-col fcr-bote">
+          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Sobre / Bote</label>
           <select class="fcr-select-bote">
-            <option value="">— Dejar en cuenta (Sin bote) —</option>
+            <option value="">— Dejar libre (Sin bote) —</option>
             ${botes
               .map(
                 (b) => `
@@ -752,14 +770,33 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
               .join("")}
           </select>
         </div>
+        <div class="fcr-col fcr-cuenta">
+          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Banco Destino</label>
+          <select class="fcr-select-cuenta">
+            <option value="">— Banco principal nómina —</option>
+            ${cuentas
+              .map(
+                (c) => `
+              <option value="${c.id}" ${String(c.id) === String(cuentaId) ? "selected" : ""}>
+                ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+              </option>
+            `
+              )
+              .join("")}
+          </select>
+        </div>
         <div class="fcr-col fcr-concepto">
+          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Concepto</label>
           <input type="text" class="fcr-input-concepto" placeholder="Concepto (ej. Ocio, Mes...)" value="${esc(concepto)}">
         </div>
         <div class="fcr-col fcr-importe">
-          <input type="number" step="0.01" min="0" class="fcr-input-importe" placeholder="0.00" value="${importeVal}">
-          <span>€</span>
+          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Importe</label>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="number" step="0.01" min="0" class="fcr-input-importe" placeholder="0.00" value="${importeVal}">
+            <span>€</span>
+          </div>
         </div>
-        <button type="button" class="btn-icon danger fcr-btn-delete" title="Eliminar fila">&times;</button>
+        <button type="button" class="btn-icon danger fcr-btn-delete" title="Eliminar fila" style="margin-top: 14px;">&times;</button>
       `;
 
       fila.querySelector(".fcr-btn-delete").addEventListener("click", () => fila.remove());
@@ -782,7 +819,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
     // Inicializar líneas si estamos editando
     if (editando && editando.lineas && editando.lineas.length > 0) {
       editando.lineas.forEach((l) => {
-        agregarFilaConfig(l.bote_id, l.concepto, l.importe);
+        agregarFilaConfig(l.bote_id, l.cuenta_id, l.concepto, l.importe);
       });
     } else {
       // Filas iniciales sugeridas para nómina
@@ -790,10 +827,10 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
       const boteOcio = botes.find((b) => b.nombre.toLowerCase().includes("ocio"));
       const boteHipoteca = botes.find((b) => b.nombre.toLowerCase().includes("hipoteca"));
 
-      if (boteMes) agregarFilaConfig(boteMes.id, "Dinero del mes", "400.00");
-      if (boteOcio) agregarFilaConfig(boteOcio.id, "Bote ocio", "200.00");
-      if (boteHipoteca) agregarFilaConfig(boteHipoteca.id, "Amortización hipoteca", "600.00");
-      agregarFilaConfig("", "Remanente en cuenta", "800.00");
+      if (boteMes) agregarFilaConfig(boteMes.id, "", "Dinero del mes", "400.00");
+      if (boteOcio) agregarFilaConfig(boteOcio.id, "", "Bote ocio", "200.00");
+      if (boteHipoteca) agregarFilaConfig(boteHipoteca.id, "", "Amortización hipoteca", "600.00");
+      agregarFilaConfig("", "", "Remanente en cuenta", "800.00");
     }
 
     // Botones de la lista: Editar y Eliminar
@@ -856,6 +893,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
         let totalEstimado = 0;
         containerConfig.querySelectorAll(".fila-config-reparto").forEach((fila) => {
           const boteId = fila.querySelector(".fcr-select-bote").value;
+          const cuentaLineaId = fila.querySelector(".fcr-select-cuenta")?.value || "";
           const concepto = fila.querySelector(".fcr-input-concepto").value.trim();
           const importeStr = fila.querySelector(".fcr-input-importe").value.trim();
           const num = parseFloat(importeStr) || 0;
@@ -863,6 +901,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
 
           lineas.push({
             bote_id: boteId ? Number(boteId) : null,
+            cuenta_id: cuentaLineaId ? Number(cuentaLineaId) : null,
             concepto: concepto || "Reparto",
             importe: importeStr || "0.00",
           });

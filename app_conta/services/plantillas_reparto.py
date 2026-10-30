@@ -23,6 +23,9 @@ def _serializar_linea(linea: PlantillaRepartoLinea) -> dict[str, Any]:
         "bote_id": linea.bote_id,
         "bote_nombre": linea.bote.nombre if linea.bote else None,
         "bote_categoria": linea.bote.categoria if linea.bote else None,
+        "cuenta_id": linea.cuenta_id,
+        "cuenta_nombre": linea.cuenta.nombre if linea.cuenta else None,
+        "cuenta_entidad": linea.cuenta.entidad if linea.cuenta else None,
         "concepto": linea.concepto,
         "importe": centimos_a_euros(linea.importe_centimos),
         "orden": linea.orden,
@@ -102,9 +105,18 @@ def crear_plantilla(db: Session, hogar_id: int, datos: dict[str, Any]) -> Planti
             if db.get(Bote, bote_id) is None:
                 bote_id = None
 
+        cuenta_linea_id = ld.get("cuenta_id")
+        if cuenta_linea_id:
+            cuenta_linea_id = int(cuenta_linea_id)
+            if db.get(Cuenta, cuenta_linea_id) is None:
+                cuenta_linea_id = None
+        else:
+            cuenta_linea_id = None
+
         linea = PlantillaRepartoLinea(
             plantilla_id=plantilla.id,
             bote_id=bote_id,
+            cuenta_id=cuenta_linea_id,
             concepto=concepto,
             importe_centimos=centimos_linea,
             orden=idx,
@@ -161,9 +173,18 @@ def actualizar_plantilla(db: Session, plantilla_id: int, datos: dict[str, Any]) 
                 if db.get(Bote, bote_id) is None:
                     bote_id = None
 
+            cuenta_linea_id = ld.get("cuenta_id")
+            if cuenta_linea_id:
+                cuenta_linea_id = int(cuenta_linea_id)
+                if db.get(Cuenta, cuenta_linea_id) is None:
+                    cuenta_linea_id = None
+            else:
+                cuenta_linea_id = None
+
             linea = PlantillaRepartoLinea(
                 plantilla_id=plantilla.id,
                 bote_id=bote_id,
+                cuenta_id=cuenta_linea_id,
                 concepto=concepto,
                 importe_centimos=centimos_linea,
                 orden=idx,
@@ -209,6 +230,7 @@ def ejecutar_reparto(
         else [
             {
                 "bote_id": item.bote_id,
+                "cuenta_id": item.cuenta_id,
                 "concepto": item.concepto,
                 "importe": centimos_a_euros(item.importe_centimos),
             }
@@ -227,6 +249,15 @@ def ejecutar_reparto(
         if bote_id:
             bote_id = int(bote_id)
 
+        # Destino de cuenta bancaria: si la línea especifica un banco concreto,
+        # se ingresa ahí; si no, al principal
+        linea_cuenta_id = ld.get("cuenta_id")
+        destino_cuenta_id = target_cuenta_id
+        if linea_cuenta_id:
+            cta_test = db.get(Cuenta, int(linea_cuenta_id))
+            if cta_test is not None:
+                destino_cuenta_id = cta_test.id
+
         desc = f"{prefijo}: {concepto}" if concepto else prefijo
 
         mov = crear_movimiento(
@@ -234,7 +265,7 @@ def ejecutar_reparto(
             fecha=fecha,
             importe=centimos_a_euros(centimos),
             descripcion=desc,
-            cuenta_id=target_cuenta_id,
+            cuenta_id=destino_cuenta_id,
             bote_id=bote_id,
         )
         movimientos_creados.append(mov)

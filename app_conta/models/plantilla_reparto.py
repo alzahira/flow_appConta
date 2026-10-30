@@ -52,9 +52,13 @@ class PlantillaRepartoLinea(Base):
     bote_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("botes.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    cuenta_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("cuentas.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     concepto: Mapped[str] = mapped_column(String(150), nullable=False)
     importe_centimos: Mapped[int] = mapped_column(BigInteger, nullable=False)
     orden: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     plantilla: Mapped[PlantillaReparto] = relationship(back_populates="lineas")
     bote: Mapped[Bote | None] = relationship()  # noqa: F821
+    cuenta: Mapped[Cuenta | None] = relationship()  # noqa: F821

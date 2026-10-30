@@ -27,6 +27,7 @@ router = APIRouter(prefix="/plantillas-reparto", tags=["plantillas-reparto"])
 class LineaRepartoInput(BaseModel):
     model_config = ConfigDict(extra="ignore")
     bote_id: int | None = None
+    cuenta_id: int | None = None
     concepto: str
     importe: str | float | int
 

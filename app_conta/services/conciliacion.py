@@ -113,7 +113,7 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
         None,
     )
     centimos_extras = bote_extras_pair[1] if bote_extras_pair else 0
-    centimos_redondeo = tot_prevision_formula % 100 if tot_prevision_formula else 0
+    centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
 
     # Total teórico antes de ajustes
     teorico_base = (

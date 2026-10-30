@@ -124,6 +124,7 @@ export default vista("prevision-gastos", async () => {
         </button>
 
         <select class="sel-mes-directo" data-accion="cambiar-mes-directo" style="margin-left: 0.5rem; background: var(--surface-card); color: var(--text-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.3rem 0.5rem; font-size: 0.82rem;">
+          <option value="0" ${meses === 0 ? "selected" : ""}>0. Sin provisión acumulada</option>
           ${MESES_NOMBRES.map(
             (m, idx) => `
             <option value="${idx + 1}" ${meses === idx + 1 ? "selected" : ""}>
@@ -131,6 +132,31 @@ export default vista("prevision-gastos", async () => {
             </option>`
           ).join("")}
         </select>
+      </div>
+    </div>
+
+    <!-- Ecuación Visual de Cuadre del Bote Anual -->
+    <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.9rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <div style="text-align: left;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Provisión Acumulada (${mesActualNombre})</span>
+          <strong style="font-size: 1.15rem; color: var(--accent-positive);">${importe(data.total_provision)}</strong>
+        </div>
+        <span style="font-size: 1.25rem; color: var(--text-muted); font-weight: 700;">−</span>
+        <div style="text-align: left;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Facturas Pagadas Reales</span>
+          <strong style="font-size: 1.15rem;">${importe(data.total_pagado)}</strong>
+        </div>
+        <span style="font-size: 1.25rem; color: var(--text-muted); font-weight: 700;">=</span>
+        <div style="text-align: left;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Saldo Neto del Bote</span>
+          <strong style="font-size: 1.25rem;" class="${esSuperavitTotal ? "positivo" : "negativo"}">${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}</strong>
+        </div>
+      </div>
+      <div>
+        <span class="badge-tag ${esSuperavitTotal ? "ok" : "alerta"}">
+          ${esSuperavitTotal ? `${icono("check")} Superávit acumulado` : `${icono("alerta")} Déficit temporal (${meses} de 12 meses)`}
+        </span>
       </div>
     </div>
 
@@ -154,8 +180,8 @@ export default vista("prevision-gastos", async () => {
       </div>
       <div class="hero-pill-stat">
         <span class="pill-stat-label">Saldo Neto del Bote</span>
-        <span class="pill-stat-value ${esSuperavitTotal ? "ok" : "alert"}">
-          ${importe(data.total_saldo)}
+        <span class="pill-stat-value ${esSuperavitTotal ? "ok" : "negativo"}">
+          ${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}
         </span>
       </div>
     </div>
@@ -206,7 +232,7 @@ export default vista("prevision-gastos", async () => {
                 <td class="num">${importe(data.total_mensual)}</td>
                 <td class="num ok">${importe(data.total_provision)}</td>
                 <td class="num">${importe(data.total_pagado)}</td>
-                <td class="num ${esSuperavitTotal ? "ok" : "alert"}">${importe(data.total_saldo)}</td>
+                <td class="num ${esSuperavitTotal ? "ok" : "negativo"}">${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}</td>
                 <td></td>
               </tr>
             </tfoot>
