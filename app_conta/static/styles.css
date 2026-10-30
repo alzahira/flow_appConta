@@ -3071,25 +3071,39 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   Responsive Móvil
+   Responsive Móvil (Optimización Táctil y Pantallas Pequeñas)
    ========================================================================== */
 @media (max-width: 768px) {
+  .app-content {
+    padding: 1rem 0.85rem 4.5rem;
+  }
+
   .header-inner {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
   }
 
   .nav-bar {
-    justify-content: center;
+    justify-content: flex-start;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
   }
 
   .nav-bar::-webkit-scrollbar {
     display: none;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.8rem;
   }
 
   .hero-main-balance {
@@ -3098,35 +3112,51 @@ input:focus, select:focus, textarea:focus {
 
   .hero-pills-row {
     grid-template-columns: 1fr;
+    gap: 0.65rem;
   }
 
   .page-header-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
   }
 
   .header-total-card {
+    width: 100%;
     align-items: flex-start;
+    padding: 0.85rem 1.15rem;
   }
 
   .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large, .grid-credit-cards, .grid-gift-cards, .grid-investments {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
+  /* Tarjeta de Cuenta Horizontal a Ancho Completo en Móvil */
   .card-account-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.15rem;
-    padding: 1.25rem 1.35rem;
+    padding: 1.2rem 1.25rem;
   }
 
   .acc-row-main {
     width: 100%;
   }
 
+  .acc-row-header-texts {
+    gap: 0.45rem;
+  }
+
+  .acc-row-title {
+    font-size: 1.1rem;
+  }
+
   .acc-row-side {
     width: 100%;
     justify-content: space-between;
+    align-items: center;
     border-top: 1px solid var(--border-subtle);
     padding-top: 0.85rem;
   }
@@ -3135,7 +3165,65 @@ input:focus, select:focus, textarea:focus {
     align-items: flex-start;
   }
 
+  .acc-row-balance-value,
+  .pot-balance-value,
+  .account-balance-value,
+  .debt-balance-value.pendiente,
+  .debt-balance-value.saldado {
+    font-size: 1.55rem;
+  }
+
+  .card-pot-full, .card-debt-full, .card-investment-full {
+    padding: 1.2rem 1.25rem;
+    gap: 1rem;
+  }
+
+  /* Píldoras de resumen bancario con scroll horizontal táctil */
+  .bank-pills-summary {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .bank-pills-summary::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bank-pill-item {
+    flex-shrink: 0;
+  }
+
+  /* Formularios colapsados a 1 columna en móvil */
+  .form-grid-2,
+  .form-grid-3,
+  .form-row-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+
+  .form-span-2 {
+    grid-column: span 1 !important;
+  }
+
+  /* Stepper de Previsión de Gastos en Móvil */
+  .prevision-stepper-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  .prevision-stepper-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* Tablas con scroll táctil */
   .table-fintech th, .table-fintech td {
     padding: 0.75rem 0.85rem;
+    font-size: 0.82rem;
   }
 }

@@ -40,6 +40,13 @@
       navigator.serviceWorker.register("/static/sw.js").then((reg) => {
         reg.update();
       });
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
   </script>
 </body>
