@@ -77,12 +77,13 @@ function tarjetaBoteMini(b) {
 }
 
 export default vista("inicio", async () => {
-  const [conc, cuentas, botes, deudasData, previsionData] = await Promise.all([
+  const [conc, cuentas, botes, deudasData, previsionData, inversionesData] = await Promise.all([
     API.get("/conciliacion"),
     API.get("/cuentas"),
     API.get("/botes"),
     API.get("/deudas").catch(() => ({ total_pendiente: "0.00" })),
     API.get("/prevision-gastos").catch(() => null),
+    API.get("/inversiones").catch(() => null),
   ]);
 
   const totalQueMeDeben = deudasData.total_pendiente || "0.00";
@@ -208,6 +209,15 @@ export default vista("inicio", async () => {
         </div>
         <span class="stat-value ${Number(previsionData?.total_saldo || 0) >= 0 ? "positivo" : "negativo"}">${importe(previsionData?.total_saldo || "0.00")}</span>
         <span class="stat-sub">${previsionData ? `${previsionData.meses_pagados}/12 meses provistos` : "Ver previsión &rarr;"}</span>
+      </a>
+
+      <a href="#/inversiones" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+        <div class="stat-pill-header">
+          <span class="stat-pill-icon">${icono("inversion")}</span>
+          <span class="stat-label">Patrimonio Invertido</span>
+        </div>
+        <span class="stat-value ${inversionesData?.total_plusvalia_centimos >= 0 ? "positivo" : "negativo"}">${importe(inversionesData?.total_valor_actual || "0.00")}</span>
+        <span class="stat-sub">${inversionesData && inversionesData.total_posiciones > 0 ? `${inversionesData.rentabilidad_global_pct >= 0 ? "+" : ""}${inversionesData.rentabilidad_global_pct}% (${inversionesData.total_posiciones} ${inversionesData.total_posiciones === 1 ? "activo" : "activos"})` : "Ver cartera &rarr;"}</span>
       </a>
     </div>
 

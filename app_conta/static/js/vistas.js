@@ -114,6 +114,7 @@ export function mostrarError(idwrap, e) {
 export function subnavCuentas(activa) {
   const tabs = [
     { id: "cuentas", href: "#/cuentas", label: "Cuentas y Depósitos", iconoKey: "cuentas" },
+    { id: "inversiones", href: "#/inversiones", label: "Inversiones", iconoKey: "inversion" },
     { id: "tarjetas", href: "#/tarjetas", label: "Tarjetas Bancarias", iconoKey: "tarjetas" },
     { id: "tarjetas-regalo", href: "#/tarjetas-regalo", label: "Tarjetas Regalo", iconoKey: "regalo" },
     { id: "gastos-tarjetas", href: "#/gastos-tarjetas", label: "Gastos Tarjetas", iconoKey: "gastos-tarjetas" },

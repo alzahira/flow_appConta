@@ -40,3 +40,6 @@ class Hogar(Base):
     gastos_recurrentes: Mapped[list[GastoRecurrente]] = relationship(  # noqa: F821
         back_populates="hogar", cascade="all, delete-orphan"
     )
+    inversiones: Mapped[list[Inversion]] = relationship(  # noqa: F821
+        back_populates="hogar", cascade="all, delete-orphan"
+    )

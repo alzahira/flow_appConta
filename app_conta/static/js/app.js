@@ -5,6 +5,7 @@ import { pintarNav } from "./nav.js";
 // Import de vistas con efecto de registro (orden = orden de la navegación):
 import "./views/inicio.js";
 import "./views/cuentas.js";
+import "./views/inversiones.js";
 import "./views/tarjetas.js";
 import "./views/tarjetas-regalo.js";
 import "./views/ahorro.js";
@@ -22,7 +23,7 @@ async function navegar() {
   if (!actual) return;
 
   // Resaltar la pestaña del grupo activo en el menú superior
-  const grupoCuentas = ["cuentas", "tarjetas", "tarjetas-regalo", "gastos-tarjetas"];
+  const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "gastos-tarjetas"];
   const grupoAhorro = ["ahorro", "botes", "prevision-gastos", "deben"];
   const grupoMas = ["categorias", "importar"];
 
@@ -190,6 +191,44 @@ document.addEventListener("submit", async (e) => {
         notas: datos.get("notas") || null,
       });
       form.reset();
+      await navegar();
+    } else if (form.dataset.accion === "crear-inversion") {
+      const capAportado = String(datos.get("capital_aportado") || "0.00").replace(",", ".").trim();
+      const valActual = datos.get("valor_actual")
+        ? String(datos.get("valor_actual")).replace(",", ".").trim()
+        : null;
+      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+      const crearMov = datos.get("crear_movimiento_inicial") === "true";
+      await API.post("/inversiones", {
+        nombre: datos.get("nombre"),
+        entidad: datos.get("entidad"),
+        tipo_activo: datos.get("tipo_activo"),
+        capital_aportado: capAportado,
+        valor_actual: valActual || capAportado,
+        cuenta_id: cuentaId,
+        crear_movimiento_inicial: crearMov,
+        fecha_inicio: datos.get("fecha_inicio") || null,
+        notas: datos.get("notas") || null,
+      });
+      form.reset();
+      await navegar();
+    } else if (form.dataset.accion === "aportar-inversion") {
+      const invId = Number(form.dataset.id);
+      const importe = String(datos.get("importe") || "").replace(",", ".").trim();
+      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+      await API.post(`/inversiones/${invId}/aportar`, {
+        importe: importe,
+        cuenta_origen_id: cuentaId,
+      });
+      await navegar();
+    } else if (form.dataset.accion === "reembolsar-inversion") {
+      const invId = Number(form.dataset.id);
+      const importe = String(datos.get("importe") || "").replace(",", ".").trim();
+      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+      await API.post(`/inversiones/${invId}/reembolsar`, {
+        importe: importe,
+        cuenta_destino_id: cuentaId,
+      });
       await navegar();
     }
 
@@ -426,6 +465,53 @@ document.addEventListener("click", async (e) => {
     } catch (err) {
       alert(`No se pudo restablecer la plantilla: ${err.message}`);
     }
+    return;
+  }
+
+  // Inversiones: Actualizar valoración de mercado
+  const btnActValor = e.target.closest('[data-accion="actualizar-valor-inversion"]');
+  if (btnActValor) {
+    const id = Number(btnActValor.dataset.id);
+    const nombre = btnActValor.dataset.nombre || "esta inversión";
+    const actual = btnActValor.dataset.valor || "0.00";
+    const nuevo = prompt(
+      `Actualizar cotización / valor de mercado de "${nombre}":\n\nValoración actual: ${actual} €\n\nIntroduce el nuevo valor total de mercado (€):`,
+      actual
+    );
+    if (nuevo === null) return;
+    const valorStr = nuevo.replace(",", ".").trim();
+    if (!valorStr) return;
+    try {
+      await API.post(`/inversiones/${id}/valoracion`, { valor_actual: valorStr });
+      await navegar();
+    } catch (err) {
+      alert(`No se pudo actualizar la valoración: ${err.message}`);
+    }
+    return;
+  }
+
+  // Inversiones: Borrar posición
+  const btnBorrarInv = e.target.closest('[data-accion="borrar-inversion"]');
+  if (btnBorrarInv) {
+    const id = Number(btnBorrarInv.dataset.id);
+    const nombre = btnBorrarInv.dataset.nombre || "esta inversión";
+    if (!confirm(`¿Deseas eliminar la posición de inversión "${nombre}"?`)) return;
+    try {
+      await API.del(`/inversiones/${id}`);
+      await navegar();
+    } catch (err) {
+      alert(`No se pudo eliminar la inversión: ${err.message}`);
+    }
+    return;
+  }
+
+  // Inversiones: Filtrar por tipo de activo
+  const btnFiltroInv = e.target.closest('[data-accion="filtrar-inversiones"]');
+  if (btnFiltroInv) {
+    const tipo = btnFiltroInv.dataset.tipo;
+    const { fijarFiltroInversion } = await import("./views/inversiones.js");
+    fijarFiltroInversion(tipo);
+    await navegar();
     return;
   }
 

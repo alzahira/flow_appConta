@@ -79,6 +79,7 @@ def _aislar_bd(_migrado, db_module) -> Iterator[None]:
             "auditoria_movimientos",
             "movimientos",
             "importaciones",
+            "inversiones",
             "gastos_recurrentes",
             "prevision_gastos_config",
             "deudas",

@@ -2884,6 +2884,483 @@ input:focus, select:focus, textarea:focus {
   opacity: 0.55;
 }
 
+/* ==========================================================================
+   Módulo de Inversiones y Carteras
+   ========================================================================== */
+.inv-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.inv-kpi-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.inv-kpi-card:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value-main {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.kpi-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.kpi-value.positivo {
+  color: #10b981;
+}
+
+.kpi-value.negativo {
+  color: #ef4444;
+}
+
+.kpi-roi-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.kpi-roi-pill.positivo {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.kpi-roi-pill.negativo {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+.kpi-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.inv-allocation-section {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.inv-allocation-bar {
+  display: flex;
+  height: 14px;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border-subtle);
+  margin: 1rem 0;
+}
+
+.inv-bar-segment {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.inv-allocation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.legend-pct {
+  font-weight: 700;
+  color: var(--accent-brand);
+}
+
+.legend-val {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.inv-filters-row {
+  margin-bottom: 1.5rem;
+}
+
+.inv-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inv-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inv-filter-pill:hover {
+  border-color: var(--border-medium);
+  color: var(--text-main);
+}
+
+.inv-filter-pill.activa {
+  background: var(--accent-brand);
+  border-color: var(--accent-brand);
+  color: #fff;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.grid-investments {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.card-investment-full {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-investment-full::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-color, var(--accent-brand));
+}
+
+.card-investment-full:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card-investment-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.investment-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.investment-tags-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.investment-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.card-investment-body {
+  margin-bottom: 1.15rem;
+}
+
+.investment-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 0.35rem 0;
+  line-height: 1.35;
+}
+
+.investment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.investment-notes {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  margin: 0.5rem 0 0 0;
+  font-family: var(--font-mono);
+}
+
+.card-investment-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.metric-box.primary {
+  grid-column: span 2;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.metric-value-huge {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.metric-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metric-value.positivo {
+  color: #10b981;
+}
+
+.metric-value.negativo {
+  color: #ef4444;
+}
+
+.metric-badge-roi {
+  font-size: 0.95rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.metric-badge-roi.positivo {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.metric-badge-roi.negativo {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+.card-investment-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.inv-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inv-operar-details {
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 0.65rem;
+}
+
+.btn-operar-trigger {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-brand);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-operar-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.inv-forms-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.inv-mini-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mini-form-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.inv-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.inv-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.inv-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.inv-field input, .inv-field select {
+  padding: 0.4rem 0.55rem;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background: var(--surface-input);
+  color: var(--text-main);
+}
+
+.form-inversion-details {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.btn-nuevo-inversion-trigger {
+  padding: 1.15rem 1.35rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--accent-brand);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-nuevo-inversion-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.formulario-inversion {
+  padding: 0 1.35rem 1.35rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.campo-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 
 
 /* ==========================================================================

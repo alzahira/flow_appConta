@@ -8,6 +8,7 @@ from app_conta.models.deuda import Deuda
 from app_conta.models.gasto_recurrente import GastoRecurrente, PrevisionGastosConfig
 from app_conta.models.hogar import Hogar
 from app_conta.models.importacion import Importacion
+from app_conta.models.inversion import Inversion
 from app_conta.models.movimiento import Movimiento
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "GastoRecurrente",
     "Hogar",
     "Importacion",
+    "Inversion",
     "Movimiento",
     "PrevisionGastosConfig",
 ]

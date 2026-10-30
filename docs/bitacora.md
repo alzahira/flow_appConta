@@ -576,6 +576,38 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Ruff check y ruff format limpios (0 errores).
   - Cobertura global del 92%.
 
+### 11. Módulo y Pestaña de Inversiones y Patrimonio (2026-10-30)
+
+- **Propósito y Reglas de Negocio (Segregación de Patrimonio Invertido)**:
+  - En finanzas personales e ingeniería contable rigurosa, las inversiones (fondos indexados, acciones/ETFs, renta fija/letras del tesoro, planes de pensiones y criptoactivos) no constituyen liquidez inmediata ("Dinero en caja" ni "Dinero disponible").
+  - Constituyen **Patrimonio Neto Invertido**, cuyo valor fluctúa en función de cotizaciones y valoraciones de mercado.
+  - Separar las inversiones de las cuentas corrientes bancarias permite mantener la pureza de la fórmula de conciliación bancaria diaria mientras se obtiene visibilidad total sobre la rentabilidad real de la cartera.
+- **Backend & Base de Datos**:
+  - **Modelo relacional `Inversion`** en `app_conta/models/inversion.py`: registra `id`, `hogar_id`, `nombre`, `entidad` (MyInvestor, Trade Republic, Indexa, Tesoro Público, etc.), `tipo_activo` (`fondos`, `acciones_etfs`, `renta_fija`, `pensiones`, `cripto`, `inmobiliario`, `otros`), `capital_aportado_centimos`, `valor_actual_centimos`, `cuenta_id` (vinculación opcional con cuenta bancaria), `fecha_inicio`, `notas` / ISIN y `activo`.
+  - Properties calculadas: `plusvalia_centimos` y `rentabilidad_pct` (ROI % ponderado).
+  - **Migración Alembic `9c8d7e6f5a4b_inversiones.py`** creada y aplicada cleanly sobre `conta.db`.
+  - **Servicio `app_conta/services/inversiones.py`**:
+    - `crear_inversion` con opción de crear movimiento inicial automático de salida en la cuenta bancaria de origen para conciliar aportaciones de efectivo.
+    - `actualizar_valoracion` para actualizar el valor de mercado periódicamente sin alterar el capital aportado.
+    - `registrar_aportacion` y `registrar_reembolso` con movimiento bancario bidireccional opcional.
+    - `resumen_inversiones` con cómputo de valor total de mercado, capital neto aportado, plusvalía global, rentabilidad ponderada total y distribuciones por tipo de activo y entidad.
+  - **Router `/api/v1/inversiones`** en `app_conta/api/inversiones.py` con endpoints REST completos y validación Pydantic estricta.
+- **Frontend PWA Fintech UI**:
+  - **Pestaña integrada en Subnavegación de Cuentas y Tarjetas (`subnavCuentas`)**:
+    `[ 🏦 Cuentas y Depósitos ]  [ 📈 Inversiones ]  [ 💳 Tarjetas Bancarias ]  [ 🎁 Tarjetas Regalo ]  [ 🏷️ Gastos Tarjetas ]`
+  - **Vista dedicada `views/inversiones.js`**:
+    - **Hero KPIs**: Valor de Mercado Total, Capital Invertido, Plusvalía Neta (+€ / −€) y Rentabilidad Ponderada (ROI %).
+    - **Barra Visual de Asset Allocation**: proporción porcentual por tipo de activo (fondos, acciones, renta fija, pensiones, cripto) con leyenda detallada.
+    - **Filtros rápidos por tipo**: botones píldora para filtrar al instante por categoría de activo.
+    - **Tarjetas de Posiciones**: tarjeta fintech completa con acento de color según clase de activo, métricas de valoración y rentabilidad, botón rápido para actualizar cotización de mercado, y desplegable para aportar o reembolsar capital vinculado a cuenta bancaria.
+    - **Formulario Integrado de Alta**: formulario para registrar nuevas inversiones con soporte para fecha, ISIN/notas y movimiento de cargo inicial.
+  - **Métrica en Dashboard Resumen (`views/inicio.js`)**: nueva tarjeta en la fila principal del hero con el patrimonio invertido y rentabilidad global enlazando a `#/inversiones`.
+  - **Service Worker**: actualizado a versión `app-conta-shell-v8`.
+- **Calidad y Tests**:
+  - **145 tests en verde (`uv run pytest`)**, 0 fallos.
+  - Cobertura global del 90%.
+  - Ruff check y ruff format al 100% limpios.
+
 
 
 
