@@ -4083,7 +4083,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .modal-card.modal-gestor-plantillas {
-  max-width: 680px;
+  max-width: 860px;
+  width: min(860px, 96vw);
 }
 
 .modal-loading {
@@ -4543,23 +4544,52 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-subtle);
 }
 
-.fcr-bote {
-  flex: 1.1;
-}
-
-.fcr-cuenta {
-  flex: 1.1;
-}
-
-.fcr-concepto {
-  flex: 1.1;
-}
-
-.fcr-importe {
+.fcr-table-header {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  width: 105px;
+  gap: 0.65rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #f1f5f9;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.25rem;
+}
+
+.fcr-th-cuenta,
+.fcr-col.fcr-cuenta {
+  flex: 1.35;
+  min-width: 0;
+}
+
+.fcr-th-bote,
+.fcr-col.fcr-bote {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.fcr-th-concepto,
+.fcr-col.fcr-concepto {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.fcr-th-importe,
+.fcr-col.fcr-importe {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.fcr-th-action {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.fcr-mobile-label {
+  display: none;
 }
 
 .fcr-select-bote,
@@ -4603,8 +4633,19 @@ input:focus, select:focus, textarea:focus {
   .modal-span-2 {
     grid-column: span 1;
   }
+  .fcr-table-header {
+    display: none;
+  }
+  .fcr-mobile-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
   .fila-config-reparto {
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
   .fcr-bote, .fcr-cuenta, .fcr-concepto {
     flex: 100%;

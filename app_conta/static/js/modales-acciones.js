@@ -218,6 +218,11 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
     const plantillas = resPlantillas || [];
     const hoy = new Date().toISOString().slice(0, 10);
 
+    const cuentasBancos = cuentas.filter(
+      (c) => c.tipo === "banco" || c.tipo === "efectivo" || !c.tipo
+    );
+    const cuentasParaReparto = cuentasBancos.length > 0 ? cuentasBancos : cuentas;
+
     overlay.innerHTML = `
       <div class="modal-card modal-ingreso">
         <div class="modal-header">
@@ -467,20 +472,23 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         <div class="reparto-line-row" data-index="${i}">
           <div class="reparto-line-info">
             <span class="reparto-line-name">${esc(l.concepto || "Sin concepto")}</span>
-            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 0.65rem; align-items: center; margin-top: 5px; flex-wrap: wrap;">
               <span class="reparto-line-bote">${l.bote_nombre ? `📦 ${esc(l.bote_nombre)}` : "🏦 En cuenta libre"}</span>
-              <select class="reparto-line-bank-select" style="font-size: 0.78rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--surface-card); color: var(--text-main);">
-                <option value="">— Banco principal (${esc(plantilla.cuenta_nombre || "Cuenta")}) —</option>
-                ${cuentas
-                  .map(
-                    (c) => `
-                  <option value="${c.id}" ${(l.cuenta_id && l.cuenta_id === c.id) || (!l.cuenta_id && plantilla.cuenta_id === c.id) ? "selected" : ""}>
-                    🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
-                  </option>
-                `
-                  )
-                  .join("")}
-              </select>
+              <label style="font-size: 0.74rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+                <span>🏛️ Destino:</span>
+                <select class="reparto-line-bank-select" style="font-size: 0.78rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--surface-card); color: var(--text-main); font-weight: 500;">
+                  <option value="">— Banco principal (${esc(plantilla.cuenta_nombre || "Cuenta")}) —</option>
+                  ${cuentasParaReparto
+                    .map(
+                      (c) => `
+                    <option value="${c.id}" ${(l.cuenta_id && l.cuenta_id === c.id) || (!l.cuenta_id && plantilla.cuenta_id === c.id) ? "selected" : ""}>
+                      🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+                    </option>
+                  `
+                    )
+                    .join("")}
+                </select>
+              </label>
             </div>
           </div>
           <div class="reparto-line-input-wrap">
@@ -615,6 +623,11 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
     const cuentas = resCuentas.items || [];
     const botes = resBotes.items || [];
 
+    const cuentasBancos = cuentas.filter(
+      (c) => c.tipo === "banco" || c.tipo === "efectivo" || !c.tipo
+    );
+    const cuentasParaReparto = cuentasBancos.length > 0 ? cuentasBancos : cuentas;
+
     const editando = plantillaAEditarId
       ? plantillas.find((p) => p.id === plantillaAEditarId)
       : null;
@@ -625,7 +638,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
           <div class="modal-title-group">
             <span class="modal-badge-action neutral">CONFIGURACIÓN</span>
             <h3 class="modal-title">${editando ? "Editar Plantilla de Nómina" : "Plantillas de Reparto Mensual"}</h3>
-            <p class="modal-subtitle">Define las reglas automáticas de reparto para tu nómina y la de tu pareja</p>
+            <p class="modal-subtitle">Define las reglas automáticas de reparto para tu nómina y la de tu pareja entre diferentes bancos y sobres</p>
           </div>
           <button type="button" class="modal-btn-close" id="btn-cerrar-gestor">&times;</button>
         </div>
@@ -652,11 +665,32 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
                       <div class="cpr-info">
                         <div class="cpr-title-row">
                           <strong class="cpr-name">${esc(p.nombre)}</strong>
-                          <span class="badge-subtle">${esc(p.cuenta_nombre || "Cuenta")}</span>
+                          <span class="badge-subtle badge-multi-banco" style="color: #4f46e5; background: #eef2ff; font-weight: 600;">
+                            🏛️ ${esc(
+                              Array.from(
+                                new Set(
+                                  [p.cuenta_nombre]
+                                    .concat((p.lineas || []).map((l) => l.cuenta_nombre))
+                                    .filter(Boolean)
+                                )
+                              ).join(" + ") || p.cuenta_nombre || "Banco"
+                            )}
+                          </span>
                           ${p.dia_mes ? `<span class="badge-subtle">Día ${p.dia_mes}</span>` : ""}
                         </div>
                         <div class="cpr-sub">
-                          Importe habitual: <strong>${p.importe_estimado} €</strong> &bull; ${p.lineas.length} sobres asignados
+                          Importe habitual: <strong>${p.importe_estimado} €</strong> &bull; ${p.lineas.length} líneas de reparto
+                        </div>
+                        <div class="cpr-desglose-lineas" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">
+                          ${(p.lineas || [])
+                            .map(
+                              (l) => `
+                            <span style="font-size: 0.73rem; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 2px 6px; color: var(--text-main);">
+                              ${l.importe}€ ➔ <strong>${esc(l.cuenta_nombre || p.cuenta_nombre || "Banco")}</strong> ${l.bote_nombre ? `(📦 ${esc(l.bote_nombre)})` : ""}
+                            </span>
+                          `
+                            )
+                            .join("")}
                         </div>
                       </div>
                       <div class="cpr-actions">
@@ -686,40 +720,61 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
               <div class="modal-grid-fields">
                 <div class="modal-field modal-span-2">
                   <label for="gp-nombre" class="form-label">Nombre de la Plantilla</label>
-                  <input id="gp-nombre" name="nombre" value="${editando ? esc(editando.nombre) : ""}" placeholder="Ej. Nómina Javier, Nómina Mujer..." required>
+                  <input id="gp-nombre" name="nombre" value="${editando ? esc(editando.nombre) : ""}" placeholder="Ej. Mi Nómina, Nómina Mujer, Ingreso mensual..." required>
                 </div>
 
                 <div class="modal-field">
-                  <label for="gp-cuenta" class="form-label">Cuenta habitual de cobro</label>
+                  <label for="gp-cuenta" class="form-label">🏛️ Banco principal de cobro (por defecto)</label>
                   <select id="gp-cuenta" name="cuenta_id" required>
-                    ${cuentas
+                    ${cuentasParaReparto
                       .map(
                         (c) => `
                       <option value="${c.id}" ${editando && editando.cuenta_id === c.id ? "selected" : ""}>
-                        ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+                        🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
                       </option>
                     `
                       )
                       .join("")}
                   </select>
+                  <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">
+                    Cuenta donde tu empresa te paga. Se usará si una línea no indica otro banco.
+                  </p>
                 </div>
 
                 <div class="modal-field">
                   <label for="gp-dia" class="form-label">Día habitual del mes (1 - 31)</label>
                   <input id="gp-dia" name="dia_mes" type="number" min="1" max="31" value="${editando?.dia_mes || 28}" placeholder="Ej. 28">
+                  <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">
+                    Día aproximado en que cobras cada mes.
+                  </p>
                 </div>
               </div>
 
-              <!-- LÍNEAS DE REPARTO CONFIGURABLES -->
+              <!-- LÍNEAS DE REPARTO MULTI-BANCO Y SOBRES -->
               <div class="reparto-config-box">
                 <div class="reparto-box-header">
                   <div>
-                    <span class="reparto-title">Reparto entre Sobres y Botes</span>
-                    <p style="font-size: 0.78rem; color: var(--text-muted); margin: 2px 0 0;">
-                      Añade los botes donde se repartirá el dinero cada mes
+                    <span class="reparto-title">💰 Reparto a Diferentes Bancos y Sobres</span>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0;">
+                      Elige en cada fila el <strong>Banco Destino</strong> y opcionalmente el <strong>Sobre</strong> donde repartir el dinero
                     </p>
                   </div>
-                  <button type="button" class="btn-secondary mini" id="btn-add-linea-config">+ Añadir Bote</button>
+                  <button type="button" class="btn-primary mini" id="btn-add-linea-config">+ Añadir Fila (Banco / Sobre)</button>
+                </div>
+
+                <div class="callout-multi-banco" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; font-size: 0.82rem; color: #166534; display: flex; align-items: flex-start; gap: 0.5rem;">
+                  <span style="font-size: 1.1rem; line-height: 1;">💡</span>
+                  <div>
+                    <strong>Libertad Multi-Banco:</strong> Puedes destinar cada parte del sueldo a un banco distinto (ej. Caixa, BBVA, Revolut...) y guardarlo en un sobre o dejarlo como saldo libre en la cuenta.
+                  </div>
+                </div>
+
+                <div class="fcr-table-header">
+                  <span class="fcr-th fcr-th-cuenta">🏛️ Banco Destino</span>
+                  <span class="fcr-th fcr-th-bote">📦 Sobre / Bote</span>
+                  <span class="fcr-th fcr-th-concepto">Concepto</span>
+                  <span class="fcr-th fcr-th-importe">Importe (€)</span>
+                  <span class="fcr-th fcr-th-action"></span>
                 </div>
 
                 <div id="lineas-config-container" class="lineas-config-container">
@@ -755,30 +810,30 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
       const fila = document.createElement("div");
       fila.className = "fila-config-reparto";
       fila.innerHTML = `
-        <div class="fcr-col fcr-bote">
-          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Sobre / Bote</label>
-          <select class="fcr-select-bote">
-            <option value="">— Dejar libre (Sin bote) —</option>
-            ${botes
+        <div class="fcr-col fcr-cuenta">
+          <label class="fcr-mobile-label">🏛️ Banco Destino</label>
+          <select class="fcr-select-cuenta">
+            <option value="">— Banco principal de cobro —</option>
+            ${cuentasParaReparto
               .map(
-                (b) => `
-              <option value="${b.id}" ${String(b.id) === String(boteId) ? "selected" : ""}>
-                ${esc(b.nombre)}
+                (c) => `
+              <option value="${c.id}" ${String(c.id) === String(cuentaId) ? "selected" : ""}>
+                🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
               </option>
             `
               )
               .join("")}
           </select>
         </div>
-        <div class="fcr-col fcr-cuenta">
-          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Banco Destino</label>
-          <select class="fcr-select-cuenta">
-            <option value="">— Banco principal nómina —</option>
-            ${cuentas
+        <div class="fcr-col fcr-bote">
+          <label class="fcr-mobile-label">📦 Sobre / Bote</label>
+          <select class="fcr-select-bote">
+            <option value="">— Sin sobre (Libre en cuenta) —</option>
+            ${botes
               .map(
-                (c) => `
-              <option value="${c.id}" ${String(c.id) === String(cuentaId) ? "selected" : ""}>
-                ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+                (b) => `
+              <option value="${b.id}" ${String(b.id) === String(boteId) ? "selected" : ""}>
+                📦 ${esc(b.nombre)}
               </option>
             `
               )
@@ -786,17 +841,17 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
           </select>
         </div>
         <div class="fcr-col fcr-concepto">
-          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Concepto</label>
-          <input type="text" class="fcr-input-concepto" placeholder="Concepto (ej. Ocio, Mes...)" value="${esc(concepto)}">
+          <label class="fcr-mobile-label">Concepto</label>
+          <input type="text" class="fcr-input-concepto" placeholder="Ej. Ocio, Gastos mes, Ahorro..." value="${esc(concepto)}">
         </div>
         <div class="fcr-col fcr-importe">
-          <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Importe</label>
+          <label class="fcr-mobile-label">Importe</label>
           <div style="display: flex; align-items: center; gap: 4px;">
             <input type="number" step="0.01" min="0" class="fcr-input-importe" placeholder="0.00" value="${importeVal}">
             <span>€</span>
           </div>
         </div>
-        <button type="button" class="btn-icon danger fcr-btn-delete" title="Eliminar fila" style="margin-top: 14px;">&times;</button>
+        <button type="button" class="btn-icon danger fcr-btn-delete" title="Eliminar fila">&times;</button>
       `;
 
       fila.querySelector(".fcr-btn-delete").addEventListener("click", () => fila.remove());

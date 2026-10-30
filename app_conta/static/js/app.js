@@ -18,7 +18,7 @@ import "./views/prestamos.js";
 import "./views/categorias.js";
 import "./views/importar.js";
 import "./views/copia-seguridad.js";
-import { iniciarModalesAcciones } from "./modales-acciones.js";
+import { iniciarModalesAcciones } from "./modales-acciones.js?v=28";
 
 async function navegar() {
   const hash = location.hash.replace("#/", "") || "inicio";
