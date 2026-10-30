@@ -70,3 +70,4 @@ def test_crud_inversiones_api(client):
     # Lista vacía
     res_post_del = client.get("/api/v1/inversiones")
     assert res_post_del.json()["total_posiciones"] == 0
+

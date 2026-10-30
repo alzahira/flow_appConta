@@ -410,3 +410,4 @@ export default vista("inversiones", async () => {
     </section>
   `;
 });
+
