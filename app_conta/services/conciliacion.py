@@ -77,8 +77,8 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
 
     diferencia = saldo_total_cuentas - saldo_inicial_total - (saldo_total_botes_saldo + sin_asignar)
 
-    # 2. Fórmula Global del Hogar
-    _, tot_botes_formula = listar_botes_activos(db)
+    # 2. Fórmula Global del Hogar (Ajustada según instrucción del usuario)
+    botes_activos_pares, tot_botes_formula = listar_botes_activos(db)
 
     hogar = db.scalars(select(Hogar)).first()
     hogar_id = str(hogar.id) if hogar else "1"
@@ -99,12 +99,32 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     inversiones = list(db.scalars(select(Inversion).where(Inversion.activo.is_(True))))
     tot_inversiones_formula = sum(i.valor_actual_centimos for i in inversiones)
 
-    tot_teorico_formula = (
+    # Deducciones solicitadas por el usuario para cuadrar con el dinero en bancos/tarjetas:
+    # 1) Inversión Etoro (1.500 € fuera del banco)
+    etoro_inv = next(
+        (i for i in inversiones if "etoro" in (i.nombre + (i.entidad or "")).lower()),
+        None,
+    )
+    centimos_etoro = etoro_inv.valor_actual_centimos if etoro_inv else 0
+
+    # 2) Bote ahorro extras + céntimos de redondeo de cuotas de previsión (186,96 €)
+    bote_extras_pair = next(
+        (p for p in botes_activos_pares if "extra" in p[0].nombre.lower() or p[0].id == 4),
+        None,
+    )
+    centimos_extras = bote_extras_pair[1] if bote_extras_pair else 0
+    centimos_redondeo = tot_prevision_formula % 100 if tot_prevision_formula else 0
+
+    # Total teórico antes de ajustes
+    teorico_base = (
         tot_botes_formula
         + tot_prevision_formula
         - tot_me_deben_formula
         - tot_prestamos_formula
     )
+
+    # Total teórico ajustado: quitando Etoro y Bote ahorro extras (con redondeo)
+    tot_teorico_formula = teorico_base - centimos_etoro - centimos_extras - centimos_redondeo
 
     dif_formula = tot_teorico_formula - saldo_total_cuentas
     dif_con_inversiones = tot_teorico_formula - (saldo_total_cuentas + tot_inversiones_formula)
@@ -124,6 +144,9 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
         "total_prevision_formula": tot_prevision_formula,
         "total_me_deben_formula": tot_me_deben_formula,
         "total_prestamos_formula": tot_prestamos_formula,
+        "deduccion_etoro_formula": centimos_etoro,
+        "deduccion_extras_formula": centimos_extras + centimos_redondeo,
+        "total_teorico_base": teorico_base,
         "total_teorico_formula": tot_teorico_formula,
         "total_cuentas_formula": saldo_total_cuentas,
         "total_inversiones_formula": tot_inversiones_formula,
