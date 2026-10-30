@@ -31,13 +31,11 @@ function tarjetaBoteFull(b) {
           </div>
           <div class="pot-header-texts">
             <h3 class="pot-title">${esc(b.nombre)}</h3>
-            <span class="pot-meta-date">
-              ${
-                b.objetivo_fecha
-                  ? `${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}`
-                  : `Sobre virtual • ${esc(tipoTexto)}`
-              }
-            </span>
+            ${
+              b.objetivo_fecha
+                ? `<span class="pot-meta-date">${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}</span>`
+                : ""
+            }
           </div>
         </div>
         <div class="card-pot-actions">
@@ -73,11 +71,7 @@ function tarjetaBoteFull(b) {
           </div>
         </div>
       `
-          : `
-        <div class="pot-no-goal-row">
-          <span class="no-goal-label">Sobre de gasto variable (sin límite fijado)</span>
-        </div>
-      `
+          : ""
       }
 
       <div class="pot-card-footer">

@@ -945,6 +945,155 @@ body {
 }
 
 /* ==========================================================================
+   Listado de Cuentas a Ancho Completo (Horizontal Ejecutivo)
+   ========================================================================== */
+.accounts-list-full {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.card-account-row {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.6rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-account-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: #0f172a;
+}
+
+.card-account-row.caixa::before { background: #0072ce; }
+.card-account-row.deutsche::before { background: #0018a8; }
+.card-account-row.bbva::before { background: #004481; }
+.card-account-row.revolut::before { background: #0f172a; }
+.card-account-row.otros::before { background: #059669; }
+
+.card-account-row:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-hover);
+}
+
+.acc-row-main {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.acc-row-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.acc-row-icon.caixa { color: #0072ce; background: #f0f7ff; }
+.acc-row-icon.deutsche { color: #0018a8; background: #eef2ff; }
+.acc-row-icon.bbva { color: #004481; background: #eff6ff; }
+.acc-row-icon.revolut { color: #0f172a; background: #f1f5f9; }
+.acc-row-icon.otros { color: #059669; background: #ecfdf5; }
+
+.acc-row-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.acc-row-header-texts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.acc-row-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.acc-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.acc-row-meta .meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.acc-row-meta .meta-label {
+  color: var(--text-muted);
+}
+
+.acc-row-meta .meta-val {
+  color: var(--text-main);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.meta-dot {
+  color: var(--border-medium);
+  font-size: 0.8rem;
+}
+
+.acc-row-side {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.acc-row-balance-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.acc-row-balance-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.acc-row-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* ==========================================================================
    Grupos de Bancos (Caixa, Deutsche Bank, BBVA, Revolut, Otros)
    ========================================================================== */
 .bank-pills-summary {
@@ -1754,6 +1903,27 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
+}
+
+/* Columna de Acciones de Tabla y Tabla de Previsión */
+.table-prevision {
+  min-width: 980px;
+}
+
+.table-fintech .th-actions,
+.table-fintech .tx-actions {
+  width: 120px;
+  min-width: 120px;
+  text-align: right;
+  padding-right: 1.5rem !important;
+  box-sizing: border-box;
+}
+
+.tx-actions-btns {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 /* Selectores inline tipo Chip */
@@ -2941,6 +3111,28 @@ input:focus, select:focus, textarea:focus {
 
   .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large, .grid-credit-cards, .grid-gift-cards, .grid-investments {
     grid-template-columns: 1fr;
+  }
+
+  .card-account-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.15rem;
+    padding: 1.25rem 1.35rem;
+  }
+
+  .acc-row-main {
+    width: 100%;
+  }
+
+  .acc-row-side {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 0.85rem;
+  }
+
+  .acc-row-balance-block {
+    align-items: flex-start;
   }
 
   .table-fintech th, .table-fintech td {

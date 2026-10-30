@@ -61,7 +61,7 @@ function filaGasto(g, mesActivoNombre) {
         </span>
       </td>
       <td class="tx-actions">
-        <div style="display: flex; gap: 0.25rem; justify-content: flex-end;">
+        <div class="tx-actions-btns">
           <button type="button" class="btn-action-icon mini" data-accion="editar-gasto" data-id="${g.id}" data-concepto="${esc(g.concepto)}" data-fecha="${esc(g.fecha_cobro)}" data-anual="${g.importe_anual}" data-cuota="${g.cuota_mensual}" data-notas="${esc(g.notas || "")}" title="Editar configuración">
             ${icono("editar")}
           </button>
@@ -175,7 +175,7 @@ export default vista("prevision-gastos", async () => {
       </div>
 
       <div class="card-table-wrap">
-        <table class="table-fintech">
+        <table class="table-fintech table-prevision">
           <thead>
             <tr>
               <th>Estado</th>
@@ -186,7 +186,7 @@ export default vista("prevision-gastos", async () => {
               <th class="num">Provisión hasta ${mesActualNombre}</th>
               <th class="num">Pagado Real</th>
               <th class="num">Saldo</th>
-              <th style="width: 80px; text-align: right;">Acciones</th>
+              <th class="th-actions">Acciones</th>
             </tr>
           </thead>
           <tbody>

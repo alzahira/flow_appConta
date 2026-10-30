@@ -21,43 +21,47 @@ function clasificarBanco(cuenta) {
   return "otros";
 }
 
-function tarjetaCuentaItem(c) {
+function tarjetaCuentaRow(c) {
+  const bancoId = clasificarBanco(c);
+  const bancoConfig = BANCOS_CONFIG.find((b) => b.id === bancoId) || {
+    id: "otros",
+    nombre: c.entidad || "Depósito Bancario",
+    iconoKey: c.tipo === "efectivo" ? "efectivo" : "banco",
+    color: "#059669",
+  };
+  const iconoKey = c.tipo === "efectivo" ? "efectivo" : bancoConfig.iconoKey;
   const esEfectivo = c.tipo === "efectivo";
   const tipoLabel = esEfectivo ? "Efectivo / Caja" : c.tipo === "inversion" ? "Inversión" : "Cuenta Corriente";
 
   return `
-    <article class="card-account-full ${c.tipo}">
-      <div class="card-account-top">
-        <div class="card-account-icon-wrap">
-          <div class="card-account-icon ${c.tipo}">
-            ${icono(c.tipo)}
+    <article class="card-account-row ${bancoId}">
+      <div class="acc-row-main">
+        <div class="acc-row-icon ${bancoId}">
+          ${icono(iconoKey)}
+        </div>
+        <div class="acc-row-details">
+          <div class="acc-row-header-texts">
+            <h3 class="acc-row-title">${esc(c.nombre)}</h3>
+            <span class="badge-subtle">${esc(c.entidad || bancoConfig.nombre)}</span>
+            <span class="badge-tag">${esc(tipoLabel)}</span>
           </div>
-          <div class="card-account-title-group">
-            <h3 class="account-title">${esc(c.nombre)}</h3>
-            <span class="account-institution">${esc(c.entidad || "Depósito Bancario")}</span>
+          <div class="acc-row-meta">
+            <span class="meta-item"><span class="meta-label">Saldo inicial:</span> <span class="meta-val">${c.saldo_inicial} €</span></span>
+            <span class="meta-dot">&bull;</span>
+            <span class="meta-item"><span class="meta-label">Apertura:</span> <span class="meta-val">${fechaCorta(c.fecha_apertura)}</span></span>
           </div>
         </div>
-        <div class="card-account-actions">
-          <span class="badge-subtle">${esc(tipoLabel)}</span>
+      </div>
+
+      <div class="acc-row-side">
+        <div class="acc-row-balance-block">
+          <span class="balance-sub">Saldo disponible</span>
+          <div class="acc-row-balance-value">${importe(c.saldo)}</div>
+        </div>
+        <div class="acc-row-actions">
           <button class="btn-action-icon delete" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}" title="Eliminar esta cuenta">
             ${icono("borrar")}
           </button>
-        </div>
-      </div>
-      
-      <div class="account-balance-section">
-        <span class="balance-sub">Saldo disponible</span>
-        <div class="account-balance-value">${importe(c.saldo)}</div>
-      </div>
-
-      <div class="card-account-footer">
-        <div class="account-meta-item">
-          <span class="meta-label">Saldo inicial:</span>
-          <span class="meta-val">${c.saldo_inicial} €</span>
-        </div>
-        <div class="account-meta-item">
-          <span class="meta-label">Apertura:</span>
-          <span class="meta-val">${fechaCorta(c.fecha_apertura)}</span>
         </div>
       </div>
     </article>
@@ -72,7 +76,7 @@ export default vista("cuentas", async () => {
     (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
   );
 
-  // Agrupamos por banco
+  // Agrupamos por banco para la barra de resumen superior
   const agrupado = {
     caixa: [],
     deutsche: [],
@@ -105,7 +109,7 @@ export default vista("cuentas", async () => {
     </div>
   </div>
 
-  <!-- Resumen rápido de entidades con cuentas -->
+  <!-- Resumen de entidades activas -->
   ${
     bancosConCuentas.length > 1
       ? `
@@ -118,7 +122,6 @@ export default vista("cuentas", async () => {
           <div class="bank-pill-item">
             <span class="bank-pill-dot" style="background: ${b.color};"></span>
             <span class="bank-pill-name">${b.nombre}</span>
-            <span class="bank-pill-count">(${cuentasB.length})</span>
             <span class="bank-pill-val">${importe(subtotalB.toFixed(2))}</span>
           </div>
         `;
@@ -129,44 +132,22 @@ export default vista("cuentas", async () => {
       : ""
   }
 
-  <!-- Listado de bancos con cuentas -->
-  ${
-    bancosConCuentas.length > 0
-      ? bancosConCuentas
-          .map((banco) => {
-            const cuentasBanco = agrupado[banco.id] || [];
-            const subtotal = cuentasBanco.reduce((acc, c) => acc + Number(c.saldo), 0);
-            return `
-        <section class="section-block">
-          <div class="bank-group-header">
-            <div class="bank-group-title">
-              <span class="bank-group-icon ${banco.id}">${icono(banco.iconoKey)}</span>
-              <div>
-                <h3 class="bank-group-name">${banco.nombre}</h3>
-                <span class="bank-group-count">${cuentasBanco.length} ${cuentasBanco.length === 1 ? "cuenta activa" : "cuentas activas"}</span>
-              </div>
-            </div>
-            <div class="bank-group-subtotal">
-              <span class="subtotal-label">Subtotal entidad</span>
-              <span class="subtotal-value">${importe(subtotal.toFixed(2))}</span>
-            </div>
+  <!-- Listado de cuentas a ancho completo -->
+  <section class="section-block">
+    <div class="accounts-list-full">
+      ${
+        cuentasValidas.length > 0
+          ? cuentasValidas.map(tarjetaCuentaRow).join("\n")
+          : `
+          <div class="tarjeta-vacia">
+            <div class="tarjeta-vacia-icon">${icono("banco")}</div>
+            <h4>No tienes cuentas bancarias registradas todavía</h4>
+            <p>Añade tu primera cuenta corriente, libreta de ahorro o depósito en el formulario inferior para comenzar a registrar movimientos.</p>
           </div>
-
-          <div class="grid-accounts-large">
-            ${cuentasBanco.map(tarjetaCuentaItem).join("\n")}
-          </div>
-        </section>
-      `;
-          })
-          .join("\n")
-      : `
-      <div class="tarjeta-vacia">
-        <div class="tarjeta-vacia-icon">${icono("banco")}</div>
-        <h4>No tienes cuentas bancarias registradas todavía</h4>
-        <p>Añade tu primera cuenta corriente, libreta de ahorro o depósito en el formulario inferior para comenzar a registrar movimientos.</p>
-      </div>
-    `
-  }
+        `
+      }
+    </div>
+  </section>
 
   <!-- Formulario para dar de alta nueva cuenta -->
   <section class="section-block">

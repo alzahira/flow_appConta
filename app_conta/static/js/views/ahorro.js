@@ -23,13 +23,11 @@ function tarjetaFondoAhorro(b) {
           </div>
           <div class="pot-header-texts">
             <h3 class="pot-title">${esc(b.nombre)}</h3>
-            <span class="pot-meta-date">
-              ${
-                b.objetivo_fecha
-                  ? `${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}`
-                  : "Fondo de ahorro acumulativo"
-              }
-            </span>
+            ${
+              b.objetivo_fecha
+                ? `<span class="pot-meta-date">${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}</span>`
+                : ""
+            }
           </div>
         </div>
         <div class="card-pot-actions">
@@ -38,7 +36,7 @@ function tarjetaFondoAhorro(b) {
               ? `<span class="badge-tag ok">${icono("check")} Cumplido</span>`
               : tieneObj
               ? `<span class="badge-tag info">${pct.toFixed(0)}%</span>`
-              : `<span class="badge-subtle">Fondo libre</span>`
+              : ""
           }
           <button class="btn-action-icon delete" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}" title="Eliminar este fondo de ahorro">
             ${icono("borrar")}
@@ -64,11 +62,7 @@ function tarjetaFondoAhorro(b) {
           </div>
         </div>
       `
-          : `
-        <div class="pot-no-goal-row">
-          <span class="no-goal-label">Fondo libre sin meta fija de ahorro</span>
-        </div>
-      `
+          : ""
       }
 
       <div class="pot-card-footer">
