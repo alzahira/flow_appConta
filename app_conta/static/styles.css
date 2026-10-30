@@ -4610,3 +4610,142 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* ==========================================================================
+   Flow Branding & Estilos de Copia de Seguridad
+   ========================================================================= */
+.brand-logo.flow-logo {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
+}
+
+.btn-hero-action.backup {
+  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+}
+
+.btn-hero-action.backup:hover {
+  border-color: #0284c7;
+}
+
+.btn-hero-action.backup .action-btn-icon {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.backup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.card-backup {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-backup:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-hover);
+}
+
+.card-backup-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.card-backup-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-backup-icon.export {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.card-backup-icon.wipe {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+
+.card-backup-icon.import {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.card-backup-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.card-backup-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.card-backup-footer {
+  margin-top: auto;
+  display: flex;
+}
+
+.restore-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.file-input-wrapper input[type="file"] {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.backup-info-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.bic-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.bic-text {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+

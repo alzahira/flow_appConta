@@ -59,4 +59,4 @@ def test_seed_hogar_unico_en_arranque(client):
 
     r = client.get("/")
     assert r.status_code == 200
-    assert "App_Conta" in r.text
+    assert "Flow" in r.text

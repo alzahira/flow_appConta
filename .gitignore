@@ -10,9 +10,11 @@ venv/
 dist/
 build/
 
-# Base de datos local
+# Base de datos local y backups
 *.sqlite3
 *.db
+backups/
+app_conta/backups/
 
 # Tests / cobertura
 .coverage

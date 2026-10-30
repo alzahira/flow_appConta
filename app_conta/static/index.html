@@ -4,27 +4,32 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>App_Conta — Control Financiero del Hogar</title>
+  <title>Flow — Finanzas & Botes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=23" />
+  <link rel="stylesheet" href="/static/styles.css?v=24" />
 </head>
 <body>
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="brand-logo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+        <div class="brand-logo flow-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="flow-logo-grad" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="50%" stop-color="#6366f1" />
+                <stop offset="100%" stop-color="#a855f7" />
+              </linearGradient>
+            </defs>
+            <path d="M17.5 7C15 7 13.5 9 12 12C10.5 15 9 17 6.5 17C4 17 2.5 15 2.5 12C2.5 9 4 7 6.5 7C9 7 10.5 9 12 12C13.5 15 15 17 17.5 17C20 17 21.5 15 21.5 12C21.5 9 20 7 17.5 7Z" stroke="url(#flow-logo-grad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="brand-text">
-          <span class="brand-name">App_Conta</span>
-          <span class="brand-sub">Finanzas del Hogar</span>
+          <span class="brand-name">Flow</span>
+          <span class="brand-sub">Finanzas & Botes</span>
         </div>
       </div>
       <nav id="nav" class="nav-bar"></nav>
@@ -33,11 +38,11 @@
 
   <main id="vista" class="app-content"></main>
 
-  <script src="/static/js/api.js?v=23"></script>
-  <script type="module" src="/static/js/app.js?v=23"></script>
+  <script src="/static/js/api.js?v=24"></script>
+  <script type="module" src="/static/js/app.js?v=24"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=23").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=24").then((reg) => {
         reg.update();
       });
       let refreshing = false;

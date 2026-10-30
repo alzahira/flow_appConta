@@ -29,9 +29,9 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    title="App_Conta",
-    description="Contabilidad del hogar por sistema de botes",
-    version="1.0.0",
+    title="Flow",
+    description="Flow: Finanzas del hogar y control por sistema de botes",
+    version="2.0.0",
     lifespan=lifespan,
 )
 register_error_handlers(app)

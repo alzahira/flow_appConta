@@ -12,6 +12,7 @@ const ITEMS_PRINCIPALES = [
 const RUTAS_MAS = [
   { nombre: "categorias", desc: "Clasificación analítica de gastos", label: "Categorías", iconoKey: "categorias" },
   { nombre: "importar", desc: "Ingesta y conciliación de libros", label: "Importar Excel", iconoKey: "importar" },
+  { nombre: "copia-seguridad", desc: "Exportar archivo, vaciar y restaurar", label: "Copia de Seguridad & Datos", iconoKey: "banco" },
 ];
 
 export function pintarNav(_rutas) {

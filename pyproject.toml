@@ -1,7 +1,7 @@
 [project]
 name = "app-conta"
-version = "1.0.0"
-description = "Contabilidad del hogar por sistema de botes (MVP)"
+version = "2.0.0"
+description = "Flow: Finanzas del hogar y control por sistema de botes"
 readme = "README.md"
 authors = [
     { name = "Javier", email = "javier@local" }

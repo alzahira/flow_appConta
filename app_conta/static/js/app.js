@@ -17,6 +17,7 @@ import "./views/gastos-tarjetas.js";
 import "./views/prestamos.js";
 import "./views/categorias.js";
 import "./views/importar.js";
+import "./views/copia-seguridad.js";
 import { iniciarModalesAcciones } from "./modales-acciones.js";
 
 async function navegar() {
@@ -27,7 +28,7 @@ async function navegar() {
   // Resaltar la pestaña del grupo activo en el menú superior
   const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "gastos-tarjetas"];
   const grupoAhorro = ["ahorro", "botes", "prevision-gastos", "deben"];
-  const grupoMas = ["categorias", "importar"];
+  const grupoMas = ["categorias", "importar", "copia-seguridad"];
 
 
   document.querySelectorAll("nav a[data-nav-group]").forEach((a) => {
