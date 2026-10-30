@@ -4,6 +4,15 @@ from __future__ import annotations
 
 
 def test_get_prevision_200(client):
+    # Si está vacía, no debe autosemillar
+    res_init = client.get("/api/v1/prevision-gastos")
+    assert res_init.status_code == 200
+    assert len(res_init.json()["gastos"]) == 0
+
+    # Restablecer plantilla inicial
+    res_seed = client.post("/api/v1/prevision-gastos/restablecer-semilla")
+    assert res_seed.status_code == 200
+
     res = client.get("/api/v1/prevision-gastos")
     assert res.status_code == 200
     data = res.json()

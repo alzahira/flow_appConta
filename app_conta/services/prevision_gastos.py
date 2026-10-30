@@ -220,7 +220,6 @@ def semillar_gastos_si_vacio(session: Session, hogar_id: str) -> None:
 
 def obtener_resumen_prevision(session: Session, hogar_id: str) -> dict[str, Any]:
     config = obtener_o_crear_config(session, hogar_id)
-    semillar_gastos_si_vacio(session, hogar_id)
 
     stmt = (
         select(GastoRecurrente)

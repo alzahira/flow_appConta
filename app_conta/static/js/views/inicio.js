@@ -170,7 +170,7 @@ export default vista("inicio", async () => {
   const itemEtoro = invItems.find(
     (i) => (i.nombre + " " + (i.entidad || "")).toLowerCase().includes("etoro")
   );
-  const dineroEtoro = itemEtoro ? itemEtoro.valor_actual : "1500.00";
+  const dineroEtoro = itemEtoro ? itemEtoro.valor_actual : "0.00";
 
   // Botes destacados: Dinero del mes y Dinero de ocio
   const botesItems = botes.items || [];
@@ -180,12 +180,12 @@ export default vista("inicio", async () => {
       b.nombre.toLowerCase().includes("cash para el mes") ||
       b.nombre.toLowerCase() === "dinero del mes"
   );
-  const dineroMes = boteMes ? boteMes.saldo : "400.00";
+  const dineroMes = boteMes ? boteMes.saldo : "0.00";
 
   const boteOcio = botesItems.find(
     (b) => b.nombre.toLowerCase().includes("ocio")
   );
-  const dineroOcio = boteOcio ? boteOcio.saldo : "214.22";
+  const dineroOcio = boteOcio ? boteOcio.saldo : "0.00";
 
   // Agrupación de cuentas por entidades bancarias
   const agrupadoBancos = {
@@ -286,10 +286,10 @@ export default vista("inicio", async () => {
         <div class="spotlight-body">
           <span class="spotlight-label">Dinero del Mes</span>
           <div class="spotlight-value">${importe(dineroMes)}</div>
-          <span class="spotlight-sub">Presupuesto en efectivo y compras cotidianas (${esc(boteMes?.nombre || "Mes en curso")})</span>
+          <span class="spotlight-sub">Presupuesto en efectivo y compras cotidianas (${esc(boteMes?.nombre || "Sin sobre asignado")})</span>
         </div>
         <div class="spotlight-footer">
-          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">Ver movimientos &rarr;</a>
+          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">${boteMes ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
         </div>
       </div>
 
@@ -303,10 +303,10 @@ export default vista("inicio", async () => {
         <div class="spotlight-body">
           <span class="spotlight-label">Dinero de Ocio</span>
           <div class="spotlight-value">${importe(dineroOcio)}</div>
-          <span class="spotlight-sub">Fondo disponible para salidas, cenas y disfrute (${esc(boteOcio?.nombre || "Bote ocio")})</span>
+          <span class="spotlight-sub">Fondo disponible para salidas, cenas y disfrute (${esc(boteOcio?.nombre || "Sin sobre asignado")})</span>
         </div>
         <div class="spotlight-footer">
-          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">Ver movimientos &rarr;</a>
+          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">${boteOcio ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
         </div>
       </div>
     </div>
@@ -355,7 +355,7 @@ export default vista("inicio", async () => {
           <span class="stat-label">Bote Gastos Anuales</span>
         </div>
         <span class="stat-value positivo">${importe(dineroPrevision)}</span>
-        <span class="stat-sub">${previsionData ? `${previsionData.meses_pagados}/12 meses acumulados` : "Ver previsión &rarr;"}</span>
+        <span class="stat-sub">${previsionData?.gastos?.length ? `${previsionData.meses_pagados}/12 meses acumulados` : "Ver previsión &rarr;"}</span>
       </a>
 
       <a href="#/deben" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
@@ -382,7 +382,7 @@ export default vista("inicio", async () => {
           <span class="stat-label">Inversiones (Patrimonio)</span>
         </div>
         <span class="stat-value ${inversionesData?.total_plusvalia_centimos >= 0 ? "positivo" : "negativo"}">${importe(inversionesData?.total_valor_actual || "0.00")}</span>
-        <span class="stat-sub">Etoro (${importe(dineroEtoro)}) + CRO &rarr;</span>
+        <span class="stat-sub">${itemEtoro ? `Etoro (${importe(dineroEtoro)})` : "Ver cartera &rarr;"}</span>
       </a>
     </div>
   </div>

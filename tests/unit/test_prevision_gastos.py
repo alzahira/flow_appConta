@@ -13,6 +13,7 @@ from app_conta.services.prevision_gastos import (
     obtener_o_crear_config,
     obtener_resumen_prevision,
     registrar_pago_factura,
+    semillar_gastos_si_vacio,
 )
 
 
@@ -39,6 +40,13 @@ def test_actualizar_config_prevision(db, hogar_id):
 
 
 def test_semillar_y_resumen_prevision(db, hogar_id):
+    # Si la base de datos está vacía, no debe autosemillar
+    resumen_vacio = obtener_resumen_prevision(db, hogar_id)
+    assert resumen_vacio["total_saldo_centimos"] == 0
+    assert len(resumen_vacio["gastos"]) == 0
+
+    # Tras semillar explícitamente
+    semillar_gastos_si_vacio(db, hogar_id)
     resumen = obtener_resumen_prevision(db, hogar_id)
     assert resumen["meses_pagados"] == 11
     assert resumen["total_mensual_centimos"] == 17654  # 176.54 €

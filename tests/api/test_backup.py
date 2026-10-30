@@ -46,7 +46,7 @@ def test_flujo_backup_vaciar_y_restaurar(client):
     assert r_vaciar.status_code == 200
     assert r_vaciar.json()["ok"] is True
 
-    # 5. Comprobar que las cuentas y botes se han vaciado
+    # 5. Comprobar que las cuentas, botes y previsión se han vaciado
     r_cuentas_vacias = client.get("/api/v1/cuentas")
     assert r_cuentas_vacias.status_code == 200
     assert len(r_cuentas_vacias.json()["items"]) == 0
@@ -54,6 +54,11 @@ def test_flujo_backup_vaciar_y_restaurar(client):
     r_botes_vacios = client.get("/api/v1/botes")
     assert r_botes_vacios.status_code == 200
     assert len(r_botes_vacios.json()["items"]) == 0
+
+    r_prevision_vacia = client.get("/api/v1/prevision-gastos")
+    assert r_prevision_vacia.status_code == 200
+    assert len(r_prevision_vacia.json()["gastos"]) == 0
+    assert r_prevision_vacia.json()["total_saldo"] == "0.00"
 
     # 6. Restaurar desde el backup exportado
     fichero_bytes = json.dumps(backup_data).encode("utf-8")
