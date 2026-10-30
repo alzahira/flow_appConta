@@ -1,5 +1,5 @@
 // Vista de Tarjetas: Gestión de tarjetas de crédito y débito del hogar
-import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, fechaCorta, icono, subnavCuentas } from "../vistas.js";
 import { esTarjetaRegalo } from "./tarjetas-regalo.js";
 
 function tarjetaCreditoItem(c) {
