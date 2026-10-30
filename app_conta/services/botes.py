@@ -69,6 +69,7 @@ def crear_bote(
     nombre: str,
     tipo: str,
     hogar_id: int,
+    categoria: str | None = None,
     objetivo: str | int | None = None,
     objetivo_fecha: str | None = None,
 ) -> Bote:
@@ -84,6 +85,7 @@ def crear_bote(
         hogar_id=hogar_id,
         nombre=nombre,
         tipo=tipo,
+        categoria=categoria,
         objetivo_centimos=_validar_objetivo(objetivo),
         objetivo_fecha=fecha,
     )
@@ -144,6 +146,8 @@ def editar_bote(db: Session, bote_id: int, cambios_peticion: dict) -> Bote:
             bote.nombre = nombre
     if "tipo" in cambios_peticion:
         bote.tipo = _validar_tipo(cambios_peticion["tipo"])
+    if "categoria" in cambios_peticion:
+        bote.categoria = cambios_peticion["categoria"]
     if "objetivo" in cambios_peticion:
         bote.objetivo_centimos = _validar_objetivo(cambios_peticion["objetivo"])
     if "objetivo_fecha" in cambios_peticion:

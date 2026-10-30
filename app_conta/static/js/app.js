@@ -113,6 +113,7 @@ document.addEventListener("submit", async (e) => {
       await API.post("/botes", {
         nombre: datos.get("nombre"),
         tipo: datos.get("tipo"),
+        categoria: datos.get("categoria") || null,
         objetivo: objetivo || null,
         objetivo_fecha: datos.get("objetivo_fecha") || null,
       });
@@ -353,6 +354,16 @@ document.addEventListener("click", async (e) => {
     } catch (err) {
       alert(`No se pudo eliminar el movimiento: ${err.message}`);
     }
+    return;
+  }
+
+  // Filtrar Botes por Categoría
+  const btnCatBote = e.target.closest('[data-accion="filtrar-categoria-bote"]');
+  if (btnCatBote) {
+    const cat = btnCatBote.dataset.categoria;
+    const { establecerCategoriaBote } = await import("./views/botes.js");
+    establecerCategoriaBote(cat);
+    await navegar();
     return;
   }
 

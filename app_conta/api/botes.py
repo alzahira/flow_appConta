@@ -35,6 +35,7 @@ class BoteCreate(BaseModel):
 
     nombre: str
     tipo: Literal["recurrente", "ahorro", "proyecto", "ajeno"]
+    categoria: str | None = None
     objetivo: str | int | float | None = None
     objetivo_fecha: str | None = None
 
@@ -44,10 +45,38 @@ class BotePatch(BaseModel):
 
     nombre: str | None = None
     tipo: Literal["recurrente", "ahorro", "proyecto", "ajeno"] | None = None
+    categoria: str | None = None
     objetivo: str | int | float | None = None
     objetivo_fecha: str | None = None
     # `saldo` (derivado) aceptado para ignorarse explícitamente (Principio II)
     saldo: str | None = None
+
+
+def detectar_categoria_bote(nombre: str) -> str:
+    n = nombre.lower()
+    if any(k in n for k in ("viaje", "vacaciones", "rabat", "invierno", "navidad", "vuelo")):
+        return "viajes"
+    if any(k in n for k in ("mantenimiento", "casa", "piso", "arreglos", "reforma", "obra")):
+        return "mantenimiento"
+    if any(k in n for k in ("ropa", "calzado", "vestir", "zapatos", "moda")):
+        return "ropa"
+    if any(k in n for k in ("dentista", "salud", "diente", "médico", "medico", "farmacia")):
+        return "dentista"
+    if any(k in n for k in ("fianza", "fianzas", "garantia", "deposito")):
+        return "fianzas"
+    if any(k in n for k in ("inversion", "inversión", "fondo", "acciones", "patrimonio", "etoro")):
+        return "inversion"
+    if any(k in n for k in ("gasolina", "combustible", "diesel", "coche", "moto")):
+        return "gasolina"
+    if any(k in n for k in ("ocio", "cena", "fiesta", "salidas", "cerveza")):
+        return "ocio"
+    if any(k in n for k in ("paro", "reserva", "emergencia", "guardado")):
+        return "reserva"
+    if any(k in n for k in ("aitor", "javi", "marijose", "m.jose", "hijo", "familiar")):
+        return "personal"
+    if any(k in n for k in ("kitoli", "mes", "cash", "pagar")):
+        return "gastos"
+    return "otros"
 
 
 def _serializar_bote(db: Session, bote) -> dict:
@@ -56,6 +85,7 @@ def _serializar_bote(db: Session, bote) -> dict:
         "id": bote.id,
         "nombre": bote.nombre,
         "tipo": bote.tipo,
+        "categoria": bote.categoria or detectar_categoria_bote(bote.nombre),
         "objetivo": euros_str(bote.objetivo_centimos)
         if bote.objetivo_centimos is not None
         else None,
@@ -74,6 +104,7 @@ def post_bote(payload: BoteCreate, db: Session = Depends(get_db)) -> dict:
         nombre=payload.nombre,
         tipo=payload.tipo,
         hogar_id=hogar_id,
+        categoria=payload.categoria,
         objetivo=payload.objetivo,
         objetivo_fecha=payload.objetivo_fecha,
     )

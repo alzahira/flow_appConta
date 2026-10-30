@@ -215,7 +215,7 @@ export default vista("inicio", async () => {
           <span class="stat-pill-icon">${icono("prestamo")}</span>
           <span class="stat-label">Dinero que me deben</span>
         </div>
-        <span class="stat-value negativo">-${importe(dineroMeDeben)}</span>
+        <span class="stat-value negativo">${importe(dineroMeDeben, "negativo")}</span>
         <span class="stat-sub">Ver deudores &rarr;</span>
       </a>
 
@@ -224,7 +224,7 @@ export default vista("inicio", async () => {
           <span class="stat-pill-icon">${icono("coche")}</span>
           <span class="stat-label">Préstamos que debo</span>
         </div>
-        <span class="stat-value negativo">-${importe(dineroPrestamos)}</span>
+        <span class="stat-value negativo">${importe(dineroPrestamos, "negativo")}</span>
         <span class="stat-sub">Coche Hyundai, Ciclo DAM &rarr;</span>
       </a>
 
@@ -269,25 +269,25 @@ export default vista("inicio", async () => {
 
         <div class="formula-step-card neg">
           <div class="formula-step-badge">(−) Me deben</div>
-          <div class="formula-step-num">-${importe(dineroMeDeben)}</div>
+          <div class="formula-step-num">${importe(dineroMeDeben, "negativo")}</div>
           <div class="formula-step-desc">Dinero prestado/adelantado pendiente</div>
         </div>
 
         <div class="formula-step-card neg">
           <div class="formula-step-badge">(−) Préstamos</div>
-          <div class="formula-step-num">-${importe(dineroPrestamos)}</div>
+          <div class="formula-step-num">${importe(dineroPrestamos, "negativo")}</div>
           <div class="formula-step-desc">Deudas que debes (Coche, DAM)</div>
         </div>
 
         <div class="formula-step-card deduccion">
           <div class="formula-step-badge">(−) Inversión Etoro</div>
-          <div class="formula-step-num">-${importe(dineroDeduccionEtoro)}</div>
+          <div class="formula-step-num">${importe(dineroDeduccionEtoro, "negativo")}</div>
           <div class="formula-step-desc">Patrimonio invertido fuera de bancos</div>
         </div>
 
         <div class="formula-step-card deduccion">
           <div class="formula-step-badge">(−) Ahorro extras</div>
-          <div class="formula-step-num">-${importe(dineroDeduccionExtras)}</div>
+          <div class="formula-step-num">${importe(dineroDeduccionExtras, "negativo")}</div>
           <div class="formula-step-desc">Bote extras y ajuste de cuotas</div>
         </div>
       </div>
@@ -420,7 +420,7 @@ export default vista("inicio", async () => {
                 <span class="table-row-sub">Dinero salido de tus cuentas para préstamos o anticipos pendientes de cobrar</span>
               </div>
             </td>
-            <td class="num negativo">-${importe(dineroMeDeben)}</td>
+            <td class="num negativo">${importe(dineroMeDeben, "negativo")}</td>
           </tr>
           <tr>
             <td>
@@ -429,7 +429,7 @@ export default vista("inicio", async () => {
                 <span class="table-row-sub">Deudas pendientes que debes (Coche Hyundai, Ciclo DAM...)</span>
               </div>
             </td>
-            <td class="num negativo">-${importe(dineroPrestamos)}</td>
+            <td class="num negativo">${importe(dineroPrestamos, "negativo")}</td>
           </tr>
           <tr>
             <td>
@@ -438,7 +438,7 @@ export default vista("inicio", async () => {
                 <span class="table-row-sub">Patrimonio invertido en activos financieros fuera del banco</span>
               </div>
             </td>
-            <td class="num negativo">-${importe(dineroDeduccionEtoro)}</td>
+            <td class="num negativo">${importe(dineroDeduccionEtoro, "negativo")}</td>
           </tr>
           <tr>
             <td>
@@ -447,7 +447,7 @@ export default vista("inicio", async () => {
                 <span class="table-row-sub">Ajuste de fondos y redondeo de cuotas mensuales</span>
               </div>
             </td>
-            <td class="num negativo">-${importe(dineroDeduccionExtras)}</td>
+            <td class="num negativo">${importe(dineroDeduccionExtras, "negativo")}</td>
           </tr>
           <tr style="background: #f8fafc; font-weight: 700;">
             <td>

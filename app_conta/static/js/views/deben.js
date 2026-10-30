@@ -43,7 +43,7 @@ function tarjetaDeudaItem(d, cuentas) {
       <div class="card-debt-footer">
         <div class="debt-balance-row">
           <div class="debt-balance-value ${saldada ? "saldado" : "negativo"}">
-            ${saldada ? "0,00 €" : `-${importe(d.importe_pendiente)}`}
+            ${saldada ? "0,00 €" : importe(d.importe_pendiente, "negativo")}
           </div>
         </div>
 
@@ -106,7 +106,7 @@ export default vista("deben", async () => {
     </div>
     <div class="header-total-card">
       <span class="header-total-label">Total que me deben</span>
-      <span class="header-total-value negativo">-${importe(totalPendiente)}</span>
+      <span class="header-total-value negativo">${importe(totalPendiente, "negativo")}</span>
       <span class="header-total-sub">${numPendientes} registros pendientes</span>
     </div>
   </div>
@@ -114,7 +114,7 @@ export default vista("deben", async () => {
   <div class="hero-pills-row">
     <div class="hero-pill-stat">
       <span class="pill-stat-label">Total que me deben</span>
-      <span class="pill-stat-value negativo">-${importe(totalPendiente)}</span>
+      <span class="pill-stat-value negativo">${importe(totalPendiente, "negativo")}</span>
     </div>
     <div class="hero-pill-stat">
       <span class="pill-stat-label">Personas / Deudas</span>

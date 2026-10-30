@@ -92,7 +92,7 @@ function tarjetaPrestamo(p, cuentas) {
         <div class="metric-box primary">
           <span class="metric-label">Capital Pendiente de Devolver</span>
           <div class="metric-value-huge ${pagadoCompletamente ? "ok" : "negativo"}">
-            ${pagadoCompletamente ? "0,00 €" : `-${importe(p.importe_pendiente)}`}
+            ${pagadoCompletamente ? "0,00 €" : importe(p.importe_pendiente, "negativo")}
           </div>
         </div>
         <div class="metric-box">
@@ -118,7 +118,7 @@ function tarjetaPrestamo(p, cuentas) {
         </div>
         <div class="progress-labels">
           <span class="progreso-txt">${p.progreso_amortizado_pct}% pagado (${p.amortizado} € de ${p.importe_inicial} €)</span>
-          <span class="pendiente-txt ${pagadoCompletamente ? "ok" : "negativo"}">${pagadoCompletamente ? "Deuda saldada" : `Resta: -${importe(p.importe_pendiente)}`}</span>
+          <span class="pendiente-txt ${pagadoCompletamente ? "ok" : "negativo"}">${pagadoCompletamente ? "Deuda saldada" : `Resta: ${importe(p.importe_pendiente, "negativo")}`}</span>
         </div>
       </div>
 
@@ -193,7 +193,7 @@ export default vista("prestamos", async () => {
       </div>
       <div class="header-total-card">
         <span class="header-total-label">Deuda Pendiente Total</span>
-        <span class="header-total-value negativo">-${importe(data.total_deuda_pendiente)}</span>
+        <span class="header-total-value negativo">${importe(data.total_deuda_pendiente, "negativo")}</span>
       </div>
     </div>
 
@@ -201,7 +201,7 @@ export default vista("prestamos", async () => {
     <div class="loan-hero-grid">
       <div class="loan-kpi-card">
         <span class="kpi-label">Deuda Total Pendiente</span>
-        <span class="kpi-value-main negativo">-${importe(data.total_deuda_pendiente)}</span>
+        <span class="kpi-value-main negativo">${importe(data.total_deuda_pendiente, "negativo")}</span>
         <span class="kpi-sub">Total pendiente de devolver hoy</span>
       </div>
 

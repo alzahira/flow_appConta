@@ -75,14 +75,20 @@ export function icono(nombre) {
 
 /** Importe en euros (string del contrato) → HTML coloreado con signo y formato tabular */
 export function importe(centimosStr, extraClase = "") {
-  const n = Number(centimosStr || 0);
-  const clase = n < 0 ? "negativo" : n > 0 ? "positivo" : "neutro";
-  const signo = n > 0 ? "+" : n < 0 ? "−" : "";
+  let n = Number(centimosStr || 0);
+  const forzarNegativo = typeof extraClase === "string" && extraClase.includes("negativo");
+  if (forzarNegativo && n > 0) {
+    n = -n;
+  }
+  const esNeg = n < 0;
+  const clase = esNeg ? "negativo" : n > 0 ? "positivo" : "neutro";
+  const signo = esNeg ? "−" : "";
   const absVal = Math.abs(n).toLocaleString("es-ES", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  return `<span class="importe ${clase} ${extraClase}"><span class="signo">${signo}</span>${absVal}&nbsp;<span class="moneda">€</span></span>`;
+  const colorAttr = esNeg ? 'style="color: #ef4444 !important;"' : "";
+  return `<span class="importe ${clase} ${extraClase}" ${colorAttr}><span class="signo">${signo}</span>${absVal}&nbsp;<span class="moneda">€</span></span>`;
 }
 
 /** Fecha ISO "2026-10-28" → "28 oct 2026" (elegante para listados). */

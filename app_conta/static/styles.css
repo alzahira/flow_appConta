@@ -1515,6 +1515,71 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* Filtro de Categorías en Botes */
+.botes-cat-filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.botes-cat-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-cat-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #ffffff;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-cat-filter:hover {
+  background: #f8fafc;
+  border-color: var(--border-medium);
+  color: var(--text-main);
+}
+
+.btn-cat-filter.activo {
+  background: var(--accent-brand);
+  color: #ffffff;
+  border-color: var(--accent-brand);
+}
+
+.btn-cat-filter .cat-pill-count {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+.btn-cat-filter.activo .cat-pill-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.card-pot-category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+}
+
 /* Tarjeta Completa (Botes y Fondos de Ahorro) */
 .card-pot-full {
   background: #ffffff;
@@ -2024,22 +2089,34 @@ body {
   color: var(--accent-positive);
 }
 
-.importe.negativo {
-  color: #ef4444 !important;
-}
-
+.importe.negativo,
+.importe.negativo *,
+.negativo,
+.negativo *,
 .header-total-value.negativo,
+.header-total-value.negativo *,
 .pill-stat-value.negativo,
+.pill-stat-value.negativo *,
 .stat-value.negativo,
+.stat-value.negativo *,
 .pot-balance-value.negativo,
+.pot-balance-value.negativo *,
 .card-pot-balance.negativo,
+.card-pot-balance.negativo *,
 .kpi-value-main.negativo,
+.kpi-value-main.negativo *,
 .kpi-value.negativo,
+.kpi-value.negativo *,
 .metric-value-huge.negativo,
+.metric-value-huge.negativo *,
 .metric-value.negativo,
+.metric-value.negativo *,
 .debt-balance-value.negativo,
+.debt-balance-value.negativo *,
 .pendiente-txt.negativo,
-.num.negativo {
+.pendiente-txt.negativo *,
+.num.negativo,
+.num.negativo * {
   color: #ef4444 !important;
 }
 

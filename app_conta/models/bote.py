@@ -22,6 +22,7 @@ class Bote(Base):
     )
     nombre: Mapped[str] = mapped_column(String(120), nullable=False)
     tipo: Mapped[str] = mapped_column(TipoBote, nullable=False)
+    categoria: Mapped[str | None] = mapped_column(String(50), nullable=True)
     objetivo_centimos: Mapped[int | None] = mapped_column(Integer, nullable=True)
     objetivo_fecha: Mapped[date | None] = mapped_column(Date, nullable=True)
     archivado: Mapped[bool] = mapped_column(Boolean, default=False)
