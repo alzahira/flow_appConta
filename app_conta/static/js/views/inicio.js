@@ -225,10 +225,10 @@ export default vista("inicio", async () => {
           Bancos (${importe(dineroBancos)}) + Efectivo (${importe(dineroCaja)}) + Tarjetas (${importe(dineroTarjetas)})
         </span>
       </div>
-      <div class="hero-status-container">
+      <div class="hero-status-container" style="cursor: pointer;" data-accion-fintech="ver-cuadre" title="Pulsar para ver el desglose del cuadre">
         ${badgeEstado(
           esCuadrado ? "cuadrado" : "revisar",
-          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia)}`
+          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia, esCuadrado ? "" : "negativo")} (ver detalle)`
         )}
       </div>
     </div>

@@ -946,6 +946,127 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
 }
 
 // --------------------------------------------------------------------------
+// 4. MODAL DESGLOSE DEL CUADRE / CONCILIACIÓN
+// --------------------------------------------------------------------------
+export async function abrirModalDesgloseCuadre() {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Calculando balance de cuadre...</div>
+    </div>
+  `;
+
+  try {
+    const conc = await API.get("/conciliacion");
+    const esCuadrado = conc.estado_formula === "cuadrado" || Math.abs(Number(conc.diferencia_formula || 0)) <= 2.0;
+    const difNum = Number(conc.diferencia_formula || 0);
+
+    overlay.innerHTML = `
+      <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-badge ${esCuadrado ? "ok" : "alerta"}">
+              ${esCuadrado ? "CONTABILIDAD AL DÍA" : "DESCUADRE DETECTADO"}
+            </span>
+            <h3 class="modal-title">¿Por qué hay Diferencia en la Contabilidad?</h3>
+            <p class="modal-subtitle">
+              Comparativa entre el dinero real que tienes en el banco y el dinero asignado en tus botes y previsión.
+            </p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-cuadre">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.25rem 1.75rem;">
+          <!-- Resumen principal de la diferencia -->
+          <div style="background: ${esCuadrado ? "var(--surface-elevated)" : "rgba(239, 68, 68, 0.08)"}; border: 1px solid ${esCuadrado ? "var(--border-subtle)" : "rgba(239, 68, 68, 0.3)"}; border-radius: var(--radius-md); padding: 1.15rem 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); display: block;">
+                Diferencia Actual
+              </span>
+              <strong style="font-size: 1.65rem;" class="${esCuadrado ? "positivo" : "negativo"}">
+                ${importe(conc.diferencia_formula, esCuadrado ? "" : "negativo")}
+              </strong>
+            </div>
+            <div style="max-width: 420px; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.4;">
+              ${
+                esCuadrado
+                  ? "🎉 <strong>Perfecto:</strong> Todo el dinero físico y bancario coincide con la suma de tus botes, sobres y previsiones."
+                  : `⚠️ <strong>Desfase de ${importe(conc.diferencia_formula, "negativo")}:</strong> Tus cuentas bancarias no coinciden con la suma de tus botes y recibos de previsión.`
+              }
+            </div>
+          </div>
+
+          <!-- Desglose de la Fórmula -->
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main);">
+            Desglose de los Componentes
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>🏛️ <strong>1. Dinero Real en Cuentas y Tarjetas</strong> (Bancos + Efectivo)</span>
+              <strong>${importe(conc.total_cuentas_formula)}</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>📦 <strong>2. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
+              <span class="positivo">${importe(conc.total_botes_formula)}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>📅 <strong>3. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
+              <span class="${Number(conc.total_prevision_formula) >= 0 ? "positivo" : "negativo"}">${importe(conc.total_prevision_formula, Number(conc.total_prevision_formula) < 0 ? "negativo" : "")}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>🤝 <strong>4. Dinero que me deben</strong> (Pendiente de cobro)</span>
+              <span class="negativo">${importe(conc.total_me_deben_formula, "negativo")}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>🚗 <strong>5. Préstamos que debo</strong> (Deuda pendiente)</span>
+              <span class="negativo">${importe(conc.total_prestamos_formula, "negativo")}</span>
+            </div>
+          </div>
+
+          <!-- Explicación de por qué sale esta cifra concreta -->
+          <div style="background: var(--surface-card); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.85rem 1.15rem; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+            ${
+              Number(conc.total_cuentas_formula) === 0 && Number(conc.total_prevision_formula) < 0
+                ? "💡 <strong>¿Por qué sale esta cifra exacta?</strong> Actualmente tienes las cuentas bancarias vacías (0,00 €), pero en la pantalla de Previsión de Gastos constan facturas pagadas (−1.830,50 €) sin que haya meses de provisión guardada aportados. El sistema avisa de que hay 1.830 € de pagos registrados que no están respaldados por ningún saldo bancario."
+                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Botes + Previsión − Deudas − Préstamos. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
+            }
+          </div>
+
+          <div class="modal-footer" style="padding: 0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <a href="#/copia-seguridad" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
+              Restaurar Copia de Seguridad
+            </a>
+            <a href="#/prevision-gastos" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
+              Ajustar Previsión de Gastos
+            </a>
+            <button type="button" class="btn-primary" id="btn-entendido-cuadre">
+              Entendido
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-cuadre").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-entendido-cuadre").addEventListener("click", cerrarModalActivo);
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Error</h3>
+          <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
+        </div>
+        <p style="color: #ef4444; padding: 1rem;">No se pudo calcular la conciliación: ${err.message}</p>
+      </div>
+    `;
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {
@@ -965,6 +1086,8 @@ export function iniciarModalesAcciones() {
       abrirModalIngreso("nomina");
     } else if (accion === "gestor-plantillas") {
       abrirModalPlantillasNomina();
+    } else if (accion === "ver-cuadre") {
+      abrirModalDesgloseCuadre();
     }
   });
 }

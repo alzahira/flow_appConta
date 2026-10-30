@@ -34,3 +34,4 @@ def downgrade() -> None:
         batch_op.drop_index("ix_plantillas_reparto_lineas_cuenta_id")
         batch_op.drop_constraint("fk_plantillas_reparto_lineas_cuenta_id", type_="foreignkey")
         batch_op.drop_column("cuenta_id")
+
