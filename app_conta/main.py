@@ -63,6 +63,7 @@ def _registrar_routers() -> None:
         "deudas",
         "prevision_gastos",
         "inversiones",
+        "prestamos",
         "backup",
     ):
         try:

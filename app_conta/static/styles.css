@@ -3071,6 +3071,210 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
+   PRÉSTAMOS, FINANCIACIONES Y PASIVOS (T028)
+   ========================================================================== */
+
+.loan-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.loan-kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.loans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.card-loan-full {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-loan-full::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-color, #0284c7);
+}
+
+.card-loan-full:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.card-loan-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.loan-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loan-tags-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.loan-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.card-loan-body {
+  margin-bottom: 1.15rem;
+}
+
+.loan-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 0.35rem 0;
+  line-height: 1.35;
+}
+
+.loan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.loan-notes {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  margin: 0.5rem 0 0 0;
+  font-family: var(--font-mono);
+}
+
+.card-loan-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.cuota-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.loan-progress-wrap {
+  margin-bottom: 1.15rem;
+}
+
+.progreso-txt {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pendiente-txt {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent-negative);
+}
+
+.card-loan-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.loan-operar-details {
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.loan-form-container {
+  padding: 0.85rem;
+  border-top: 1px solid var(--border-subtle);
+  background: #ffffff;
+}
+
+.loan-mini-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.loan-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.loan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.loan-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.loan-field input, .loan-field select {
+  padding: 0.4rem 0.55rem;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+/* ==========================================================================
    Responsive Móvil (Optimización Táctil y Pantallas Pequeñas)
    ========================================================================== */
 @media (max-width: 768px) {
@@ -3128,7 +3332,7 @@ input:focus, select:focus, textarea:focus {
     padding: 0.85rem 1.15rem;
   }
 
-  .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large, .grid-credit-cards, .grid-gift-cards, .grid-investments {
+  .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large, .grid-credit-cards, .grid-gift-cards, .grid-investments, .loans-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
@@ -3173,7 +3377,7 @@ input:focus, select:focus, textarea:focus {
     font-size: 1.55rem;
   }
 
-  .card-pot-full, .card-debt-full, .card-investment-full {
+  .card-pot-full, .card-debt-full, .card-investment-full, .card-loan-full {
     padding: 1.2rem 1.25rem;
     gap: 1rem;
   }

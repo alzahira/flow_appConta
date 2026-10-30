@@ -10,6 +10,7 @@ from app_conta.models.hogar import Hogar
 from app_conta.models.importacion import Importacion
 from app_conta.models.inversion import Inversion
 from app_conta.models.movimiento import Movimiento
+from app_conta.models.prestamo import Prestamo
 
 __all__ = [
     "AuditoriaMovimiento",
@@ -22,5 +23,6 @@ __all__ = [
     "Importacion",
     "Inversion",
     "Movimiento",
+    "Prestamo",
     "PrevisionGastosConfig",
 ]

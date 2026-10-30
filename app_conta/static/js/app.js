@@ -14,6 +14,7 @@ import "./views/prevision-gastos.js";
 import "./views/deben.js";
 import "./views/movimientos.js";
 import "./views/gastos-tarjetas.js";
+import "./views/prestamos.js";
 import "./views/categorias.js";
 import "./views/importar.js";
 
@@ -33,6 +34,7 @@ async function navegar() {
     let activa = false;
     if (grupo === "inicio" && actual.nombre === "inicio") activa = true;
     else if (grupo === "cuentas-grupo" && grupoCuentas.includes(actual.nombre)) activa = true;
+    else if (grupo === "prestamos" && actual.nombre === "prestamos") activa = true;
     else if (grupo === "ahorro-grupo" && grupoAhorro.includes(actual.nombre)) activa = true;
     else if (grupo === "movimientos" && actual.nombre === "movimientos") activa = true;
     a.classList.toggle("activa", activa);
@@ -228,6 +230,42 @@ document.addEventListener("submit", async (e) => {
       await API.post(`/inversiones/${invId}/reembolsar`, {
         importe: importe,
         cuenta_destino_id: cuentaId,
+      });
+      await navegar();
+    } else if (form.dataset.accion === "crear-prestamo") {
+      const impInicial = String(datos.get("importe_inicial") || "").replace(",", ".").trim();
+      const impPendienteRaw = datos.get("importe_pendiente");
+      const impPendiente = impPendienteRaw ? String(impPendienteRaw).replace(",", ".").trim() : null;
+      const cuotaRaw = datos.get("cuota_mensual");
+      const cuota = cuotaRaw ? String(cuotaRaw).replace(",", ".").trim() : null;
+      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+
+      await API.post("/prestamos", {
+        nombre: datos.get("nombre"),
+        entidad: datos.get("entidad"),
+        tipo: datos.get("tipo") || "coche",
+        importe_inicial: impInicial,
+        importe_pendiente: impPendiente || impInicial,
+        cuota_mensual: cuota,
+        cuenta_id: cuentaId,
+        fecha_inicio: datos.get("fecha_inicio") || null,
+        fecha_fin: datos.get("fecha_fin") || null,
+        notas: datos.get("notas") || null,
+      });
+      form.reset();
+      await navegar();
+    } else if (form.dataset.accion === "pagar-prestamo") {
+      const pId = Number(form.dataset.id);
+      const importe = String(datos.get("importe") || "").replace(",", ".").trim();
+      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+      const concepto = datos.get("concepto") ? String(datos.get("concepto")).trim() : null;
+      const fecha = datos.get("fecha") || null;
+
+      await API.post(`/prestamos/${pId}/pagar`, {
+        importe,
+        cuenta_id: cuentaId,
+        concepto,
+        fecha,
       });
       await navegar();
     }
@@ -512,6 +550,48 @@ document.addEventListener("click", async (e) => {
     const { fijarFiltroInversion } = await import("./views/inversiones.js");
     fijarFiltroInversion(tipo);
     await navegar();
+    return;
+  }
+
+  // Préstamos: Borrar préstamo
+  const btnBorrarPrestamo = e.target.closest('[data-accion="borrar-prestamo"]');
+  if (btnBorrarPrestamo) {
+    const id = Number(btnBorrarPrestamo.dataset.id);
+    const nombre = btnBorrarPrestamo.dataset.nombre || "este préstamo";
+    if (!confirm(`¿Deseas eliminar definitivamente el préstamo "${nombre}"?`)) return;
+    try {
+      await API.del(`/prestamos/${id}`);
+      await navegar();
+    } catch (err) {
+      alert(`No se pudo eliminar el préstamo: ${err.message}`);
+    }
+    return;
+  }
+
+  // Préstamos: Editar datos rápidos (capital pendiente / cuota mensual)
+  const btnEditarPrestamo = e.target.closest('[data-accion="editar-prestamo"]');
+  if (btnEditarPrestamo) {
+    const id = Number(btnEditarPrestamo.dataset.id);
+    const nombre = btnEditarPrestamo.dataset.nombre || "este préstamo";
+    const pendienteActual = prompt(
+      `Actualizar capital pendiente para "${nombre}" (€):`,
+      btnEditarPrestamo.dataset.pendiente || ""
+    );
+    if (pendienteActual === null) return;
+    const cuotaActual = prompt(
+      "Cuota mensual (€, o vacío si no aplica):",
+      btnEditarPrestamo.dataset.cuota || ""
+    );
+    if (cuotaActual === null) return;
+    try {
+      await API.patch(`/prestamos/${id}`, {
+        importe_pendiente: pendienteActual.replace(",", ".").trim(),
+        cuota_mensual: cuotaActual.trim() === "" ? null : cuotaActual.replace(",", ".").trim(),
+      });
+      await navegar();
+    } catch (err) {
+      alert(`No se pudo actualizar el préstamo: ${err.message}`);
+    }
     return;
   }
 

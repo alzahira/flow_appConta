@@ -4,6 +4,7 @@ import { icono } from "./vistas.js";
 const ITEMS_PRINCIPALES = [
   { grupo: "inicio", href: "#/inicio", label: "Resumen", iconoKey: "inicio" },
   { grupo: "cuentas-grupo", href: "#/cuentas", label: "Cuentas y Tarjetas", iconoKey: "cuentas" },
+  { grupo: "prestamos", href: "#/prestamos", label: "Préstamos", iconoKey: "coche" },
   { grupo: "ahorro-grupo", href: "#/ahorro", label: "Ahorro y Botes", iconoKey: "ahorro" },
   { grupo: "movimientos", href: "#/movimientos", label: "Movimientos", iconoKey: "movimientos" },
 ];
