@@ -719,6 +719,142 @@ body {
 }
 
 /* ==========================================================================
+   Tarjetas Destacadas de Disponibilidad (Dinero del Mes y Ocio)
+   ========================================================================= */
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.15rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1.25rem;
+}
+
+.spotlight-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.45rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spotlight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-medium);
+}
+
+.spotlight-card.mes {
+  border-left: 4px solid #0284c7;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+.spotlight-card.ocio {
+  border-left: 4px solid #7c3aed;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+}
+
+.spotlight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.spotlight-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spotlight-icon.mes {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.spotlight-icon.ocio {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.spotlight-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-pill);
+}
+
+.spotlight-card.mes .spotlight-badge {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.spotlight-card.ocio .spotlight-badge {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.spotlight-body {
+  margin-bottom: 0.75rem;
+}
+
+.spotlight-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.spotlight-value {
+  font-size: 2.15rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+
+.spotlight-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.spotlight-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.65rem;
+  margin-top: 0.35rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.spotlight-link {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.spotlight-link:hover {
+  color: var(--text-main);
+}
+
+/* ==========================================================================
    Tarjetas de Cuentas (Estilo Fintech)
    ========================================================================= */
 .grid-accounts {

@@ -1,6 +1,26 @@
 // Vista de inicio: Dashboard de Control Financiero y Conciliación ("Disponible Real")
-import { esc, importe, vista, icono } from "../vistas.js";
+import { esc, importe, vista, icono, fechaCorta } from "../vistas.js";
 import { esTarjetaRegalo } from "./tarjetas-regalo.js";
+
+const BANCOS_CONFIG = [
+  { id: "caixa", nombre: "CaixaBank", iconoKey: "caixa", color: "#0072ce" },
+  { id: "deutsche", nombre: "Deutsche Bank", iconoKey: "deutsche", color: "#0018a8" },
+  { id: "bbva", nombre: "BBVA", iconoKey: "bbva", color: "#004481" },
+  { id: "revolut", nombre: "Revolut", iconoKey: "revolut", color: "#0f172a" },
+  { id: "otros", nombre: "Otros Depósitos y Entidades", iconoKey: "banco", color: "#059669" },
+];
+
+function clasificarBanco(cuenta) {
+  const nombre = (cuenta.nombre || "").toLowerCase();
+  const entidad = (cuenta.entidad || "").toLowerCase();
+  const texto = `${nombre} ${entidad}`;
+
+  if (texto.includes("caixa")) return "caixa";
+  if (texto.includes("deutsche") || texto.includes("deustche") || texto.includes(" db")) return "deutsche";
+  if (texto.includes("bbva")) return "bbva";
+  if (texto.includes("revolut")) return "revolut";
+  return "otros";
+}
 
 function badgeEstado(estado, texto = null) {
   const esCuadrado = estado === "cuadrado";
@@ -12,25 +32,46 @@ function badgeEstado(estado, texto = null) {
   `;
 }
 
-function tarjetaCuenta(c) {
+function tarjetaCuentaRow(c) {
+  const bancoId = clasificarBanco(c);
+  const bancoConfig = BANCOS_CONFIG.find((b) => b.id === bancoId) || {
+    id: "otros",
+    nombre: c.entidad || "Depósito Bancario",
+    iconoKey: c.tipo === "efectivo" ? "efectivo" : "banco",
+    color: "#059669",
+  };
+  const iconoKey = c.tipo === "efectivo" ? "efectivo" : c.tipo === "tarjeta" ? "tarjeta" : bancoConfig.iconoKey;
+  const esEfectivo = c.tipo === "efectivo";
+  const esTarjeta = c.tipo === "tarjeta" || c.nombre.toUpperCase().startsWith("TARJETA");
+  const tipoLabel = esEfectivo ? "Efectivo / Caja" : esTarjeta ? "Tarjeta / Prepago" : "Cuenta Corriente";
+
   return `
-    <div class="card-account">
-      <div class="card-account-header">
-        <div class="card-account-icon ${c.tipo}">
-          ${icono(c.tipo)}
+    <article class="card-account-row ${bancoId}">
+      <div class="acc-row-main">
+        <div class="acc-row-icon ${bancoId}">
+          ${icono(iconoKey)}
         </div>
-        <div class="card-account-meta">
-          <h3 class="card-account-name">${esc(c.nombre)}</h3>
-          <span class="badge-subtle">${esc(c.entidad || c.tipo)}</span>
+        <div class="acc-row-details">
+          <div class="acc-row-header-texts">
+            <h3 class="acc-row-title">${esc(c.nombre)}</h3>
+            <span class="badge-subtle">${esc(c.entidad || bancoConfig.nombre)}</span>
+            <span class="badge-tag">${esc(tipoLabel)}</span>
+          </div>
+          <div class="acc-row-meta">
+            <span class="meta-item"><span class="meta-label">Saldo inicial:</span> <span class="meta-val">${c.saldo_inicial} €</span></span>
+            <span class="meta-dot">&bull;</span>
+            <span class="meta-item"><span class="meta-label">Apertura:</span> <span class="meta-val">${fechaCorta(c.fecha_apertura)}</span></span>
+          </div>
         </div>
       </div>
-      <div class="account-balance-section">
-        <span class="balance-sub">Disponible</span>
-        <div class="card-account-balance">
-          ${importe(c.saldo)}
+
+      <div class="acc-row-side">
+        <div class="acc-row-balance-block">
+          <span class="balance-sub">Saldo disponible</span>
+          <div class="acc-row-balance-value">${importe(c.saldo)}</div>
         </div>
       </div>
-    </div>
+    </article>
   `;
 }
 
@@ -136,10 +177,44 @@ export default vista("inicio", async () => {
   );
   const dineroEtoro = itemEtoro ? itemEtoro.valor_actual : "1500.00";
 
-  // Cuentas y depósitos sin tarjetas (para el bloque de cuentas corrientes)
-  const cuentasSinTarjetas = itemsCuentas.filter(
+  // Botes destacados: Dinero del mes y Dinero de ocio
+  const botesItems = botes.items || [];
+  const boteMes = botesItems.find(
+    (b) =>
+      b.nombre.toLowerCase().includes("mes en curso") ||
+      b.nombre.toLowerCase().includes("cash para el mes") ||
+      b.nombre.toLowerCase() === "dinero del mes"
+  );
+  const dineroMes = boteMes ? boteMes.saldo : "400.00";
+
+  const boteOcio = botesItems.find(
+    (b) => b.nombre.toLowerCase().includes("ocio")
+  );
+  const dineroOcio = boteOcio ? boteOcio.saldo : "214.22";
+
+  // Agrupación de cuentas por entidades bancarias
+  const agrupadoBancos = {
+    caixa: [],
+    deutsche: [],
+    bbva: [],
+    revolut: [],
+    otros: [],
+  };
+
+  const cuentasBancosYEfectivo = itemsCuentas.filter(
     (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
   );
+
+  const tarjetasItems = itemsCuentas.filter(
+    (c) => c.tipo === "tarjeta" || c.nombre.toUpperCase().startsWith("TARJETA")
+  );
+
+  cuentasBancosYEfectivo.forEach((c) => {
+    const bancoId = clasificarBanco(c);
+    agrupadoBancos[bancoId].push(c);
+  });
+
+  const bancosConCuentas = BANCOS_CONFIG.filter((b) => (agrupadoBancos[b.id] || []).length > 0);
 
   return `
   <!-- HERO DASHBOARD -->
@@ -160,6 +235,41 @@ export default vista("inicio", async () => {
           esCuadrado ? "cuadrado" : "revisar",
           esCuadrado ? "Contabilidad cuadrada (0,00 €)" : `Diferencia: ${importe(dineroDiferencia)}`
         )}
+      </div>
+    </div>
+
+    <!-- Tarjetas Destacadas de Disponibilidad (Dinero del Mes y Dinero de Ocio) -->
+    <div class="spotlight-grid">
+      <div class="spotlight-card mes">
+        <div class="spotlight-header">
+          <div class="spotlight-icon mes">${icono("efectivo")}</div>
+          <span class="spotlight-badge">DISPONIBLE MES</span>
+        </div>
+        <div class="spotlight-body">
+          <span class="spotlight-label">Dinero del Mes</span>
+          <div class="spotlight-value">${importe(dineroMes)}</div>
+          <span class="spotlight-sub">Presupuesto en efectivo y compras cotidianas (${esc(boteMes?.nombre || "Mes en curso")})</span>
+        </div>
+        <div class="spotlight-footer">
+          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">Ver movimientos &rarr;</a>
+        </div>
+      </div>
+
+      <div class="spotlight-card ocio">
+        <div class="spotlight-header">
+          <div class="spotlight-icon ocio">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 3-7 8-7-8h14Z"/><path d="M12 11v10"/><path d="M8 21h8"/></svg>
+          </div>
+          <span class="spotlight-badge">LIBRE PARA OCIO</span>
+        </div>
+        <div class="spotlight-body">
+          <span class="spotlight-label">Dinero de Ocio</span>
+          <div class="spotlight-value">${importe(dineroOcio)}</div>
+          <span class="spotlight-sub">Fondo disponible para salidas, cenas y disfrute (${esc(boteOcio?.nombre || "Bote ocio")})</span>
+        </div>
+        <div class="spotlight-footer">
+          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">Ver movimientos &rarr;</a>
+        </div>
       </div>
     </div>
 
@@ -238,6 +348,75 @@ export default vista("inicio", async () => {
       </a>
     </div>
   </div>
+
+  <!-- SECCIÓN DINERO EN CUENTAS Y TARJETAS (POSICIÓN CONSOLIDADA) -->
+  <section class="section-block">
+    <div class="section-header">
+      <div>
+        <h3 class="section-title">Dinero en Cuentas y Tarjetas</h3>
+        <p class="section-desc">Posición consolidada por entidades bancarias, efectivo y monederos activos</p>
+      </div>
+      <a href="#/cuentas" class="btn-link">Gestionar cuentas bancarias &rarr;</a>
+    </div>
+
+    <!-- Píldoras de resumen por entidad bancaria -->
+    <div class="bank-pills-summary">
+      ${bancosConCuentas
+        .map((b) => {
+          const cuentasB = agrupadoBancos[b.id] || [];
+          const subtotalB = cuentasB.reduce((acc, c) => acc + Number(c.saldo), 0);
+          return `
+          <div class="bank-pill-item">
+            <span class="bank-pill-dot" style="background: ${b.color};"></span>
+            <span class="bank-pill-name">${b.nombre}</span>
+            <span class="bank-pill-val">${importe(subtotalB.toFixed(2))}</span>
+          </div>
+        `;
+        })
+        .join("")}
+      <div class="bank-pill-item">
+        <span class="bank-pill-dot" style="background: #059669;"></span>
+        <span class="bank-pill-name">Efectivo Total</span>
+        <span class="bank-pill-val">${importe(dineroCaja)}</span>
+      </div>
+      <div class="bank-pill-item">
+        <span class="bank-pill-dot" style="background: #2563eb;"></span>
+        <span class="bank-pill-name">Tarjetas y Prepago</span>
+        <span class="bank-pill-val">${importe(dineroTarjetas)}</span>
+      </div>
+    </div>
+
+    <!-- Listado de Cuentas Bancarias y Efectivo -->
+    <div class="accounts-list-full">
+      ${
+        cuentasBancosYEfectivo.length > 0
+          ? cuentasBancosYEfectivo.map(tarjetaCuentaRow).join("\n")
+          : `<div class="empty-state">
+              <span class="empty-icon">${icono("cuentas")}</span>
+              <p>No tienes cuentas registradas aún.</p>
+            </div>`
+      }
+    </div>
+
+    <!-- Bloque de Tarjetas Prepago y Monederos Regalo -->
+    ${
+      tarjetasItems.length > 0
+        ? `
+      <div style="margin-top: 1.5rem;">
+        <div class="section-header" style="margin-bottom: 0.85rem;">
+          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0;">
+            Tarjetas Prepago y Monederos (${tarjetasItems.length})
+          </h4>
+          <a href="#/tarjetas" class="btn-link" style="font-size: 0.8rem;">Ver detalle tarjetas &rarr;</a>
+        </div>
+        <div class="accounts-list-full">
+          ${tarjetasItems.map(tarjetaCuentaRow).join("\n")}
+        </div>
+      </div>
+      `
+        : ""
+    }
+  </section>
 
   <!-- SECCIÓN CUADRE GLOBAL DEL HOGAR (FÓRMULA DEL USUARIO) -->
   <section class="section-block">
@@ -333,28 +512,6 @@ export default vista("inicio", async () => {
           </li>
         </ul>
       </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN CUENTAS Y DEPÓSITOS -->
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Cuentas y Depósitos</h3>
-        <p class="section-desc">Dinero real disponible en cuentas bancarias y efectivo</p>
-      </div>
-      <a href="#/cuentas" class="btn-link">Gestionar cuentas &rarr;</a>
-    </div>
-    <div class="grid-accounts">
-      ${
-        cuentasSinTarjetas.length > 0
-          ? cuentasSinTarjetas.map(tarjetaCuenta).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("cuentas")}</span>
-              <p>No tienes cuentas registradas aún.</p>
-              <a href="#/cuentas" class="btn-primary mini">+ Añadir primera cuenta</a>
-            </div>`
-      }
     </div>
   </section>
 
