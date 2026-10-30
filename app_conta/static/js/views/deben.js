@@ -42,9 +42,8 @@ function tarjetaDeudaItem(d, cuentas) {
 
       <div class="card-debt-footer">
         <div class="debt-balance-row">
-          <span class="balance-sub">Te deben</span>
-          <div class="debt-balance-value negativo">
-            -${importe(d.importe_pendiente)}
+          <div class="debt-balance-value ${saldada ? "saldado" : "negativo"}">
+            ${saldada ? "0,00 €" : `-${importe(d.importe_pendiente)}`}
           </div>
         </div>
 
@@ -95,7 +94,6 @@ export default vista("deben", async () => {
   const deudas = deudasData.items || [];
   const cuentas = cuentasData.items || [];
   const totalPendiente = deudasData.total_pendiente || "0.00";
-  const totalCobrado = deudasData.total_cobrado || "0.00";
   const numPendientes = deudas.filter((d) => d.estado !== "saldado").length;
 
   return `
@@ -115,16 +113,12 @@ export default vista("deben", async () => {
 
   <div class="hero-pills-row">
     <div class="hero-pill-stat">
-      <span class="pill-stat-label">Total que me deben (No disponible)</span>
+      <span class="pill-stat-label">Total que me deben</span>
       <span class="pill-stat-value negativo">-${importe(totalPendiente)}</span>
     </div>
     <div class="hero-pill-stat">
-      <span class="pill-stat-label">Personas / Conceptos</span>
+      <span class="pill-stat-label">Personas / Deudas</span>
       <span class="pill-stat-value">${numPendientes} pendientes</span>
-    </div>
-    <div class="hero-pill-stat">
-      <span class="pill-stat-label">Total Ya Recuperado</span>
-      <span class="pill-stat-value ok">${importe(totalCobrado)}</span>
     </div>
   </div>
 
@@ -132,7 +126,7 @@ export default vista("deben", async () => {
     <div class="section-header">
       <div>
         <h3 class="section-title">Listado de Dinero que me Deben</h3>
-        <p class="section-desc">Detalle de cada persona o concepto pendiente de cobrar</p>
+        <p class="section-desc">Detalle de personas y deudas pendientes</p>
       </div>
     </div>
 

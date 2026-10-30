@@ -91,7 +91,7 @@ function tarjetaPrestamo(p, cuentas) {
       <div class="card-loan-metrics">
         <div class="metric-box primary">
           <span class="metric-label">Capital Pendiente de Devolver</span>
-          <div class="metric-value-huge negativo">
+          <div class="metric-value-huge ${pagadoCompletamente ? "ok" : "negativo"}">
             ${pagadoCompletamente ? "0,00 €" : `-${importe(p.importe_pendiente)}`}
           </div>
         </div>
@@ -118,7 +118,7 @@ function tarjetaPrestamo(p, cuentas) {
         </div>
         <div class="progress-labels">
           <span class="progreso-txt">${p.progreso_amortizado_pct}% pagado (${p.amortizado} € de ${p.importe_inicial} €)</span>
-          <span class="pendiente-txt">${pagadoCompletamente ? "Deuda saldada" : `Resta: ${p.importe_pendiente} €`}</span>
+          <span class="pendiente-txt ${pagadoCompletamente ? "ok" : "negativo"}">${pagadoCompletamente ? "Deuda saldada" : `Resta: -${importe(p.importe_pendiente)}`}</span>
         </div>
       </div>
 

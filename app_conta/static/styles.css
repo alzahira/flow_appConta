@@ -2025,15 +2025,22 @@ body {
 }
 
 .importe.negativo {
-  color: var(--accent-negative);
+  color: #ef4444 !important;
 }
 
 .header-total-value.negativo,
 .pill-stat-value.negativo,
 .stat-value.negativo,
 .pot-balance-value.negativo,
-.card-pot-balance.negativo {
-  color: var(--accent-negative) !important;
+.card-pot-balance.negativo,
+.kpi-value-main.negativo,
+.kpi-value.negativo,
+.metric-value-huge.negativo,
+.metric-value.negativo,
+.debt-balance-value.negativo,
+.pendiente-txt.negativo,
+.num.negativo {
+  color: #ef4444 !important;
 }
 
 .importe.neutro {
@@ -2644,6 +2651,14 @@ input:focus, select:focus, textarea:focus {
   letter-spacing: -0.02em;
 }
 
+.kpi-value-main.negativo {
+  color: #ef4444 !important;
+}
+
+.kpi-value-main.positivo {
+  color: var(--accent-positive) !important;
+}
+
 .kpi-value {
   font-size: 1.45rem;
   font-weight: 700;
@@ -2655,7 +2670,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .kpi-value.negativo {
-  color: var(--accent-negative);
+  color: #ef4444 !important;
 }
 
 .kpi-roi-pill {
@@ -2922,6 +2937,15 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-main);
 }
 
+.metric-value-huge.negativo {
+  color: #ef4444 !important;
+}
+
+.metric-value-huge.ok,
+.metric-value-huge.positivo {
+  color: var(--accent-positive) !important;
+}
+
 .metric-value {
   font-size: 1.05rem;
   font-weight: 700;
@@ -2933,7 +2957,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .metric-value.negativo {
-  color: var(--accent-negative);
+  color: #ef4444 !important;
 }
 
 .metric-badge-roi {
@@ -3359,11 +3383,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 .formula-step-card.neg {
-  border-left: 3px solid #f59e0b;
+  border-left: 3px solid #ef4444;
+}
+
+.formula-step-card.neg .formula-step-num {
+  color: #ef4444 !important;
 }
 
 .formula-step-card.deduccion {
-  border-left: 3px solid #6366f1;
+  border-left: 3px solid #ef4444;
+}
+
+.formula-step-card.deduccion .formula-step-num {
+  color: #ef4444 !important;
 }
 
 .formula-step-badge {
