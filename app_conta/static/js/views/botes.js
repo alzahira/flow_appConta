@@ -14,18 +14,40 @@ function tarjetaBoteFull(b) {
   const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
   const conseguido = b.estado === "conseguido";
 
+  const tipoLabels = {
+    recurrente: "Gasto recurrente",
+    ahorro: "Ahorro",
+    proyecto: "Proyecto puntual",
+    ajeno: "Fondo ajeno",
+  };
+  const tipoTexto = tipoLabels[b.tipo] || b.tipo;
+
   return `
     <article class="card-pot-full ${b.tipo}">
-      <div class="card-pot-top">
-        <div class="card-pot-icon ${b.tipo}">
-          ${icono(b.tipo)}
+      <div class="card-pot-header">
+        <div class="pot-header-main">
+          <div class="card-pot-icon ${b.tipo}">
+            ${icono(b.tipo)}
+          </div>
+          <div class="pot-header-texts">
+            <h3 class="pot-title">${esc(b.nombre)}</h3>
+            <span class="pot-meta-date">
+              ${
+                b.objetivo_fecha
+                  ? `${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}`
+                  : `Sobre virtual • ${esc(tipoTexto)}`
+              }
+            </span>
+          </div>
         </div>
-        <div class="card-pot-tags">
+        <div class="card-pot-actions">
           <span class="badge-type">${esc(b.tipo)}</span>
           ${
             conseguido
               ? `<span class="badge-tag ok">${icono("check")} Cumplido</span>`
-              : `<span class="badge-tag info">En curso</span>`
+              : tieneObj
+              ? `<span class="badge-tag info">${pct.toFixed(0)}%</span>`
+              : ""
           }
           <button class="btn-action-icon delete" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}" title="Eliminar este bote">
             ${icono("borrar")}
@@ -33,46 +55,36 @@ function tarjetaBoteFull(b) {
         </div>
       </div>
 
-      <div class="card-pot-body">
-        <h3 class="pot-title">${esc(b.nombre)}</h3>
-        ${
-          b.objetivo_fecha
-            ? `<span class="pot-date">${icono("calendario")} Meta: ${b.objetivo_fecha}</span>`
-            : ""
-        }
+      <div class="pot-balance-section">
+        <span class="balance-sub">Fondos acumulados</span>
+        <div class="pot-balance-value">${importe(b.saldo)}</div>
       </div>
 
-      <div class="card-pot-footer">
-        <div class="pot-balance-row">
-          <span class="balance-sub">Fondos acumulados</span>
-          <div class="pot-balance-value">${importe(b.saldo)}</div>
-        </div>
-
-        ${
-          tieneObj
-            ? `
-          <div class="progress-wrap-large">
-            <div class="progress-bar-large ${pct > 100 ? "over" : ""}">
-              <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
-            </div>
-            <div class="progress-info-row">
-              <span class="progress-pct">${pct.toFixed(0)}%</span>
-              <span class="progress-goal">Objetivo: ${b.objetivo} €</span>
-            </div>
+      ${
+        tieneObj
+          ? `
+        <div class="pot-progress-section">
+          <div class="progress-bar-large ${pct > 100 ? "over" : ""}">
+            <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
           </div>
-        `
-            : `
-          <div class="no-goal-info">
-            <span>Sin objetivo fijado (fondo libre)</span>
+          <div class="progress-info-row">
+            <span class="progress-pct">${pct.toFixed(0)}% del objetivo</span>
+            <span class="progress-goal">Límite: ${b.objetivo} €</span>
           </div>
-        `
-        }
-
-        <div class="pot-actions-row">
-          <button type="button" class="btn-pot-detail" data-accion="ver-detalle-bote" data-id="${b.id}">
-            ${icono("ojo")} Ver movimientos y extracto &rarr;
-          </button>
         </div>
+      `
+          : `
+        <div class="pot-no-goal-row">
+          <span class="no-goal-label">Sobre de gasto variable (sin límite fijado)</span>
+        </div>
+      `
+      }
+
+      <div class="pot-card-footer">
+        <button type="button" class="btn-pot-detail" data-accion="ver-detalle-bote" data-id="${b.id}">
+          <span>${icono("ojo")} Ver movimientos y extracto</span>
+          <span class="btn-arrow">&rarr;</span>
+        </button>
       </div>
     </article>
   `;

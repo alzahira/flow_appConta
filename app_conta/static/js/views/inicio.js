@@ -24,8 +24,11 @@ function tarjetaCuenta(c) {
           <span class="badge-subtle">${esc(c.entidad || c.tipo)}</span>
         </div>
       </div>
-      <div class="card-account-balance">
-        ${importe(c.saldo)}
+      <div class="account-balance-section">
+        <span class="balance-sub">Disponible</span>
+        <div class="card-account-balance">
+          ${importe(c.saldo)}
+        </div>
       </div>
     </div>
   `;
@@ -49,8 +52,11 @@ function tarjetaBoteMini(b) {
           <span class="badge-subtle">${esc(b.tipo)}</span>
         </div>
       </div>
-      <div class="card-pot-balance">
-        ${importe(b.saldo)}
+      <div class="account-balance-section">
+        <span class="balance-sub">Saldo acumulado</span>
+        <div class="card-pot-balance">
+          ${importe(b.saldo)}
+        </div>
       </div>
       ${
         tieneObj
@@ -60,8 +66,8 @@ function tarjetaBoteMini(b) {
             <div class="progress-fill" style="width: ${pct}%"></div>
           </div>
           <div class="progress-labels">
-            <span>${pct.toFixed(0)}% del objetivo</span>
-            <span>${b.objetivo} €</span>
+            <span>${pct.toFixed(0)}% cumplido</span>
+            <span>Meta: ${b.objetivo} €</span>
           </div>
         </div>
       `

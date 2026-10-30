@@ -1,5 +1,5 @@
 // Vista de Tarjetas Regalo y Monederos: Gestión del dinero en tarjetas prepago y regalo
-import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, fechaCorta, icono, subnavCuentas } from "../vistas.js";
 
 export function esTarjetaRegalo(c) {
   if (c.tipo !== "tarjeta") return false;
@@ -71,7 +71,7 @@ function tarjetaRegaloItem(c) {
         </div>
         <div class="gift-card-meta">
           <span>Carga inicial: ${c.saldo_inicial} €</span>
-          <span>Fecha: ${c.fecha_apertura}</span>
+          <span>Fecha: ${fechaCorta(c.fecha_apertura)}</span>
         </div>
       </div>
     </article>

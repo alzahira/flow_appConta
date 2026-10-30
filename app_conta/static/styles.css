@@ -723,26 +723,26 @@ body {
    ========================================================================= */
 .grid-accounts {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
 }
 
 .grid-accounts-large {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
 .card-account {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 1rem 1.15rem;
+  padding: 1.15rem 1.25rem;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.85rem;
+  gap: 0.95rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -755,13 +755,13 @@ body {
 .card-account-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .card-account-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
   background: #f8fafc;
   display: flex;
   align-items: center;
@@ -778,11 +778,14 @@ body {
 
 .card-account-meta {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .card-account-name {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   font-weight: 700;
   color: var(--text-main);
   white-space: nowrap;
@@ -791,23 +794,23 @@ body {
 }
 
 .card-account-balance {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 800;
   font-family: var(--font-mono);
   color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
-/* Tarjeta de Cuenta Completa */
+/* Tarjeta de Cuenta Completa (Vista Cuentas y Depósitos) */
 .card-account-full {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1.25rem 1.35rem;
+  padding: 1.4rem 1.45rem;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 180px;
+  gap: 1.15rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -818,7 +821,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  right: 0;
   height: 3px;
   background: #0f172a;
 }
@@ -835,9 +838,23 @@ body {
 
 .card-account-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  gap: 0.85rem;
+}
+
+.card-account-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.card-account-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
 }
 
 .account-title {
@@ -845,38 +862,77 @@ body {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .account-institution {
-  margin: 0.2rem 0 0;
+  margin: 0;
   font-size: 0.82rem;
   color: var(--text-muted);
+  font-weight: 500;
+}
+
+.card-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.account-balance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.25rem 0;
+}
+
+.account-balance-section .balance-sub,
+.balance-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.account-balance-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
 .card-account-footer {
   border-top: 1px solid var(--border-subtle);
   padding-top: 0.85rem;
-  margin-top: 1rem;
+  margin-top: auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.balance-sub {
-  font-size: 0.72rem;
-  font-weight: 600;
+.account-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.account-meta-item .meta-label {
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  display: block;
-  margin-bottom: 0.15rem;
+  font-size: 0.76rem;
 }
 
-.account-balance-value {
-  font-size: 1.45rem;
-  font-weight: 800;
-  font-family: var(--font-mono);
+.account-meta-item .meta-val {
+  font-weight: 700;
   color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
 }
 
 .account-meta-small {
@@ -891,6 +947,51 @@ body {
 /* ==========================================================================
    Grupos de Bancos (Caixa, Deutsche Bank, BBVA, Revolut, Otros)
    ========================================================================== */
+.bank-pills-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1.75rem;
+}
+
+.bank-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.bank-pill-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bank-pill-name {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.bank-pill-count {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.bank-pill-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-main);
+  margin-left: 0.35rem;
+}
+
 .bank-group-header {
   display: flex;
   align-items: center;
@@ -1089,8 +1190,8 @@ body {
    ========================================================================== */
 .grid-gift-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
 .gift-card-fintech {
@@ -1205,52 +1306,103 @@ body {
    ========================================================================== */
 .grid-pots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
 }
 
 .grid-pots-large {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
-.card-pot, .card-pot-full {
+/* Tarjeta mini (Dashboard Inicio) */
+.card-pot {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 1.15rem;
+  padding: 1.2rem 1.25rem;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-pot:hover, .card-pot-full:hover {
+.card-pot:hover {
   transform: translateY(-2px);
   border-color: var(--border-medium);
   box-shadow: var(--shadow-hover);
 }
 
-.card-pot-full {
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.35rem;
-  justify-content: space-between;
-  min-height: 190px;
-}
-
 .card-pot-top {
   display: flex;
   align-items: center;
+  gap: 0.85rem;
+}
+
+.card-pot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.card-pot-info h4 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-pot-balance {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+/* Tarjeta Completa (Botes y Fondos de Ahorro) */
+.card-pot-full {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.45rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-pot-full:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-hover);
+}
+
+.card-pot-header {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.85rem;
+}
+
+.pot-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
 }
 
 .card-pot-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1263,31 +1415,52 @@ body {
 .card-pot-icon.proyecto { color: #2563eb; background: #eff6ff; }
 .card-pot-icon.ajeno { color: #7c3aed; background: #f5f3ff; }
 
+.pot-header-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
 .pot-title {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.pot-date {
+.pot-meta-date {
   font-size: 0.76rem;
   color: var(--text-muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
-.pot-balance-row {
-  margin-bottom: 0.6rem;
+.card-pot-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
 }
 
-.pot-balance-value, .card-pot-balance {
-  font-size: 1.4rem;
+.pot-balance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.25rem 0;
+}
+
+.pot-balance-value {
+  font-size: 1.75rem;
   font-weight: 800;
   font-family: var(--font-mono);
   color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
 /* Barras de Progreso Minimalistas */
@@ -1331,7 +1504,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -1341,13 +1514,65 @@ body {
   font-weight: 700;
 }
 
-.card-pot-footer {
+.progress-goal {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.pot-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.pot-no-goal-row {
+  padding: 0.35rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.no-goal-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.pot-card-footer {
   border-top: 1px solid var(--border-subtle);
-  padding-top: 0.85rem;
-  margin-top: 0.5rem;
+  padding-top: 0.95rem;
+  margin-top: auto;
+}
+
+.btn-pot-detail {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.7rem 1.05rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-pot-detail:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.btn-pot-detail .btn-arrow {
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-pot-detail:hover .btn-arrow {
+  transform: translateX(3px);
 }
 
 /* Vista de Detalle y Extracto de Botes / Fondos */
@@ -1404,7 +1629,8 @@ body {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-sm);
 }
 
@@ -1896,10 +2122,10 @@ input:focus, select:focus, textarea:focus {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1.35rem;
+  padding: 1.4rem 1.45rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 1.15rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -2007,16 +2233,18 @@ input:focus, select:focus, textarea:focus {
 
 .debt-balance-value.pendiente {
   font-family: var(--font-mono);
-  font-size: 1.35rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--accent-warning);
+  letter-spacing: -0.02em;
 }
 
 .debt-balance-value.saldado {
   font-family: var(--font-mono);
-  font-size: 1.35rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--accent-positive);
+  letter-spacing: -0.02em;
 }
 
 .debt-cobro-box {
@@ -2711,7 +2939,7 @@ input:focus, select:focus, textarea:focus {
     align-items: flex-start;
   }
 
-  .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large {
+  .grid-accounts, .grid-pots, .grid-accounts-large, .grid-pots-large, .grid-credit-cards, .grid-gift-cards, .grid-investments {
     grid-template-columns: 1fr;
   }
 

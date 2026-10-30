@@ -35,7 +35,7 @@ function tarjetaCreditoItem(c) {
         </div>
         <div class="credit-card-meta">
           <span>Inicial: ${c.saldo_inicial} €</span>
-          <span>Apertura: ${c.fecha_apertura}</span>
+          <span>Apertura: ${fechaCorta(c.fecha_apertura)}</span>
         </div>
       </div>
     </article>
