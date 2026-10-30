@@ -553,6 +553,15 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  // Dashboard Inicio: Alternar suma de Inversión Etoro en Cuentas
+  const btnToggleEtoro = e.target.closest('[data-accion="toggle-etoro"]');
+  if (btnToggleEtoro) {
+    const { toggleEtoro } = await import("./views/inicio.js");
+    toggleEtoro();
+    await navegar();
+    return;
+  }
+
   // Préstamos: Borrar préstamo
   const btnBorrarPrestamo = e.target.closest('[data-accion="borrar-prestamo"]');
   if (btnBorrarPrestamo) {
