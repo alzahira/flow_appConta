@@ -46,3 +46,6 @@ class Hogar(Base):
     prestamos: Mapped[list[Prestamo]] = relationship(  # noqa: F821
         back_populates="hogar", cascade="all, delete-orphan"
     )
+    plantillas_reparto: Mapped[list[PlantillaReparto]] = relationship(  # noqa: F821
+        back_populates="hogar", cascade="all, delete-orphan"
+    )

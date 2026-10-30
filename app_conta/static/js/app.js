@@ -17,6 +17,7 @@ import "./views/gastos-tarjetas.js";
 import "./views/prestamos.js";
 import "./views/categorias.js";
 import "./views/importar.js";
+import { iniciarModalesAcciones } from "./modales-acciones.js";
 
 async function navegar() {
   const hash = location.hash.replace("#/", "") || "inicio";
@@ -696,6 +697,7 @@ document.addEventListener("change", async (e) => {
 
 async function iniciarApp() {
   pintarNav(rutasRegistradas());
+  iniciarModalesAcciones();
   await navegar();
 }
 

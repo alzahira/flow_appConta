@@ -64,6 +64,7 @@ def _registrar_routers() -> None:
         "prevision_gastos",
         "inversiones",
         "prestamos",
+        "plantillas_reparto",
         "backup",
     ):
         try:

@@ -233,6 +233,39 @@ export default vista("inicio", async () => {
       </div>
     </div>
 
+    <!-- BARRA DE ACCIONES RÁPIDAS (INGRESO, GASTO Y NÓMINA) -->
+    <div class="hero-actions-bar">
+      <button type="button" class="btn-hero-action ingreso" data-accion-fintech="abrir-ingreso">
+        <span class="action-btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <span class="action-btn-text">
+          <strong>+ Ingreso</strong>
+          <small>Libre o Nómina</small>
+        </span>
+      </button>
+
+      <button type="button" class="btn-hero-action gasto" data-accion-fintech="abrir-gasto">
+        <span class="action-btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <span class="action-btn-text">
+          <strong>− Gasto</strong>
+          <small>Descontar de sobre</small>
+        </span>
+      </button>
+
+      <button type="button" class="btn-hero-action nomina" data-accion-fintech="abrir-nomina">
+        <span class="action-btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <span class="action-btn-text">
+          <strong>Reparto Nómina</strong>
+          <small>Automático mes</small>
+        </span>
+      </button>
+    </div>
+
     <!-- Tarjetas Destacadas de Disponibilidad (Dinero del Mes y Dinero de Ocio) -->
     <div class="spotlight-grid">
       <div class="spotlight-card mes">
