@@ -54,7 +54,7 @@ function tarjetaBoteMini(b) {
       </div>
       <div class="account-balance-section">
         <span class="balance-sub">Saldo acumulado</span>
-        <div class="card-pot-balance">
+        <div class="card-pot-balance ${sal < 0 ? "negativo" : ""}">
           ${importe(b.saldo)}
         </div>
       </div>
@@ -215,8 +215,8 @@ export default vista("inicio", async () => {
           <span class="stat-pill-icon">${icono("prestamo")}</span>
           <span class="stat-label">Dinero que me deben</span>
         </div>
-        <span class="stat-value positivo">${importe(dineroMeDeben)}</span>
-        <span class="stat-sub">Ver préstamos &rarr;</span>
+        <span class="stat-value negativo">-${importe(dineroMeDeben)}</span>
+        <span class="stat-sub">Ver deudores &rarr;</span>
       </a>
 
       <a href="#/prestamos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">

@@ -46,7 +46,7 @@ function tarjetaFondoAhorro(b) {
 
       <div class="pot-balance-section">
         <span class="balance-sub">Ahorro acumulado</span>
-        <div class="pot-balance-value">${importe(b.saldo)}</div>
+        <div class="pot-balance-value ${sal < 0 ? "negativo" : ""}">${importe(b.saldo)}</div>
       </div>
 
       ${
@@ -287,7 +287,7 @@ export default vista("ahorro", async () => {
   ]);
   
   const fondosAhorro = data.items.filter(
-    (b) => b.tipo === "ahorro" || b.nombre.toLowerCase().includes("hipoteca") || b.nombre.toLowerCase().includes("ahorro")
+    (b) => b.nombre.toLowerCase().includes("hipoteca")
   );
 
   const cuentas = cuentasData.items || [];

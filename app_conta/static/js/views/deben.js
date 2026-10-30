@@ -3,10 +3,6 @@ import { vista, esc, importe, hoy, fechaCorta, icono, subnavAhorro } from "../vi
 
 function tarjetaDeudaItem(d, cuentas) {
   const saldada = d.estado === "saldado";
-  const parcial = d.estado === "parcial";
-  const inicialNum = Number(d.importe_inicial);
-  const cobradoNum = Number(d.importe_cobrado);
-  const pct = inicialNum > 0 ? Math.min(100, Math.round((cobradoNum / inicialNum) * 100)) : 0;
 
   const opcionesCuentas = cuentas
     .map((c) => `<option value="${c.id}">${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
@@ -22,9 +18,7 @@ function tarjetaDeudaItem(d, cuentas) {
           ${
             saldada
               ? `<span class="badge-tag ok">${icono("check")} Saldado</span>`
-              : parcial
-              ? `<span class="badge-tag info">${pct}% recuperado</span>`
-              : `<span class="badge-tag alerta">${icono("alerta")} Pendiente</span>`
+              : ""
           }
           <button class="btn-action-icon delete" data-accion="borrar-deuda" data-id="${d.id}" data-deudor="${esc(d.deudor)}" title="Eliminar este registro">
             ${icono("borrar")}
@@ -36,7 +30,7 @@ function tarjetaDeudaItem(d, cuentas) {
         <h3 class="debt-person">${esc(d.deudor)}</h3>
         <p class="debt-concept">${esc(d.concepto)}</p>
         <div class="debt-meta">
-          <span class="meta-item">${icono("calendario")} Prestado: ${fechaCorta(d.fecha)}</span>
+          <span class="meta-item">${icono("calendario")} Fecha: ${fechaCorta(d.fecha)}</span>
           ${
             d.fecha_limite
               ? `<span class="meta-item limit">Límite: ${fechaCorta(d.fecha_limite)}</span>`
@@ -48,19 +42,9 @@ function tarjetaDeudaItem(d, cuentas) {
 
       <div class="card-debt-footer">
         <div class="debt-balance-row">
-          <span class="balance-sub">${saldada ? "Total recuperado" : "Pendiente de cobrar"}</span>
-          <div class="debt-balance-value ${saldada ? "saldado" : "pendiente"}">
-            ${saldada ? importe(d.importe_inicial) : importe(d.importe_pendiente)}
-          </div>
-        </div>
-
-        <div class="progress-wrap-large">
-          <div class="progress-bar-large ${saldada ? "ok" : ""}">
-            <div class="progress-fill" style="width: ${pct}%"></div>
-          </div>
-          <div class="progress-info-row">
-            <span class="progress-pct">${pct}% recuperado (${d.importe_cobrado} €)</span>
-            <span class="progress-goal">Total: ${d.importe_inicial} €</span>
+          <span class="balance-sub">Te deben</span>
+          <div class="debt-balance-value negativo">
+            -${importe(d.importe_pendiente)}
           </div>
         </div>
 
@@ -75,11 +59,11 @@ function tarjetaDeudaItem(d, cuentas) {
               <form data-accion="registrar-cobro-deuda" data-deuda-id="${d.id}" class="cobro-form">
                 <div class="cobro-inputs-row">
                   <div class="cobro-group">
-                    <label class="cobro-label">Importe cobrado (€)</label>
+                    <label class="cobro-label">Importe devuelto (€)</label>
                     <input name="importe" inputmode="decimal" placeholder="${d.importe_pendiente}" max="${d.importe_pendiente}" required>
                   </div>
                   <div class="cobro-group">
-                    <label class="cobro-label">Ingresar en cuenta (opcional)</label>
+                    <label class="cobro-label">Ingresar en cuenta bancaria</label>
                     <select name="cuenta_id">
                       <option value="">— No crear movimiento —</option>
                       ${opcionesCuentas}
@@ -112,7 +96,6 @@ export default vista("deben", async () => {
   const cuentas = cuentasData.items || [];
   const totalPendiente = deudasData.total_pendiente || "0.00";
   const totalCobrado = deudasData.total_cobrado || "0.00";
-  const totalInicial = deudasData.total_inicial || "0.00";
   const numPendientes = deudas.filter((d) => d.estado !== "saldado").length;
 
   return `
@@ -121,35 +104,35 @@ export default vista("deben", async () => {
   <div class="page-header-row">
     <div>
       <h2 class="page-title">Dinero que me deben</h2>
-      <p class="page-subtitle">Seguimiento de dinero prestado, adelantos a amigos o familiares y cuentas pendientes de cobro</p>
+      <p class="page-subtitle">Seguimiento de dinero prestado o adelantado pendiente de que me lo devuelvan</p>
     </div>
     <div class="header-total-card">
-      <span class="header-total-label">Total Pendiente de Cobro</span>
-      <span class="header-total-value positivo">${importe(totalPendiente)}</span>
-      <span class="header-total-sub">${numPendientes} cobro(s) pendiente(s)</span>
+      <span class="header-total-label">Total que me deben</span>
+      <span class="header-total-value negativo">-${importe(totalPendiente)}</span>
+      <span class="header-total-sub">${numPendientes} registros pendientes</span>
     </div>
   </div>
 
   <div class="hero-pills-row">
     <div class="hero-pill-stat">
-      <span class="pill-stat-label">Total Prestado</span>
-      <span class="pill-stat-value">${importe(totalInicial)}</span>
+      <span class="pill-stat-label">Total que me deben (No disponible)</span>
+      <span class="pill-stat-value negativo">-${importe(totalPendiente)}</span>
     </div>
     <div class="hero-pill-stat">
-      <span class="pill-stat-label">Total Recuperado</span>
+      <span class="pill-stat-label">Personas / Conceptos</span>
+      <span class="pill-stat-value">${numPendientes} pendientes</span>
+    </div>
+    <div class="hero-pill-stat">
+      <span class="pill-stat-label">Total Ya Recuperado</span>
       <span class="pill-stat-value ok">${importe(totalCobrado)}</span>
-    </div>
-    <div class="hero-pill-stat">
-      <span class="pill-stat-label">Pendiente de Devolución</span>
-      <span class="pill-stat-value alert">${importe(totalPendiente)}</span>
     </div>
   </div>
 
   <section class="section-block">
     <div class="section-header">
       <div>
-        <h3 class="section-title">Listado de Personas y Deudas</h3>
-        <p class="section-desc">Registros de personas que te deben dinero y su evolución</p>
+        <h3 class="section-title">Listado de Dinero que me Deben</h3>
+        <p class="section-desc">Detalle de cada persona o concepto pendiente de cobrar</p>
       </div>
     </div>
 
@@ -159,7 +142,7 @@ export default vista("deben", async () => {
           ? deudas.map((d) => tarjetaDeudaItem(d, cuentas)).join("\n")
           : `<div class="empty-state">
               <span class="empty-icon">${icono("prestamo")}</span>
-              <p>No tienes ningún préstamo o deuda registrada.</p>
+              <p>No tienes ningún dinero prestado registrado.</p>
               <span class="empty-sub">Usa el formulario inferior para anotar dinero que te deben amigos, familiares o empresas.</span>
             </div>`
       }

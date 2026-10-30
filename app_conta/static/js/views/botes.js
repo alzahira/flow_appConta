@@ -55,7 +55,7 @@ function tarjetaBoteFull(b) {
 
       <div class="pot-balance-section">
         <span class="balance-sub">Fondos acumulados</span>
-        <div class="pot-balance-value">${importe(b.saldo)}</div>
+        <div class="pot-balance-value ${sal < 0 ? "negativo" : ""}">${importe(b.saldo)}</div>
       </div>
 
       ${
@@ -305,7 +305,11 @@ export default vista("botes", async () => {
   // Si el bote seleccionado ya no existe, reseteamos a vista general
   boteSeleccionadoId = null;
 
-  const totalBotes = botesData.items.reduce((acc, b) => acc + Number(b.saldo), 0);
+  // En Sobres y Botes dejamos todo excepto Amortización Hipoteca (que queda en Fondo de Ahorro)
+  const sobresBotes = botesData.items.filter(
+    (b) => !b.nombre.toLowerCase().includes("hipoteca")
+  );
+  const totalBotes = sobresBotes.reduce((acc, b) => acc + Number(b.saldo), 0);
 
   return `
   ${subnavAhorro("botes")}
@@ -316,7 +320,7 @@ export default vista("botes", async () => {
       <p class="page-subtitle">Sistema de sobres virtuales para reservar dinero con un fin concreto. Pulsa en un sobre para ver sus movimientos.</p>
     </div>
     <div class="header-total-card">
-      <span class="header-total-label">Total en Botes</span>
+      <span class="header-total-label">Total en Sobres y Botes</span>
       <span class="header-total-value">${importe(totalBotes.toFixed(2))}</span>
     </div>
   </div>
@@ -324,12 +328,12 @@ export default vista("botes", async () => {
   <section class="section-block">
     <div class="grid-pots-large">
       ${
-        botesData.items.length > 0
-          ? botesData.items.map(tarjetaBoteFull).join("\n")
+        sobresBotes.length > 0
+          ? sobresBotes.map(tarjetaBoteFull).join("\n")
           : `<div class="empty-state">
               <span class="empty-icon">${icono("botes")}</span>
-              <p>No tienes ningún bote creado aún.</p>
-              <span class="empty-sub">Crea un bote de ahorro, gastos recurrentes o proyecto para apartar dinero.</span>
+              <p>No tienes ningún sobre o bote creado aún.</p>
+              <span class="empty-sub">Crea un bote para apartar dinero.</span>
             </div>`
       }
     </div>

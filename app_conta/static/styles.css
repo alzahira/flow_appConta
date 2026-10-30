@@ -2028,6 +2028,14 @@ body {
   color: var(--accent-negative);
 }
 
+.header-total-value.negativo,
+.pill-stat-value.negativo,
+.stat-value.negativo,
+.pot-balance-value.negativo,
+.card-pot-balance.negativo {
+  color: var(--accent-negative) !important;
+}
+
 .importe.neutro {
   color: var(--text-muted);
 }
@@ -2401,11 +2409,12 @@ input:focus, select:focus, textarea:focus {
   align-items: baseline;
 }
 
-.debt-balance-value.pendiente {
+.debt-balance-value.pendiente,
+.debt-balance-value.negativo {
   font-family: var(--font-mono);
   font-size: 1.6rem;
   font-weight: 800;
-  color: var(--accent-warning);
+  color: #ef4444;
   letter-spacing: -0.02em;
 }
 
@@ -3610,6 +3619,7 @@ input:focus, select:focus, textarea:focus {
   .pot-balance-value,
   .account-balance-value,
   .debt-balance-value.pendiente,
+  .debt-balance-value.negativo,
   .debt-balance-value.saldado {
     font-size: 1.55rem;
   }
