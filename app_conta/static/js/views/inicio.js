@@ -27,7 +27,7 @@ function badgeEstado(estado, texto = null) {
   return `
     <div class="status-pill ${esCuadrado ? "ok" : "alerta"}">
       <span class="status-dot"></span>
-      <span class="status-text">${esc(texto || (esCuadrado ? "Contabilidad cuadrada" : "Diferencia pendiente"))}</span>
+      <span class="status-text">${esc(texto || (esCuadrado ? "Contabilidad al día" : "Diferencia pendiente"))}</span>
     </div>
   `;
 }
@@ -160,11 +160,6 @@ export default vista("inicio", async () => {
   const dineroPrevision = conc.total_prevision_formula || "0.00";
   const dineroMeDeben = conc.total_me_deben_formula || "0.00";
   const dineroPrestamos = conc.total_prestamos_formula || "0.00";
-  const dineroDeduccionEtoro = conc.deduccion_etoro_formula || "1500.00";
-  const dineroDeduccionExtras = conc.deduccion_extras_formula || "186.96";
-
-  // Total Dinero Teórico ajustado = Botes + Previsión - Me Deben - Préstamos - Etoro - Ahorro extras/redondeo
-  const dineroTeorico = conc.total_teorico_formula || dineroTotalCuentas;
   const dineroDiferencia = conc.diferencia_formula || "0.00";
 
   // Estado cuadrado garantizado: diferencia exacta = 0.00 €
@@ -233,7 +228,7 @@ export default vista("inicio", async () => {
       <div class="hero-status-container">
         ${badgeEstado(
           esCuadrado ? "cuadrado" : "revisar",
-          esCuadrado ? "Contabilidad cuadrada (0,00 €)" : `Diferencia: ${importe(dineroDiferencia)}`
+          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia)}`
         )}
       </div>
     </div>
@@ -418,102 +413,6 @@ export default vista("inicio", async () => {
     }
   </section>
 
-  <!-- SECCIÓN CUADRE GLOBAL DEL HOGAR (FÓRMULA DEL USUARIO) -->
-  <section class="section-block">
-    <div class="cuadre-card">
-      <div class="cuadre-card-header">
-        <div class="cuadre-header-info">
-          <span class="badge-subtle">FÓRMULA CONTABLE DEL HOGAR</span>
-          <h3 class="cuadre-title">Cuadre Global de la Contabilidad</h3>
-          <p class="cuadre-subtitle">El dinero que debes tener en Cuentas y Tarjetas = Sobres y Botes + Previsión − Dinero que me deben − Préstamos − Etoro − Ahorro extras</p>
-        </div>
-        <div class="cuadre-badge-wrap">
-          ${badgeEstado("cuadrado", "Contabilidad cuadrada (0,00 €)")}
-        </div>
-      </div>
-
-      <!-- Desglose visual en tarjetas de la fórmula -->
-      <div class="formula-breakdown-grid">
-        <div class="formula-step-card pos">
-          <div class="formula-step-badge">(+) Sobres y Botes</div>
-          <div class="formula-step-num">${importe(dineroBotes)}</div>
-          <div class="formula-step-desc">Ahorro hipoteca, viajes y proyectos</div>
-        </div>
-
-        <div class="formula-step-card pos">
-          <div class="formula-step-badge">(+) Previsión Gastos</div>
-          <div class="formula-step-num">${importe(dineroPrevision)}</div>
-          <div class="formula-step-desc">Saldo acumulado gastos anuales</div>
-        </div>
-
-        <div class="formula-step-card neg">
-          <div class="formula-step-badge">(−) Me deben</div>
-          <div class="formula-step-num">${importe(dineroMeDeben, "negativo")}</div>
-          <div class="formula-step-desc">Dinero prestado/adelantado pendiente</div>
-        </div>
-
-        <div class="formula-step-card neg">
-          <div class="formula-step-badge">(−) Préstamos</div>
-          <div class="formula-step-num">${importe(dineroPrestamos, "negativo")}</div>
-          <div class="formula-step-desc">Deudas que debes (Coche, DAM)</div>
-        </div>
-
-        <div class="formula-step-card deduccion">
-          <div class="formula-step-badge">(−) Inversión Etoro</div>
-          <div class="formula-step-num">${importe(dineroDeduccionEtoro, "negativo")}</div>
-          <div class="formula-step-desc">Patrimonio invertido fuera de bancos</div>
-        </div>
-
-        <div class="formula-step-card deduccion">
-          <div class="formula-step-badge">(−) Ahorro extras</div>
-          <div class="formula-step-num">${importe(dineroDeduccionExtras, "negativo")}</div>
-          <div class="formula-step-desc">Bote extras y ajuste de cuotas</div>
-        </div>
-      </div>
-
-      <!-- Banner de comparación: Teórico vs Real vs Diferencia -->
-      <div class="cuadre-comparison-banner">
-        <div class="comparison-side teorico">
-          <span class="comparison-label">Dinero que debes tener</span>
-          <div class="comparison-amount">${importe(dineroTeorico)}</div>
-          <span class="comparison-sub">Según sobres + previsión − me deben − préstamos − deducciones</span>
-        </div>
-
-        <div class="comparison-vs">=</div>
-
-        <div class="comparison-side real">
-          <span class="comparison-label">Dinero Real en Cuentas y Tarjetas</span>
-          <div class="comparison-amount">${importe(dineroTotalCuentas)}</div>
-          <span class="comparison-sub">Bancos (${importe(dineroBancos)}) + Efectivo (${importe(dineroCaja)}) + Tarjetas (${importe(dineroTarjetas)})</span>
-        </div>
-
-        <div class="comparison-diff ok">
-          <span class="comparison-label">Diferencia Neta</span>
-          <div class="comparison-amount">${importe(dineroDiferencia)}</div>
-          <span class="comparison-sub">¡Contabilidad perfectamente cuadrada!</span>
-        </div>
-      </div>
-
-      <!-- Cuadro Explicativo del Cuadre -->
-      <div class="cuadre-insight-box">
-        <div class="insight-title">
-          ${icono("check")}
-          <span>Contabilidad totalmente cuadrada al céntimo</span>
-        </div>
-        <ul class="insight-list">
-          <li>
-            <strong>Inversión Etoro (${importe(dineroDeduccionEtoro)}):</strong> Se ha deducido de las exigencias bancarias porque es capital invertido en plataforma financiera y no saldo en cuenta corriente.
-          </li>
-          <li>
-            <strong>Bote ahorro extras y redondeo (${importe(dineroDeduccionExtras)}):</strong> Deducido como solicitaste, equilibrando la totalidad de los fondos al céntimo.
-          </li>
-          <li>
-            <strong>Resultado exacto:</strong> Los <strong>${importe(dineroTeorico)}</strong> requeridos coinciden al 100% con los <strong>${importe(dineroTotalCuentas)}</strong> reales de tus bancos, efectivo y tarjetas.
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
 
   <!-- SECCIÓN BOTES Y SOBRES -->
   ${
@@ -535,134 +434,5 @@ export default vista("inicio", async () => {
       : ""
   }
 
-  <!-- SECCIÓN TABLA ANALÍTICA DE CONCILIACIÓN -->
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Detalle Analítico del Cuadre</h3>
-        <p class="section-desc">Desglose línea a línea de la ecuación financiera del hogar</p>
-      </div>
-    </div>
-    <div class="card-table-wrap">
-      <table class="table-fintech">
-        <thead>
-          <tr>
-            <th>Concepto Contable</th>
-            <th class="num">Importe</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(+) Sobres y Botes de Ahorro</strong>
-                <span class="table-row-sub">Total acumulado en fondos de ahorro, amortizaciones y proyectos</span>
-              </div>
-            </td>
-            <td class="num positivo">+${importe(dineroBotes)}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(+) Previsión de Gastos (Bote Anual)</strong>
-                <span class="table-row-sub">Saldo acumulado por cuotas mensuales transcurridas menos facturas pagadas</span>
-              </div>
-            </td>
-            <td class="num positivo">+${importe(dineroPrevision)}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(−) Dinero que me deben</strong>
-                <span class="table-row-sub">Dinero salido de tus cuentas para préstamos o anticipos pendientes de cobrar</span>
-              </div>
-            </td>
-            <td class="num negativo">${importe(dineroMeDeben, "negativo")}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(−) Préstamos propios (deudas)</strong>
-                <span class="table-row-sub">Deudas pendientes que debes (Coche Hyundai, Ciclo DAM...)</span>
-              </div>
-            </td>
-            <td class="num negativo">${importe(dineroPrestamos, "negativo")}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(−) Inversión en Etoro</strong>
-                <span class="table-row-sub">Patrimonio invertido en activos financieros fuera del banco</span>
-              </div>
-            </td>
-            <td class="num negativo">${importe(dineroDeduccionEtoro, "negativo")}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>(−) Bote ahorro extras y redondeo</strong>
-                <span class="table-row-sub">Ajuste de fondos y redondeo de cuotas mensuales</span>
-              </div>
-            </td>
-            <td class="num negativo">${importe(dineroDeduccionExtras, "negativo")}</td>
-          </tr>
-          <tr style="background: #f8fafc; font-weight: 700;">
-            <td>
-              <div class="table-row-title">
-                <strong>(=) TOTAL DINERO QUE DEBES TENER</strong>
-                <span class="table-row-sub">Fondos netos exigibles en cuentas y tarjetas</span>
-              </div>
-            </td>
-            <td class="num"><strong>${importe(dineroTeorico)}</strong></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>Dinero Real en Bancos</strong>
-                <span class="table-row-sub">Cuentas corrientes y depósitos</span>
-              </div>
-            </td>
-            <td class="num">${importe(dineroBancos)}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>Dinero Real en Caja (Efectivo)</strong>
-                <span class="table-row-sub">Efectivo físico</span>
-              </div>
-            </td>
-            <td class="num">${importe(dineroCaja)}</td>
-          </tr>
-          <tr>
-            <td>
-              <div class="table-row-title">
-                <strong>Tarjetas y Saldos Prepago</strong>
-                <span class="table-row-sub">Tarjetas regalo, divisas, tarjetas de pago</span>
-              </div>
-            </td>
-            <td class="num">${importe(dineroTarjetas)}</td>
-          </tr>
-          <tr style="background: #f8fafc; font-weight: 700;">
-            <td>
-              <div class="table-row-title">
-                <strong>(=) TOTAL REAL EN CUENTAS Y TARJETAS</strong>
-                <span class="table-row-sub">Bancos + Efectivo + Tarjetas</span>
-              </div>
-            </td>
-            <td class="num"><strong>${importe(dineroTotalCuentas)}</strong></td>
-          </tr>
-          <tr class="table-highlight-row">
-            <td>
-              <div class="table-row-title">
-                <strong>Diferencia de Cuadre</strong>
-                <span class="table-row-sub">La contabilidad cuadra exactamente con el dinero real</span>
-              </div>
-            </td>
-            <td class="num"><strong class="positivo">${importe(dineroDiferencia)}</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
   `;
 });
