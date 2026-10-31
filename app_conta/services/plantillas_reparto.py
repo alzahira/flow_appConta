@@ -27,7 +27,7 @@ def _serializar_linea(linea: PlantillaRepartoLinea) -> dict[str, Any]:
         "cuenta_nombre": linea.cuenta.nombre if linea.cuenta else None,
         "cuenta_entidad": linea.cuenta.entidad if linea.cuenta else None,
         "concepto": linea.concepto,
-        "importe": centimos_a_euros(linea.importe_centimos),
+        "importe": f"{centimos_a_euros(linea.importe_centimos):.2f}",
         "orden": linea.orden,
     }
 
@@ -39,11 +39,150 @@ def serializar_plantilla(plantilla: PlantillaReparto) -> dict[str, Any]:
         "cuenta_id": plantilla.cuenta_id,
         "cuenta_nombre": plantilla.cuenta.nombre if plantilla.cuenta else None,
         "cuenta_entidad": plantilla.cuenta.entidad if plantilla.cuenta else None,
-        "importe_estimado": centimos_a_euros(plantilla.importe_estimado_centimos),
+        "importe_estimado": f"{centimos_a_euros(plantilla.importe_estimado_centimos):.2f}",
         "dia_mes": plantilla.dia_mes,
         "activo": plantilla.activo,
         "lineas": [_serializar_linea(linea) for linea in plantilla.lineas],
     }
+
+
+def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaReparto]:
+    """Siembra la plantilla mensual del hogar con desglose multi-banco y sobres."""
+    stmt_cuentas = select(Cuenta).where(Cuenta.hogar_id == hogar_id)
+    cuentas = list(db.scalars(stmt_cuentas).all())
+    if not cuentas:
+        return []
+
+    cuentas_banco = [c for c in cuentas if c.tipo == "banco"]
+    if not cuentas_banco:
+        cuentas_banco = cuentas
+
+    cta_caixa = next(
+        (
+            c
+            for c in cuentas_banco
+            if any(
+                k in (c.nombre + " " + (c.entidad or "")).lower()
+                for k in ["la caixa", "caixa", "caixabank"]
+            )
+        ),
+        None,
+    )
+    cta_db = next(
+        (
+            c
+            for c in cuentas_banco
+            if any(
+                k in (c.nombre + " " + (c.entidad or "")).lower()
+                for k in ["deutsche", "deustche", " db"]
+            )
+        ),
+        None,
+    )
+
+    if not cta_caixa and not cta_db:
+        return []
+
+    if not cta_db:
+        cta_db = cta_caixa
+    if not cta_caixa:
+        cta_caixa = cta_db
+
+    def obtener_o_crear_bote(nombre: str, tipo: str, categoria: str | None = None) -> Bote:
+        stmt_b = select(Bote).where(Bote.hogar_id == hogar_id)
+        todos_b = list(db.scalars(stmt_b).all())
+        for b in todos_b:
+            if nombre.lower() in b.nombre.lower() or b.nombre.lower() in nombre.lower():
+                return b
+        nuevo = Bote(
+            hogar_id=hogar_id,
+            nombre=nombre,
+            tipo=tipo,
+            categoria=categoria,
+            archivado=False,
+        )
+        db.add(nuevo)
+        db.flush()
+        return nuevo
+
+    bote_hipoteca = obtener_o_crear_bote("Amortización Hipoteca", "ahorro")
+    bote_dazn = obtener_o_crear_bote("Bote DAZN", "recurrente", "suscripciones")
+    bote_seguros = obtener_o_crear_bote("Provisión Seguros e IBI", "recurrente", "impuestos")
+    bote_ahorro = obtener_o_crear_bote("Bote Ahorro Mes", "ahorro", "ahorro")
+    bote_arreglos = obtener_o_crear_bote("Bote Arreglos Pisos", "proyecto")
+    bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro")
+    bote_mes = obtener_o_crear_bote("Cash para el mes en curso", "ahorro")
+
+    lineas_datos = [
+        {
+            "bote_id": None,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Recibos y gastos Caixa",
+            "importe": "526.00",
+        },
+        {
+            "bote_id": None,
+            "cuenta_id": cta_db.id,
+            "concepto": "Recibos y gastos Deutsche Bank",
+            "importe": "548.00",
+        },
+        {
+            "bote_id": bote_dazn.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Cuota DAZN",
+            "importe": "10.00",
+        },
+        {
+            "bote_id": bote_seguros.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Provisión Seguros e IBI",
+            "importe": "176.00",
+        },
+        {
+            "bote_id": bote_mes.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Dinero del mes",
+            "importe": "400.00",
+        },
+        {
+            "bote_id": bote_ocio.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Bote ocio",
+            "importe": "100.00",
+        },
+        {
+            "bote_id": bote_hipoteca.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Cuota Hipotecas",
+            "importe": "927.00",
+        },
+        {
+            "bote_id": bote_ahorro.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Bote ahorro mes",
+            "importe": "110.00",
+        },
+        {
+            "bote_id": bote_arreglos.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Arreglos de pisos",
+            "importe": "50.00",
+        },
+    ]
+
+    plantilla = crear_plantilla(
+        db,
+        hogar_id,
+        {
+            "nombre": "Reparto Mensual Hogar",
+            "cuenta_id": cta_db.id,
+            "importe_estimado": "2847.00",
+            "dia_mes": 28,
+            "activo": True,
+            "lineas": lineas_datos,
+        },
+    )
+    return [plantilla]
 
 
 def listar_plantillas(db: Session, hogar_id: int) -> list[dict[str, Any]]:
@@ -52,7 +191,9 @@ def listar_plantillas(db: Session, hogar_id: int) -> list[dict[str, Any]]:
         .where(PlantillaReparto.hogar_id == hogar_id)
         .order_by(PlantillaReparto.id)
     )
-    plantillas = db.scalars(stmt).all()
+    plantillas = list(db.scalars(stmt).all())
+    if not plantillas:
+        plantillas = sembrar_plantillas_defecto(db, hogar_id)
     return [serializar_plantilla(p) for p in plantillas]
 
 
@@ -279,7 +420,7 @@ def ejecutar_reparto(
         "plantilla_nombre": plantilla.nombre,
         "cuenta_id": target_cuenta_id,
         "cuenta_nombre": cuenta.nombre,
-        "total_ingresado": centimos_a_euros(total_centimos),
+        "total_ingresado": f"{centimos_a_euros(total_centimos):.2f}",
         "movimientos_count": len(movimientos_creados),
         "movimiento_ids": [m.id for m in movimientos_creados],
     }

@@ -30,6 +30,22 @@ export default vista("pagos-recurrentes", async () => {
       </div>
     </div>
 
+    <!-- BANNER DE ENLACE CON REPARTO DE NÓMINA -->
+    <div class="banner-reparto-link" style="margin-bottom: 1.25rem; padding: 0.85rem 1.15rem; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.3rem;">💼</span>
+        <div>
+          <strong style="color: var(--text-main); font-size: 0.92rem;">¿Quieres pagar todos estos recibos al repartir tu nómina?</strong>
+          <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">
+            Puedes aplicar automáticamente todos los recibos fijos de Caixa y Deutsche Bank en 1 solo clic desde el Reparto de Nómina.
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn-primary mini" data-accion-fintech="abrir-nomina">
+        🚀 Abrir Reparto de Nómina
+      </button>
+    </div>
+
     <!-- BARRA DE ACCIÓN GLOBAL: APLICAR TODOS LOS RECIBOS DEL MES -->
     <div class="card-ejecutar-todos-recibos">
       <div class="cetr-info">

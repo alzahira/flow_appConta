@@ -207,15 +207,21 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
   `;
 
   try {
-    const [resCuentas, resBotes, resPlantillas] = await Promise.all([
+    const [resCuentas, resBotes, resPlantillas, resPagos] = await Promise.all([
       API.get("/cuentas"),
       API.get("/botes"),
       API.get("/plantillas-reparto"),
+      API.get("/pagos-recurrentes"),
     ]);
 
     const cuentas = resCuentas.items || [];
     const botes = resBotes.items || [];
     const plantillas = resPlantillas || [];
+    const datosRecibos = resPagos || {
+      por_cuenta: [],
+      total_general: "0.00",
+      total_general_centimos: 0,
+    };
     const hoy = new Date().toISOString().slice(0, 10);
 
     const cuentasBancos = cuentas.filter(
@@ -367,13 +373,101 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               <!-- Desglose de botes a repartir -->
               <div class="modal-reparto-box">
                 <div class="reparto-box-header">
-                  <span class="reparto-title">Desglose del Reparto por Sobres</span>
+                  <span class="reparto-title">💼 Desglose del Reparto por Sobres y Bancos</span>
                   <span class="reparto-total-sum" id="reparto-total-badge">Total: 0,00 €</span>
                 </div>
                 <div class="reparto-lines-list" id="reparto-lines-container">
                   <!-- Se rellena dinámicamente con JS -->
                 </div>
               </div>
+
+              ${
+                datosRecibos.por_cuenta && datosRecibos.por_cuenta.length > 0
+                  ? `
+              <!-- SECCIÓN INTEGRADA: RECIBOS FIJOS DEL MES -->
+              <div class="modal-reparto-box box-recibos-fijos-integrados" style="margin-top: 1rem; border: 1.5px solid var(--border-medium); border-radius: var(--radius-md, 8px); background: var(--surface-card, #ffffff); overflow: hidden;">
+                <div class="reparto-box-header" style="padding: 0.75rem 1rem; background: var(--surface-ground, #f8fafc); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="mn-chk-aplicar-recibos" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--color-primary, #6366f1);">
+                    <label for="mn-chk-aplicar-recibos" style="font-weight: 700; cursor: pointer; font-size: 0.88rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                      ⚡ Aplicar también los Recibos Fijos domiciliados
+                      <span class="badge-recibos-total" style="font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                        −<span id="mn-recibos-total-label">${datosRecibos.total_general}</span> €
+                      </span>
+                    </label>
+                  </div>
+                  <button type="button" class="btn-link mini" id="btn-toggle-detalle-recibos" style="font-size: 0.76rem; color: var(--color-primary, #6366f1); cursor: pointer; background: none; border: none; font-weight: 600; padding: 2px 4px;">
+                    Ver / Editar recibos (${datosRecibos.por_cuenta.reduce((acc, g) => acc + (g.items || []).length, 0)}) ▼
+                  </button>
+                </div>
+
+                <div id="mn-detalle-recibos-wrapper" style="display: none; padding: 0.85rem 1rem; background: var(--surface-bg, #ffffff); border-top: 1px solid var(--border-subtle);">
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0 0 0.75rem 0;">
+                    💡 Al guardar, se crearán los cargos correspondientes en cada banco. Puedes desmarcar o cambiar el importe de cualquier recibo que haya variado este mes (ej. luz).
+                  </p>
+                  <div id="mn-lista-recibos-por-banco" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    ${datosRecibos.por_cuenta
+                      .map(
+                        (g) => `
+                      <div class="mn-recibos-banco-group" style="border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.65rem 0.8rem; background: var(--surface-card, #fafafa);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px dashed var(--border-subtle); padding-bottom: 0.35rem;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--text-main);">
+                            🏛️ ${esc(g.cuenta_nombre)} ${g.cuenta_entidad ? `(${esc(g.cuenta_entidad)})` : ""}
+                          </span>
+                          <span style="font-weight: 700; font-size: 0.8rem; color: #ef4444;" class="mn-banco-subtotal" data-cuenta-id="${g.cuenta_id}">
+                            Subtotal: −${g.total} €
+                          </span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                          ${(g.items || [])
+                            .map(
+                              (pago) => `
+                            <div class="mn-pago-item-row" data-pago-id="${pago.id}" data-cuenta-id="${g.cuenta_id}" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem;">
+                              <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                                <input type="checkbox" class="mn-chk-pago" data-pago-id="${pago.id}" ${pago.activo ? "checked" : ""} style="cursor: pointer;">
+                                <span style="color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                  ${esc(pago.concepto)}
+                                </span>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 3px;">
+                                <span style="color: #ef4444; font-weight: 700;">−</span>
+                                <input type="number" step="0.01" min="0" class="mn-pago-amount" data-pago-id="${pago.id}" value="${pago.importe.replace(",", ".")}" style="width: 75px; text-align: right; padding: 2px 4px; font-size: 0.78rem; border: 1px solid var(--border-medium); border-radius: 4px; font-family: var(--font-mono);">
+                                <span style="color: var(--text-muted); font-size: 0.75rem;">€</span>
+                              </div>
+                            </div>
+                          `
+                            )
+                            .join("")}
+                        </div>
+                      </div>
+                    `
+                      )
+                      .join("")}
+                  </div>
+                </div>
+              </div>
+
+              <!-- RESUMEN NETO FINAL -->
+              <div class="modal-balance-resumen" style="margin-top: 1rem; padding: 0.85rem 1.15rem; border-radius: var(--radius-md, 8px); background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                  <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
+                    Balance del Mes (Reparto Nómina + Recibos)
+                  </div>
+                  <div style="display: flex; gap: 0.85rem; align-items: center; margin-top: 4px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.8rem;">
+                    <span style="color: #34d399;">+<span id="mn-sum-ingresos-label">0.00</span> € ingresos</span>
+                    <span style="color: #f87171;" id="mn-sum-gastos-label">−<span id="mn-sum-gastos-val">${datosRecibos.total_general}</span> € recibos</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 0.7rem; color: #94a3b8; display: block;">Neto resultante a favor:</span>
+                  <span id="mn-sum-neto-total" style="font-size: 1.25rem; font-weight: 800; color: #34d399; font-family: var(--font-mono);">
+                    +0.00 €
+                  </span>
+                </div>
+              </div>
+              `
+                  : ""
+              }
 
               <div id="modal-nomina-err" class="modal-error-box" style="display: none;"></div>
 
@@ -460,6 +554,75 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
     const totalBadge = overlay.querySelector("#reparto-total-badge");
     const selCuentaNomina = overlay.querySelector("#mn-cuenta");
 
+    function recalcularTotales() {
+      if (!containerLineas || !totalBadge) return;
+
+      // 1. Suma de ingresos a repartir
+      let sumaIngresos = 0;
+      containerLineas.querySelectorAll(".reparto-line-amount").forEach((inp) => {
+        const val = parseFloat(inp.value) || 0;
+        sumaIngresos += val;
+      });
+      totalBadge.textContent = `Total a ingresar: ${sumaIngresos.toFixed(2)} €`;
+
+      const sumIngresosLabel = overlay.querySelector("#mn-sum-ingresos-label");
+      if (sumIngresosLabel) sumIngresosLabel.textContent = sumaIngresos.toFixed(2);
+
+      // 2. Suma de recibos fijos
+      const chkMaster = overlay.querySelector("#mn-chk-aplicar-recibos");
+      const aplicarRecibos = chkMaster ? chkMaster.checked : false;
+      let sumaRecibos = 0;
+
+      overlay.querySelectorAll(".mn-recibos-banco-group").forEach((group) => {
+        let subtotalBanco = 0;
+        group.querySelectorAll(".mn-pago-item-row").forEach((row) => {
+          const chk = row.querySelector(".mn-chk-pago");
+          const inp = row.querySelector(".mn-pago-amount");
+          const val = parseFloat(inp?.value || "0") || 0;
+          if (chk && chk.checked) {
+            subtotalBanco += val;
+            if (aplicarRecibos) {
+              sumaRecibos += val;
+            }
+          }
+        });
+        const subtotalEl = group.querySelector(".mn-banco-subtotal");
+        if (subtotalEl) {
+          subtotalEl.textContent = `Subtotal: −${subtotalBanco.toFixed(2)} €`;
+        }
+      });
+
+      const totalRecibosLabel = overlay.querySelector("#mn-recibos-total-label");
+      if (totalRecibosLabel) totalRecibosLabel.textContent = sumaRecibos.toFixed(2);
+
+      const sumGastosVal = overlay.querySelector("#mn-sum-gastos-val");
+      if (sumGastosVal) sumGastosVal.textContent = sumaRecibos.toFixed(2);
+
+      const sumGastosLabel = overlay.querySelector("#mn-sum-gastos-label");
+      if (sumGastosLabel) {
+        sumGastosLabel.style.display = aplicarRecibos ? "inline" : "none";
+      }
+
+      // 3. Balance neto
+      const neto = sumaIngresos - sumaRecibos;
+      const netoLabel = overlay.querySelector("#mn-sum-neto-total");
+      if (netoLabel) {
+        const signo = neto >= 0 ? "+" : "−";
+        netoLabel.textContent = `${signo}${Math.abs(neto).toFixed(2)} €`;
+        netoLabel.style.color = neto >= 0 ? "#34d399" : "#f87171";
+      }
+
+      // 4. Texto del botón principal
+      const btnSubmit = overlay.querySelector("#btn-ejecutar-nomina");
+      if (btnSubmit) {
+        if (aplicarRecibos && sumaRecibos > 0) {
+          btnSubmit.innerHTML = `<span>🚀 Aplicar Reparto y Pagar Recibos (Neto: ${neto >= 0 ? "+" : "−"}${Math.abs(neto).toFixed(2)} €)</span>`;
+        } else {
+          btnSubmit.innerHTML = `<span>🚀 Aplicar Reparto de Nómina (+${sumaIngresos.toFixed(2)} €)</span>`;
+        }
+      }
+    }
+
     function renderizarLineasPlantilla(plantilla) {
       if (!plantilla || !containerLineas) return;
       if (selCuentaNomina && plantilla.cuenta_id) {
@@ -500,22 +663,38 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         )
         .join("");
 
-      recalcularSumaReparto();
+      recalcularTotales();
 
       containerLineas.querySelectorAll(".reparto-line-amount").forEach((inp) => {
-        inp.addEventListener("input", recalcularSumaReparto);
+        inp.addEventListener("input", recalcularTotales);
       });
     }
 
-    function recalcularSumaReparto() {
-      if (!containerLineas || !totalBadge) return;
-      let suma = 0;
-      containerLineas.querySelectorAll(".reparto-line-amount").forEach((inp) => {
-        const val = parseFloat(inp.value) || 0;
-        suma += val;
+    // Toggle de detalle de recibos
+    const btnToggleRecibos = overlay.querySelector("#btn-toggle-detalle-recibos");
+    const wrapDetalleRecibos = overlay.querySelector("#mn-detalle-recibos-wrapper");
+    if (btnToggleRecibos && wrapDetalleRecibos) {
+      btnToggleRecibos.addEventListener("click", () => {
+        const visible = wrapDetalleRecibos.style.display !== "none";
+        wrapDetalleRecibos.style.display = visible ? "none" : "block";
+        const count = overlay.querySelectorAll(".mn-chk-pago").length;
+        btnToggleRecibos.textContent = visible
+          ? `Ver / Editar recibos (${count}) ▼`
+          : "Ocultar detalle ▲";
       });
-      totalBadge.textContent = `Total a ingresar: ${suma.toFixed(2)} €`;
     }
+
+    const chkMasterRecibos = overlay.querySelector("#mn-chk-aplicar-recibos");
+    if (chkMasterRecibos) {
+      chkMasterRecibos.addEventListener("change", () => {
+        recalcularTotales();
+      });
+    }
+
+    overlay.querySelectorAll(".mn-chk-pago, .mn-pago-amount").forEach((el) => {
+      el.addEventListener("input", recalcularTotales);
+      el.addEventListener("change", recalcularTotales);
+    });
 
     if (selPlantilla) {
       selPlantilla.addEventListener("change", () => {
@@ -544,14 +723,14 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         const btnSubmit = overlay.querySelector("#btn-ejecutar-nomina");
         errBox.style.display = "none";
         btnSubmit.disabled = true;
-        btnSubmit.textContent = "Aplicando reparto...";
+        btnSubmit.textContent = "Aplicando reparto y recibos...";
 
         const plantillaId = selPlantilla.value;
         const plantillaObj = plantillas.find((p) => String(p.id) === plantillaId);
         const cuentaId = selCuentaNomina.value;
         const fecha = overlay.querySelector("#mn-fecha").value;
 
-        // Recoger líneas con los valores actuales y el banco destino elegido
+        // Recoger líneas de reparto
         const lineasPayload = [];
         containerLineas.querySelectorAll(".reparto-line-row").forEach((row) => {
           const inp = row.querySelector(".reparto-line-amount");
@@ -567,13 +746,43 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           }
         });
 
+        // Recoger recibos fijos seleccionados si el master checkbox está activo
+        const chkMaster = overlay.querySelector("#mn-chk-aplicar-recibos");
+        const aplicarRecibos = chkMaster ? chkMaster.checked : false;
+        const pagosPayload = [];
+        if (aplicarRecibos) {
+          overlay.querySelectorAll(".mn-pago-item-row").forEach((row) => {
+            const chk = row.querySelector(".mn-chk-pago");
+            const inp = row.querySelector(".mn-pago-amount");
+            if (chk && chk.checked) {
+              const val = String(inp?.value || "0").replace(",", ".").trim();
+              if (parseFloat(val) > 0) {
+                pagosPayload.push({
+                  id: Number(chk.dataset.pagoId),
+                  importe: val,
+                });
+              }
+            }
+          });
+        }
+
         try {
+          // 1. Ejecutar reparto de nómina
           await API.post(`/plantillas-reparto/${plantillaId}/ejecutar`, {
             fecha: fecha,
             cuenta_id: Number(cuentaId),
             descripcion_general: plantillaObj?.nombre || "Nómina",
             lineas: lineasPayload,
           });
+
+          // 2. Ejecutar recibos fijos si procede
+          if (aplicarRecibos && pagosPayload.length > 0) {
+            await API.post("/pagos-recurrentes/ejecutar", {
+              fecha: fecha,
+              pagos: pagosPayload,
+            });
+          }
+
           cerrarModalActivo();
           if (window.location.hash === "#/inicio" || window.location.hash === "") {
             window.dispatchEvent(new HashChangeEvent("hashchange"));
@@ -582,8 +791,9 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           }
         } catch (err) {
           btnSubmit.disabled = false;
-          btnSubmit.textContent = "🚀 Aplicar Reparto de Nómina";
-          errBox.textContent = err.message || "Error al aplicar el reparto de nómina";
+          recalcularTotales();
+          errBox.textContent =
+            err.message || "Error al aplicar el reparto de nómina y recibos";
           errBox.style.display = "block";
         }
       });
