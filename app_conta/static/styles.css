@@ -4794,4 +4794,257 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.5;
 }
 
+/* ==========================================================================
+   Recibos y Pagos Recurrentes (Domiciliaciones Fijas)
+   ========================================================================= */
+.card-ejecutar-todos-recibos {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cetr-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cetr-icon {
+  font-size: 2rem;
+  background: #fef08a;
+  color: #854d0e;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.cetr-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cetr-texts strong {
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.cetr-texts span {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.cetr-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.cetr-date-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.input-fecha-recibos {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+.grid-pagos-cuentas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.card-banco-recibos {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cbr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.35rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cbr-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cbr-bank-icon {
+  font-size: 1.6rem;
+}
+
+.cbr-bank-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.cbr-bank-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.cbr-header-total {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cbr-total-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.cbr-total-value {
+  font-size: 1.25rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.cbr-table-wrap {
+  overflow-x: auto;
+}
+
+.table-recibos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table-recibos th {
+  padding: 0.65rem 1rem;
+  background: #ffffff;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.table-recibos td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.table-recibos tr:last-child td {
+  border-bottom: none;
+}
+
+.table-recibos tr:hover td {
+  background: #fafafa;
+}
+
+.pago-concepto-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pago-concepto-text {
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.badge-mini-pago {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.pago-importe-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.input-importe-pago {
+  width: 85px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+  color: #ef4444;
+  outline: none;
+}
+
+.input-importe-pago:focus {
+  border-color: #6366f1;
+}
+
+.pago-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.cbr-footer {
+  padding: 0.95rem 1.25rem;
+  background: #f8fafc;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .card-ejecutar-todos-recibos {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cetr-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .grid-pagos-cuentas {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 

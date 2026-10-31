@@ -125,6 +125,7 @@ export function subnavCuentas(activa) {
     { id: "tarjetas", href: "#/tarjetas", label: "Tarjetas Bancarias", iconoKey: "tarjetas" },
     { id: "tarjetas-regalo", href: "#/tarjetas-regalo", label: "Tarjetas Regalo", iconoKey: "regalo" },
     { id: "gastos-tarjetas", href: "#/gastos-tarjetas", label: "Gastos Tarjetas", iconoKey: "gastos-tarjetas" },
+    { id: "pagos-recurrentes", href: "#/pagos-recurrentes", label: "Recibos Fijos", iconoKey: "prevision" },
   ];
 
   return `

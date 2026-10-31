@@ -1,5 +1,5 @@
 // Service worker: app shell offline (Principio V). Network-first para desarrollo local.
-const CACHE = "app-conta-shell-v28";
+const CACHE = "app-conta-shell-v29";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();

@@ -49,3 +49,6 @@ class Hogar(Base):
     plantillas_reparto: Mapped[list[PlantillaReparto]] = relationship(  # noqa: F821
         back_populates="hogar", cascade="all, delete-orphan"
     )
+    pagos_recurrentes: Mapped[list[PagoRecurrente]] = relationship(  # noqa: F821
+        back_populates="hogar", cascade="all, delete-orphan"
+    )
