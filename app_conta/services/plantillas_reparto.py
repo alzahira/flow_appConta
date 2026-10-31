@@ -53,9 +53,10 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
     if not cuentas:
         return []
 
-    cuentas_banco = [c for c in cuentas if c.tipo == "banco"]
+    cuentas_activas = [c for c in cuentas if not getattr(c, "archivada", False)]
+    cuentas_banco = [c for c in cuentas_activas if getattr(c, "tipo", None) == "banco"]
     if not cuentas_banco:
-        cuentas_banco = cuentas
+        cuentas_banco = cuentas_activas or list(cuentas)
 
     cta_caixa = next(
         (
@@ -114,6 +115,7 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
     bote_mes = obtener_o_crear_bote("Cash para el mes en curso", "ahorro")
 
     lineas_datos = [
+        # --- BLOQUE LA CAIXA (Total: 860 € = 580 € Alquiler Córdoba + 280 € Alquiler Cañete) ---
         {
             "bote_id": None,
             "cuenta_id": cta_caixa.id,
@@ -121,22 +123,29 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
             "importe": "526.00",
         },
         {
-            "bote_id": None,
-            "cuenta_id": cta_db.id,
-            "concepto": "Recibos y gastos Deutsche Bank",
-            "importe": "548.00",
-        },
-        {
-            "bote_id": bote_dazn.id,
-            "cuenta_id": cta_db.id,
-            "concepto": "Cuota DAZN",
-            "importe": "10.00",
-        },
-        {
             "bote_id": bote_seguros.id,
             "cuenta_id": cta_caixa.id,
             "concepto": "Provisión Seguros e IBI",
             "importe": "176.00",
+        },
+        {
+            "bote_id": bote_ahorro.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Bote ahorro mes",
+            "importe": "110.00",
+        },
+        {
+            "bote_id": bote_arreglos.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Arreglos de pisos",
+            "importe": "48.00",
+        },
+        # --- BLOQUE DEUTSCHE BANK (1.463 € = 490 € Estudio + 973 € Nómina Javier) ---
+        {
+            "bote_id": None,
+            "cuenta_id": cta_db.id,
+            "concepto": "Recibos y gastos Deutsche Bank",
+            "importe": "548.00",
         },
         {
             "bote_id": bote_mes.id,
@@ -151,22 +160,16 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
             "importe": "100.00",
         },
         {
+            "bote_id": bote_dazn.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Cuota DAZN",
+            "importe": "10.00",
+        },
+        {
             "bote_id": bote_hipoteca.id,
             "cuenta_id": cta_db.id,
-            "concepto": "Cuota Hipotecas",
-            "importe": "927.00",
-        },
-        {
-            "bote_id": bote_ahorro.id,
-            "cuenta_id": cta_caixa.id,
-            "concepto": "Bote ahorro mes",
-            "importe": "110.00",
-        },
-        {
-            "bote_id": bote_arreglos.id,
-            "cuenta_id": cta_caixa.id,
-            "concepto": "Arreglos de pisos",
-            "importe": "50.00",
+            "concepto": "Amortización Hipoteca (Aporte nómina)",
+            "importe": "405.00",
         },
     ]
 
@@ -176,7 +179,7 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
         {
             "nombre": "Reparto Mensual Hogar",
             "cuenta_id": cta_db.id,
-            "importe_estimado": "2847.00",
+            "importe_estimado": "2323.00",
             "dia_mes": 28,
             "activo": True,
             "lineas": lineas_datos,

@@ -61,9 +61,10 @@ def sembrar_pagos_defecto(db: Session, hogar_id: int) -> list[PagoRecurrente]:
         return list(existentes)
 
     cuentas = db.scalars(select(Cuenta).where(Cuenta.hogar_id == hogar_id)).all()
-    cuentas_banco = [c for c in cuentas if getattr(c, "tipo", None) == "banco"]
+    cuentas_activas = [c for c in cuentas if not getattr(c, "archivada", False)]
+    cuentas_banco = [c for c in cuentas_activas if getattr(c, "tipo", None) == "banco"]
     if not cuentas_banco:
-        cuentas_banco = cuentas
+        cuentas_banco = cuentas_activas or list(cuentas)
 
     cta_caixa = next(
         (c for c in cuentas_banco if "caixa" in (c.nombre + " " + (c.entidad or "")).lower()), None
