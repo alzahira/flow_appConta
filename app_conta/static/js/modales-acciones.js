@@ -630,13 +630,18 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
       }
 
       containerLineas.innerHTML = (plantilla.lineas || [])
-        .map(
-          (l, i) => `
-        <div class="reparto-line-row" data-index="${i}">
+        .map((l, i) => {
+          const esNegativo = parseFloat(l.importe) < 0;
+          return `
+        <div class="reparto-line-row ${esNegativo ? "fila-descuento" : ""}" data-index="${i}" style="${esNegativo ? "background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3);" : ""}">
           <div class="reparto-line-info">
-            <span class="reparto-line-name">${esc(l.concepto || "Sin concepto")}</span>
+            <span class="reparto-line-name" style="${esNegativo ? "color: #ef4444; font-weight: 700;" : ""}">
+              ${esNegativo ? "📤 " : ""}${esc(l.concepto || "Sin concepto")}
+            </span>
             <div style="display: flex; gap: 0.65rem; align-items: center; margin-top: 5px; flex-wrap: wrap;">
-              <span class="reparto-line-bote">${l.bote_nombre ? `📦 ${esc(l.bote_nombre)}` : "🏦 En cuenta libre"}</span>
+              <span class="reparto-line-bote" style="${esNegativo ? "color: #ef4444; font-weight: 600;" : ""}">
+                ${l.bote_nombre ? (esNegativo ? `📤 Descuenta del sobre: ${esc(l.bote_nombre)}` : `📦 ${esc(l.bote_nombre)}`) : "🏦 En cuenta libre"}
+              </span>
               <label style="font-size: 0.74rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
                 <span>🏛️ Destino:</span>
                 <select class="reparto-line-bank-select" style="font-size: 0.78rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--surface-card); color: var(--text-main); font-weight: 500;">
@@ -655,12 +660,12 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
             </div>
           </div>
           <div class="reparto-line-input-wrap">
-            <input type="number" step="0.01" min="0" class="reparto-line-amount" value="${l.importe}" data-bote-id="${l.bote_id || ""}" data-concepto="${esc(l.concepto || "")}">
-            <span class="reparto-currency">€</span>
+            <input type="number" step="0.01" class="reparto-line-amount" value="${l.importe}" data-bote-id="${l.bote_id || ""}" data-concepto="${esc(l.concepto || "")}" style="${esNegativo ? "color: #ef4444; font-weight: 800;" : ""}">
+            <span class="reparto-currency" style="${esNegativo ? "color: #ef4444; font-weight: 700;" : ""}">€</span>
           </div>
         </div>
-      `
-        )
+      `;
+        })
         .join("");
 
       recalcularTotales();
@@ -736,7 +741,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           const inp = row.querySelector(".reparto-line-amount");
           const selBank = row.querySelector(".reparto-line-bank-select");
           const val = String(inp?.value || "0").replace(",", ".").trim();
-          if (parseFloat(val) > 0) {
+          if (parseFloat(val) !== 0) {
             lineasPayload.push({
               bote_id: inp.dataset.boteId ? Number(inp.dataset.boteId) : null,
               cuenta_id: selBank?.value ? Number(selBank.value) : null,
@@ -1057,7 +1062,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
         <div class="fcr-col fcr-importe">
           <label class="fcr-mobile-label">Importe</label>
           <div style="display: flex; align-items: center; gap: 4px;">
-            <input type="number" step="0.01" min="0" class="fcr-input-importe" placeholder="0.00" value="${importeVal}">
+            <input type="number" step="0.01" class="fcr-input-importe" placeholder="0.00" value="${importeVal}">
             <span>€</span>
           </div>
         </div>

@@ -113,6 +113,7 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
     bote_arreglos = obtener_o_crear_bote("Bote Arreglos Pisos", "proyecto")
     bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro")
     bote_mes = obtener_o_crear_bote("Cash para el mes en curso", "ahorro")
+    bote_paro = obtener_o_crear_bote("Guardado Resto Paro", "ahorro")
 
     lineas_datos = [
         # --- BLOQUE LA CAIXA (Total: 860 € = 580 € Alquiler Córdoba + 280 € Alquiler Cañete) ---
@@ -168,8 +169,14 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
         {
             "bote_id": bote_hipoteca.id,
             "cuenta_id": cta_db.id,
-            "concepto": "Amortización Hipoteca (Aporte nómina)",
-            "importe": "405.00",
+            "concepto": "Bote Hipotecas",
+            "importe": "927.00",
+        },
+        {
+            "bote_id": bote_paro.id,
+            "cuenta_id": cta_db.id,
+            "concepto": "Aporte desde Bote de Paro para Hipotecas",
+            "importe": "-522.00",
         },
     ]
 
@@ -385,7 +392,7 @@ def ejecutar_reparto(
     for ld in lineas_a_ejecutar:
         importe_str = str(ld.get("importe", "0.00")).replace(",", ".").strip()
         centimos = euros_a_centimos(importe_str)
-        if centimos <= 0:
+        if centimos == 0:
             continue
 
         concepto = str(ld.get("concepto") or "").strip()

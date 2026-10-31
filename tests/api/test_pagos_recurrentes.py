@@ -162,6 +162,15 @@ def test_flujo_conjunto_nomina_y_pagos_recurrentes(client):
     r_db_final = client.get(f"/api/v1/cuentas/{db_id}")
     assert r_db_final.json()["saldo"] == "1115.00"
 
+    # Comprobar botes asignados:
+    # Amortización Hipoteca recibe +927.00 €
+    # Guardado Resto Paro descuenta -522.00 €
+    r_botes = client.get("/api/v1/botes")
+    assert r_botes.status_code == 200
+    botes_map = {b["nombre"]: b["saldo"] for b in r_botes.json()["items"]}
+    assert botes_map.get("Amortización Hipoteca") == "927.00"
+    assert botes_map.get("Guardado Resto Paro") == "-522.00"
+
     # Ganancia neta total del mes = (434 - 100) + (1115 - 200) = 334 + 915 = 1249.00 €
     ganancia_neta = (
         float(r_cx_final.json()["saldo"]) - 100.0
