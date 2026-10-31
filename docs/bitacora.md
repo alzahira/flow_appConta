@@ -608,6 +608,74 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Cobertura global del 90%.
   - Ruff check y ruff format al 100% limpios.
 
+### 12. Módulo de Copias de Seguridad, Respaldo JSON y Vaciado Seguro (2026-10-30)
+
+- **Propósito y Reglas de Negocio**:
+  - Garantizar la soberanía total y seguridad de los datos financieros del usuario.
+  - Capacidad de exportar toda la base de datos a un archivo JSON autónomo y fechado con un solo clic.
+  - Posibilidad de vaciar la base de datos de pruebas o restaurar instantáneamente desde un backup previo con validación de integridad referencial.
+- **Backend & Base de Datos**:
+  - Servicio `app_conta/services/backup.py` que serializa/deserializa todas las tablas relacionales respetando dependencias foráneas (`Hogar`, `Cuenta`, `Categoria`, `Bote`, `Movimiento`, `Prestamo`, `Deuda`, `Inversion`, `GastoRecurrente`, `PrevisionGastosConfig`, `PlantillaReparto`, `PagoRecurrente`).
+  - Endpoints en `app_conta/api/backup.py`: `GET /api/v1/backup/exportar`, `POST /api/v1/backup/restaurar` y `POST /api/v1/backup/vaciar`.
+- **Frontend PWA**:
+  - Sección integrada en el menú flotante `⋯ Más` (`#/backup`) con botones de acción rápida para descargar copia de seguridad, subir archivo JSON de restauración y diálogo de confirmación para vaciado de datos.
+
+### 13. Modales de Acción Rápida y Motor de Plantillas de Reparto de Nómina (2026-10-30)
+
+- **Propósito y Automatización del Flujo Mensual**:
+  - Sustituir la distribución manual de nóminas e ingresos periódicos por un motor de plantillas configurable.
+  - Automatizar el reparto de la nómina y rentas de alquiler hacia cuentas bancarias y sobres/botes de ahorro en un solo paso.
+- **Backend & Modelos**:
+  - Modelos relacionales `PlantillaReparto` y `PlantillaRepartoLinea` en `app_conta/models/plantilla_reparto.py`.
+  - Migración Alembic `c3d4e5f6a7b8_plantillas_reparto.py` aplicada a la base de datos.
+  - Servicio `app_conta/services/plantillas_reparto.py` con soporte para:
+    - Ejecución atómica de repartos (`ejecutar_reparto`), generando movimientos etiquetados y conciliados.
+    - Soporte multi-banco en una única plantilla (líneas asignadas a Caixa o Deutsche Bank independientemente).
+    - Gestión de líneas con destino a cuenta libre (`bote_id=None`) o asignadas a sobres específicos.
+  - Router `/api/v1/plantillas-reparto` con CRUD completo y ejecución directa.
+- **Frontend PWA**:
+  - Botones destacados en cabecera y barra flotante `[ ➕ Ingreso ]` y `[ ➖ Gasto ]` (`modales-acciones.js`).
+  - Modal de ingreso con selector de pestaña: «Ingreso Libre» o «Reparto de Nómina».
+  - Previsualización en vivo de totales por banco y asignaciones a sobres con selector de destino y recálculo automático.
+
+### 14. Módulo de Pagos Recurrentes y Recibos Bancarios Domiciliados (2026-10-30)
+
+- **Propósito y Separación de Recibos Fijos**:
+  - Separar los recibos fijos domiciliados que el banco cobra automáticamente (hipotecas mensuales, suministros de luz, telecomunicaciones, seguros, comunidades de propietarios) de los gastos corrientes diarios.
+  - Evitar confusiones entre el dinero provisionado en botes y los cobros domiciliados directos.
+- **Backend & Modelos**:
+  - Modelo relacional `PagoRecurrente` en `app_conta/models/pago_recurrente.py`.
+  - Migración Alembic `e5f6a7b8c9d0_crear_tabla_pagos_recurrentes.py` aplicada a `conta.db`.
+  - Servicio `app_conta/services/pagos_recurrentes.py`:
+    - Siembra canónica de los 12 recibos domiciliados del hogar:
+      - **La Caixa (526,00 €)**: Hipoteca Estudio (140 €), Hipoteca Córdoba (153 €), Seguro Hogar Córdoba (28 €), Cruz Roja (3 €), Comunidad Los Verdiales (55 €), Comunidad Córdoba (20 €), Luz piso (65 €), Finetwork (19 €), Vodafone (43 €).
+      - **Deutsche Bank (548,00 €)**: Hipoteca Piso (483 €), Seguro Hogar Cañete (13 €), Comunidad Piso (52 €).
+    - Endpoint `POST /api/v1/pagos-recurrentes/ejecutar` para ejecutar todos los recibos fijos del mes generando sus 12 movimientos bancarios correspondientes de salida.
+- **Frontend PWA**:
+  - Vista dedicada `views/pagos-recurrentes.js` accesible desde el menú `⋯ Más` (`#/pagos-recurrentes`).
+  - Desglose visual por entidad bancaria con totales agregados y botón `⚡ Ejecutar Pagos del Mes`.
+  - Integración en el modal de reparto de nómina para ejecutar simultáneamente el reparto y los recibos en una sola acción coordinada.
+
+### 15. Conciliación Bancaria Exacta y Deducciones Internas en Reparto (2026-10-31)
+
+- **Ajuste Fino de la Lógica Contable y Aportación de Botes**:
+  - El usuario especificó la regla de negocio para la amortización de capital de hipotecas:
+    - El sobre `Amortización Hipoteca` es una reserva mensual acumulativa para amortizaciones futuras de capital (independiente de las cuotas domiciliadas de las hipotecas).
+    - Debe recibir **+927,00 €** cada mes.
+    - Se financia combinando **+405,00 €** procedentes del remanente de nómina con **+522,00 €** traspasados desde el bote de reserva `Guardado Resto Paro`.
+- **Implementación de Importes Negativos / Deducciones en Repartos**:
+  - **Backend**: En `plantillas_reparto.py`, se habilitó el procesamiento de líneas con signo negativo (`centimos != 0`), permitiendo deducciones que reducen un bote previo (`Guardado Resto Paro`: −522,00 €) y aumentan la liquidez de reparto hacia el bote de hipotecas (+927,00 €) dentro de Deutsche Bank, manteniendo un flujo de caja neto bancario idéntico a la entrada real de efectivo (+1.463,00 € en DB).
+  - **Frontend**: Modificación de inputs en `modales-acciones.js` para admitir valores negativos, visualización semántica en rojo (`#ef4444`) con etiqueta explícita `📤 Descuenta del sobre: Guardado Resto Paro`.
+  - **Filtro de Cuentas Activas**: Corrección en los sembrados por defecto para asegurar la asignación a la cuenta activa de Caixa (#25) y Deutsche Bank (#19), ignorando cuentas archivadas.
+- **Cuadre Matemático Exacto Verificado**:
+  - **La Caixa (#25)**: Saldo inicial 2.880,50 € + 860,00 € (Alquileres 580 € + 280 €) − 526,00 € (9 recibos) = **3.214,50 €** ✅ *(Cuadre exacto con calculadora Caixa)*.
+  - **Deutsche Bank (#19)**: Saldo inicial 4.396,75 € + 1.463,00 € (Alquiler Estudio 490 € + Nómina 973 €) − 548,00 € (3 recibos) = **5.311,75 €** ✅ *(Cuadre exacto con calculadora DB)*.
+- **Cache y Calidad**:
+  - Cache de Service Worker y assets actualizada a `app-conta-shell-v31`.
+  - **158 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global.
+  - Ruff linter 100% limpio en `app_conta` y `tests`.
+
+
 
 
 

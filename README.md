@@ -6,21 +6,26 @@ Aplicación web local-first para la gestión contable doméstica basada en el si
 
 ## Estructura de la Aplicación
 
-La navegación principal organiza el flujo financiero en **5 secciones maestras sin saturación ni barras de desplazamiento**:
+La navegación principal organiza el flujo financiero en **5 secciones maestras sin saturación ni barras de desplazamiento**, complementadas con botones de acción rápida `[ ➕ Ingreso ]` y `[ ➖ Gasto ]` en la cabecera:
 
 1. **📊 Resumen (`#/inicio`)**: Panel de control con el **Dinero disponible** (suma total de efectivo en caja + cuentas bancarias), desglose explícito de **Dinero en caja** (estrictamente dinero efectivo físico) y **Dinero en bancos** (cuentas corrientes y depósitos), indicador vivo de cuadre contable (🟢 Cuadrado / 🔴 Revisar), métricas globales de botes y tabla de conciliación analítica.
 2. **🏦 Cuentas y Tarjetas (`#/cuentas`)**: Hub financiero integral que agrupa todas tus cuentas y plásticos mediante una barra de píldoras secundaria:
    - **Cuentas y Depósitos**: Visión agrupada por entidad (**Caixa**, **Deutsche Bank**, **BBVA**, **Revolut** y **Otros**).
+   - **Inversiones**: Patrimonio neto invertido (fondos indexados, acciones/ETFs, renta fija, pensiones, cripto) con plusvalías y ROI % ponderado.
    - **Tarjetas Bancarias**: Tarjetas de crédito y débito bancarias con control de deuda o saldo disponible.
    - **Tarjetas Regalo**: Dinero en tarjetas prepago y regalo (**Amazon**, **El Corte Inglés**, **Carrefour**, etc.).
    - **Gastos Tarjetas**: Registro detallado de compras por tarjeta.
 3. **🎯 Ahorro y Botes (`#/ahorro`)**: Centro de planificación y previsión del hogar:
    - **Fondos de Ahorro e Hipotecas**: Reserva para pagar hipotecas a futuro, amortizaciones de préstamo y colchón de seguridad, con extracto individual de movimientos.
-   - **Botes y Gastos Periódicos**: Sobres virtuales con extracto detallado de aportaciones y gastos separados.
+   - **Sobres y Botes**: Sobres virtuales con extracto detallado de aportaciones y gastos separados.
+   - **Previsión Gastos Anuales**: Planificación homogénea en cuotas fijas mensuales de tributos, seguros y recibos periódicos del hogar (IBIs, basuras, seguros de hogar y vehículos) con control de meses provistos y facturas reales cobradas.
    - **Dinero que me deben**: Control de préstamos a terceros, dinero adelantado, estados de cobro y registro de devoluciones automáticas en cuenta.
 4. **📝 Movimientos (`#/movimientos`)**: Historial general cronológico de flujos de caja con chips de botes/categorías y opción de borrado.
 5. **⋯ Más**: Menú desplegable flotante con las herramientas avanzadas:
-   - **Categorías**: Clasificación analítica de gastos e ingresos con códigos de color.
+   - **Pagos Recurrentes / Domiciliaciones**: Gestión de los 12 recibos domiciliados mensuales (hipotecas, comunidades, suministros) organizados por banco (Caixa: 526 € / Deutsche Bank: 548 €) con ejecución en un solo clic.
+   - **Reparto de Nómina**: Motor de plantillas multi-banco para automatizar la distribución de nóminas y alquileres hacia cuentas y sobres (incluyendo deducciones internas como aporte desde Paro a Hipotecas).
+   - **Categorías**: Clasificación analítica de gastos e ingresos con códigos de color e iconos.
+   - **Copia de Seguridad**: Exportación/importación completa en formato JSON y vaciado seguro de la base de datos.
    - **Importar Excel**: Conciliación e importación de extractos bancarios.
 
 ---
@@ -62,8 +67,8 @@ uv run pytest
 uv run ruff check .
 ```
 
-* Estado actual: **127 tests en verde** (0 fallos).
-* Cobertura de tests: **93% global**.
+* Estado actual: **158 tests en verde** (0 fallos).
+* Cobertura de tests: **88% global** en todo el backend y lógica contable.
 
 
 ---
