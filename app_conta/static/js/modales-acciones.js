@@ -388,7 +388,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               <div class="modal-reparto-box box-recibos-fijos-integrados" style="margin-top: 1rem; border: 1.5px solid var(--border-medium); border-radius: var(--radius-md, 8px); background: var(--surface-card, #ffffff); overflow: hidden;">
                 <div class="reparto-box-header" style="padding: 0.75rem 1rem; background: var(--surface-ground, #f8fafc); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="mn-chk-aplicar-recibos" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--color-primary, #6366f1);">
+                    <input type="checkbox" id="mn-chk-aplicar-recibos" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--color-primary, #6366f1);">
                     <label for="mn-chk-aplicar-recibos" style="font-weight: 700; cursor: pointer; font-size: 0.88rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
                       ⚡ Aplicar también los Recibos Fijos domiciliados
                       <span class="badge-recibos-total" style="font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; background: rgba(239, 68, 68, 0.12); color: #ef4444;">
@@ -569,8 +569,10 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
       if (sumIngresosLabel) sumIngresosLabel.textContent = sumaIngresos.toFixed(2);
 
       // 2. Suma de recibos fijos
+      const boxRecibos = overlay.querySelector(".box-recibos-fijos-integrados");
+      const boxVisible = boxRecibos && boxRecibos.style.display !== "none";
       const chkMaster = overlay.querySelector("#mn-chk-aplicar-recibos");
-      const aplicarRecibos = chkMaster ? chkMaster.checked : false;
+      const aplicarRecibos = boxVisible && chkMaster ? chkMaster.checked : false;
       let sumaRecibos = 0;
 
       overlay.querySelectorAll(".mn-recibos-banco-group").forEach((group) => {
@@ -668,6 +670,19 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         })
         .join("");
 
+      const boxRecibos = overlay.querySelector(".box-recibos-fijos-integrados");
+      const esNominaMJ = (plantilla.nombre || "").toLowerCase().includes("mj");
+      if (boxRecibos) {
+        const chkMaster = overlay.querySelector("#mn-chk-aplicar-recibos");
+        if (esNominaMJ) {
+          boxRecibos.style.display = "none";
+          if (chkMaster) chkMaster.checked = false;
+        } else {
+          boxRecibos.style.display = "block";
+          if (chkMaster) chkMaster.checked = false;
+        }
+      }
+
       recalcularTotales();
 
       containerLineas.querySelectorAll(".reparto-line-amount").forEach((inp) => {
@@ -751,9 +766,11 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           }
         });
 
-        // Recoger recibos fijos seleccionados si el master checkbox está activo
+        // Recoger recibos fijos seleccionados si el master checkbox está activo y visible
+        const boxRecibos = overlay.querySelector(".box-recibos-fijos-integrados");
+        const boxVisible = boxRecibos && boxRecibos.style.display !== "none";
         const chkMaster = overlay.querySelector("#mn-chk-aplicar-recibos");
-        const aplicarRecibos = chkMaster ? chkMaster.checked : false;
+        const aplicarRecibos = boxVisible && chkMaster ? chkMaster.checked : false;
         const pagosPayload = [];
         if (aplicarRecibos) {
           overlay.querySelectorAll(".mn-pago-item-row").forEach((row) => {

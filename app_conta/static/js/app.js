@@ -19,7 +19,7 @@ import "./views/categorias.js?v=33";
 import "./views/importar.js?v=33";
 import "./views/copia-seguridad.js?v=33";
 import "./views/pagos-recurrentes.js?v=33";
-import { iniciarModalesAcciones } from "./modales-acciones.js?v=33";
+import { iniciarModalesAcciones } from "./modales-acciones.js?v=34";
 
 async function navegar() {
   const hash = location.hash.replace("#/", "") || "inicio";
