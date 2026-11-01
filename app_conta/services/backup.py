@@ -111,11 +111,14 @@ def resetear_saldos_a_cero(db: Session, guardar_copia_seguridad: bool = True) ->
     - Hace copia de seguridad preventiva automática en el servidor.
     - Elimina todos los movimientos y auditoría de movimientos (saldo derivado de botes = 0.00 €).
     - Pone a 0 el saldo_inicial_centimos de todas las cuentas (saldo derivado de cuentas = 0.00 €).
-    - Pone a 0 el pagado_real_centimos de los gastos recurrentes (previsión).
+    - Pone a 0 meses_pagados en la previsión anual y pagado_real_centimos en gastos recurrentes.
     - Pone a 0 importes de inversiones si las hay.
+    - Pone a 0 capital pendiente de préstamos (100% amortizado para pruebas).
+    - Pone a 0 deudas (dinero que me deben) marcándolas como saldadas.
+    - Limpia la fecha de último cobro en recibos fijos recurrentes.
     - Limpia las huellas de importaciones para poder re-importar en limpio.
     - CONSERVA intactos: todos los botes, todas las cuentas, todas las categorías,
-      todas las plantillas de reparto y todos los pagos recurrentes.
+      todas las plantillas de reparto, todos los préstamos y todos los recibos fijos.
     """
     if guardar_copia_seguridad:
         exportar_datos_completos(db)
@@ -128,19 +131,43 @@ def resetear_saldos_a_cero(db: Session, guardar_copia_seguridad: bool = True) ->
     # 2. Poner saldo inicial a 0 en todas las cuentas (las cuentas quedan con saldo 0.00 €)
     db.execute(text("UPDATE cuentas SET saldo_inicial_centimos = 0;"))
 
-    # 3. Poner a 0 pagado_real en gastos recurrentes
+    # 3. Previsión de gastos: resetear meses pagados y pagos reales de recibos
     try:
+        db.execute(text("UPDATE prevision_gastos_config SET meses_pagados = 0;"))
         db.execute(text("UPDATE gastos_recurrentes SET pagado_real_centimos = 0;"))
     except Exception:
         pass
 
-    # 4. Poner a 0 capital en inversiones si existen
+    # 4. Inversiones: capital aportado y valor actual a 0
     try:
         db.execute(
             text(
                 "UPDATE inversiones SET capital_aportado_centimos = 0, valor_actual_centimos = 0;"
             )
         )
+    except Exception:
+        pass
+
+    # 5. Préstamos: capital pendiente a 0 (cuadrado)
+    try:
+        db.execute(text("UPDATE prestamos SET importe_pendiente_centimos = 0;"))
+    except Exception:
+        pass
+
+    # 6. Deudas (dinero que me deben): importe y pendiente a 0 (saldado)
+    try:
+        db.execute(
+            text(
+                "UPDATE deudas SET importe_inicial_centimos = 0, "
+                "importe_cobrado_centimos = 0, estado = 'saldado';"
+            )
+        )
+    except Exception:
+        pass
+
+    # 7. Recibos y pagos recurrentes fijos: reiniciar último pago
+    try:
+        db.execute(text("UPDATE pagos_recurrentes SET ultimo_pago = NULL;"))
     except Exception:
         pass
 

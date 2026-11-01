@@ -25,10 +25,11 @@ function clasificarBanco(cuenta) {
 
 function badgeEstado(estado, texto = null) {
   const esCuadrado = estado === "cuadrado";
+  const contenido = texto || (esCuadrado ? "Contabilidad al día" : "Diferencia pendiente");
   return `
     <div class="status-pill ${esCuadrado ? "ok" : "alerta"}">
       <span class="status-dot"></span>
-      <span class="status-text">${esc(texto || (esCuadrado ? "Contabilidad al día" : "Diferencia pendiente"))}</span>
+      <span class="status-text">${contenido}</span>
     </div>
   `;
 }

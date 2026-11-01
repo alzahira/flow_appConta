@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=35" />
+  <link rel="stylesheet" href="/static/styles.css?v=36" />
 </head>
 <body>
   <header class="app-header">
@@ -38,11 +38,11 @@
 
   <main id="vista" class="app-content"></main>
 
-  <script src="/static/js/api.js?v=35"></script>
-  <script type="module" src="/static/js/app.js?v=35"></script>
+  <script src="/static/js/api.js?v=36"></script>
+  <script type="module" src="/static/js/app.js?v=36"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=35").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=36").then((reg) => {
         reg.update();
       });
       let refreshing = false;

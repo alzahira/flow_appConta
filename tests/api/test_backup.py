@@ -143,4 +143,14 @@ def test_poner_a_cero_conserva_botes_y_cuentas(client):
     # 9. No quedan movimientos vivos
     assert len(client.get("/api/v1/movimientos").json()["items"]) == 0
 
+    # 10. La conciliación queda a 0.00 € y cuadrada
+    conc = client.get("/api/v1/conciliacion").json()
+    assert conc["saldo_total_cuentas"] == "0.00"
+    assert conc["saldo_total_botes"] == "0.00"
+    assert conc["total_prevision_formula"] == "0.00"
+    assert conc["total_me_deben_formula"] == "0.00"
+    assert conc["total_prestamos_formula"] == "0.00"
+    assert conc["diferencia_formula"] == "0.00"
+    assert conc["estado_formula"] == "cuadrado"
+
 
