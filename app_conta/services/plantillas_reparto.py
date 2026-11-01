@@ -192,7 +192,108 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
             "lineas": lineas_datos,
         },
     )
-    return [plantilla]
+
+    plantilla_mj = sembrar_plantilla_nomina_mj(db, hogar_id)
+    res = [plantilla]
+    if plantilla_mj:
+        res.append(plantilla_mj)
+    return res
+
+
+def sembrar_plantilla_nomina_mj(db: Session, hogar_id: int) -> PlantillaReparto | None:
+    """Siembra la plantilla 'Nómina MJ' (731 € en Caixa) con sus 6 destinos exactos."""
+    stmt_c = select(Cuenta).where(Cuenta.hogar_id == hogar_id)
+    cuentas = list(db.scalars(stmt_c).all())
+    cuentas_activas = [c for c in cuentas if not getattr(c, "archivada", False)]
+
+    cta_caixa = next(
+        (
+            c
+            for c in cuentas_activas
+            if "caixa" in c.nombre.lower() or "caixa" in (c.entidad or "").lower()
+        ),
+        None,
+    )
+    if not cta_caixa and cuentas_activas:
+        cta_caixa = cuentas_activas[0]
+    if not cta_caixa:
+        return None
+
+    def obtener_o_crear_bote(nombre: str, tipo: str, categoria: str | None = None) -> Bote:
+        stmt_b = select(Bote).where(Bote.hogar_id == hogar_id)
+        todos_b = list(db.scalars(stmt_b).all())
+        for b in todos_b:
+            if nombre.lower() in b.nombre.lower() or b.nombre.lower() in nombre.lower():
+                return b
+        nuevo = Bote(
+            hogar_id=hogar_id,
+            nombre=nombre,
+            tipo=tipo,
+            categoria=categoria,
+            archivado=False,
+        )
+        db.add(nuevo)
+        db.flush()
+        return nuevo
+
+    bote_gasolina = obtener_o_crear_bote("Gasolina mes", "ahorro", "gasolina")
+    bote_irpf = obtener_o_crear_bote("Bote IRPF", "ajeno", "reserva")
+    bote_coche = obtener_o_crear_bote("Préstamo Coche Hyundai", "ahorro", "personal")
+    bote_paro = obtener_o_crear_bote("Guardado Resto Paro", "ahorro", "reserva")
+    bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro", "ocio")
+    bote_mejoras = obtener_o_crear_bote("Mejoras del Hogar", "ahorro", "mantenimiento")
+
+    lineas_datos_mj = [
+        {
+            "bote_id": bote_gasolina.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Gasolina mes",
+            "importe": "40.00",
+        },
+        {
+            "bote_id": bote_irpf.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Provisión IRPF (4%)",
+            "importe": "27.64",
+        },
+        {
+            "bote_id": bote_coche.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Préstamo Coche (30%)",
+            "importe": "199.01",
+        },
+        {
+            "bote_id": bote_paro.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Bote del Paro (30%)",
+            "importe": "199.01",
+        },
+        {
+            "bote_id": bote_ocio.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Bote de Ocio (20%)",
+            "importe": "132.67",
+        },
+        {
+            "bote_id": bote_mejoras.id,
+            "cuenta_id": cta_caixa.id,
+            "concepto": "Mejoras de Casa (20%)",
+            "importe": "132.67",
+        },
+    ]
+
+    return crear_plantilla(
+        db,
+        hogar_id,
+        {
+            "nombre": "Nómina MJ",
+            "cuenta_id": cta_caixa.id,
+            "importe_estimado": "731.00",
+            "dia_mes": 28,
+            "activo": True,
+            "lineas": lineas_datos_mj,
+        },
+    )
 
 
 def listar_plantillas(db: Session, hogar_id: int) -> list[dict[str, Any]]:
@@ -204,6 +305,12 @@ def listar_plantillas(db: Session, hogar_id: int) -> list[dict[str, Any]]:
     plantillas = list(db.scalars(stmt).all())
     if not plantillas:
         plantillas = sembrar_plantillas_defecto(db, hogar_id)
+    else:
+        nombres = {p.nombre.lower() for p in plantillas}
+        if "nómina mj" not in nombres and "nomina mj" not in nombres:
+            p_mj = sembrar_plantilla_nomina_mj(db, hogar_id)
+            if p_mj:
+                plantillas.append(p_mj)
     return [serializar_plantilla(p) for p in plantillas]
 
 

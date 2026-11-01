@@ -78,6 +78,10 @@ def _aislar_bd(_migrado, db_module) -> Iterator[None]:
         for tabla in (
             "auditoria_movimientos",
             "movimientos",
+            "plantillas_reparto_lineas",
+            "plantillas_reparto",
+            "pagos_recurrentes",
+            "prestamos",
             "importaciones",
             "inversiones",
             "gastos_recurrentes",
