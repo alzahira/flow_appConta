@@ -1,5 +1,5 @@
 // Modales de Acciones Rápidas (+ Ingreso, − Gasto y Reparto de Nómina)
-import { esc, importe } from "./vistas.js?v=33";
+import { esc, importe } from "./vistas.js";
 
 let modalesInstalados = false;
 

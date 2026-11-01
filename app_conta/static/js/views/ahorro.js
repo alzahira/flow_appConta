@@ -1,6 +1,6 @@
 // Vista de Ahorro: Previsión futura, amortización de hipotecas y fondos de reserva con extracto individual
-import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js?v=33";
-import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js?v=33";
+import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
 let ahorroSeleccionadoId = null;
 

@@ -1,7 +1,7 @@
 // Vista de inicio: Dashboard de Control Financiero y Conciliación ("Disponible Real")
-import { esc, importe, vista, icono, fechaCorta } from "../vistas.js?v=33";
-import { esTarjetaRegalo } from "./tarjetas-regalo.js?v=33";
-import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js?v=33";
+import { esc, importe, vista, icono, fechaCorta } from "../vistas.js";
+import { esTarjetaRegalo } from "./tarjetas-regalo.js";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
 const BANCOS_CONFIG = [
   { id: "caixa", nombre: "CaixaBank", iconoKey: "caixa", color: "#0072ce" },
