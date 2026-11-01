@@ -1,5 +1,6 @@
 // Vista de Ahorro: Previsión futura, amortización de hipotecas y fondos de reserva con extracto individual
 import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
 let ahorroSeleccionadoId = null;
 
@@ -233,46 +234,8 @@ async function renderDetalleFondoAhorro(fondoId, cuentas) {
         </div>
       `
           : `
-        <div class="card-table-wrap">
-          <table class="table-fintech">
-            <thead>
-              <tr>
-                <th style="width: 130px">Fecha</th>
-                <th>Concepto</th>
-                <th class="num" style="width: 140px">Importe</th>
-                <th style="width: 44px"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${movs
-                .map((m) => {
-                  const esGasto = Number(m.importe) < 0;
-                  return `
-                  <tr class="tx-row">
-                    <td class="tx-date">
-                      <span class="date-badge">${fechaCorta(m.fecha)}</span>
-                    </td>
-                    <td class="tx-main">
-                      <div class="tx-concept">
-                        <span class="tx-direction-icon ${esGasto ? "out" : "in"}">
-                          ${esGasto ? "&darr;" : "&uarr;"}
-                        </span>
-                        <span class="tx-desc">${esc(m.descripcion)}</span>
-                      </div>
-                    </td>
-                    <td class="num tx-amount">
-                      ${importe(m.importe)}
-                    </td>
-                    <td class="tx-actions">
-                      <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" title="Eliminar este movimiento">
-                        ${icono("borrar")}
-                      </button>
-                    </td>
-                  </tr>`;
-                })
-                .join("")}
-            </tbody>
-          </table>
+        <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          ${movs.map(pintarFilaMovimiento).join("\n")}
         </div>
       `
       }
@@ -285,6 +248,8 @@ export default vista("ahorro", async () => {
     API.get("/botes"),
     API.get("/cuentas"),
   ]);
+
+  setGlobalCaches({ cuentas: cuentasData.items, botes: data.items });
   
   const fondosAhorro = data.items.filter(
     (b) => b.nombre.toLowerCase().includes("hipoteca")

@@ -2047,7 +2047,557 @@ body {
   border-top: 1px dashed var(--border-medium);
 }
 
-/* Fila de Transacción */
+/* ==========================================================================
+   FEED DE MOVIMIENTOS & TRANSACCIONES FINTECH EJECUTIVAS
+   ========================================================================== */
+
+/* Barra de KPIs superiores de Movimientos */
+.tx-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.tx-kpi-item {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tx-kpi-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+}
+
+.tx-kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tx-kpi-val {
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-kpi-val.positivo {
+  color: #059669;
+}
+
+.tx-kpi-val.negativo {
+  color: #dc2626;
+}
+
+/* Toolbar de Búsqueda y Filtros */
+.tx-toolbar-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.tx-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.85rem;
+  flex: 1 1 240px;
+  min-width: 190px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tx-search-box:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background: #ffffff;
+}
+
+.tx-search-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--text-main);
+  outline: none;
+}
+
+.tx-search-box .search-icon {
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+}
+
+.tx-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.segmented-pills {
+  display: inline-flex;
+  background: var(--bg-app);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  gap: 2px;
+}
+
+.btn-filtro-tipo {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-filtro-tipo:hover {
+  color: var(--text-main);
+}
+
+.btn-filtro-tipo.activo {
+  background: #ffffff;
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+.tx-filter-select {
+  padding: 0.42rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.tx-filter-select:focus {
+  border-color: #6366f1;
+}
+
+/* Feed de Movimientos Agrupados */
+.tx-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tx-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tx-date-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.25rem;
+}
+
+.tx-date-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.tx-date-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6366f1;
+}
+
+.tx-date-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.tx-date-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.tx-date-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tx-date-breakdown {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.breakdown-in {
+  color: #059669;
+}
+
+.breakdown-out {
+  color: #dc2626;
+}
+
+.tx-date-net {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.tx-date-net.positivo {
+  color: #059669;
+}
+
+.tx-date-net.negativo {
+  color: #475569;
+}
+
+.tx-date-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+/* Tarjeta individual de transacción */
+.tx-card-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  gap: 1rem;
+}
+
+.tx-card-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  border-color: #cbd5e1;
+}
+
+.tx-card-item.ingreso {
+  border-left: 4px solid #10b981;
+}
+
+.tx-card-item.gasto {
+  border-left: 4px solid #cbd5e1;
+}
+
+.tx-card-item.gasto:hover {
+  border-left-color: #ef4444;
+}
+
+.tx-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tx-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tx-avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tx-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.tx-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tx-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-badge-date {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.tx-card-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/* Insignia de Banco */
+.pill-banco {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.16rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.pill-banco-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.pill-banco-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Selectores integrados tipo Chip con etiqueta */
+.chip-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--border-medium);
+  background: #ffffff;
+  color: var(--text-muted);
+}
+
+.chip-select-wrapper.bote.asignado {
+  background: rgba(99, 102, 241, 0.06);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #4f46e5;
+}
+
+.chip-select-wrapper.cat.asignado {
+  background: rgba(14, 165, 233, 0.06);
+  border-color: rgba(14, 165, 233, 0.35);
+  color: #0284c7;
+}
+
+.chip-select-label {
+  padding: 0.18rem 0.6rem;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-select-wrapper select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Lado Derecho de la tarjeta */
+.tx-card-right {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-shrink: 0;
+}
+
+.tx-amount-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.tx-amount-val {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-amount-val.positivo {
+  color: #059669;
+}
+
+.tx-amount-val.negativo {
+  color: #0f172a;
+}
+
+.tx-amount-sub-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.tx-amount-sub-badge.ingreso {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.tx-amount-sub-badge.gasto {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-primary-fintech {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+  transition: all 0.15s ease;
+}
+
+.btn-primary-fintech:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+}
+
+.btn-primary-fintech.activo {
+  background: #334155;
+}
+
+/* Responsividad móvil para tarjetas de movimientos */
+@media (max-width: 680px) {
+  .tx-card-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .tx-card-left {
+    width: 100%;
+  }
+
+  .tx-card-right {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px dashed var(--border-subtle);
+    padding-top: 0.6rem;
+  }
+
+  .tx-amount-wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .tx-toolbar-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tx-search-box {
+    width: 100%;
+  }
+
+  .tx-filter-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .segmented-pills {
+    width: 100%;
+    display: flex;
+  }
+
+  .btn-filtro-tipo {
+    flex: 1;
+    text-align: center;
+  }
+
+  .tx-filter-select {
+    width: 100%;
+  }
+}
+
+/* Fila de Transacción Tradicional (retrocompatibilidad) */
 .tx-date .date-badge {
   display: inline-block;
   padding: 0.2rem 0.55rem;

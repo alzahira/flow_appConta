@@ -1,35 +1,9 @@
 // Vista de Gastos Tarjetas: Detalle de movimientos de Tarjeta Caixa, Tarjeta Deutsche Bank, Tarjeta Carrefour...
-import { vista, esc, importe, fechaCorta, hoy, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
 // Estado de la tarjeta seleccionada para persistir entre renders
 let tarjetaSeleccionadaId = null;
-
-function filaMovimientoTarjeta(m) {
-  const esGasto = Number(m.importe) < 0;
-  return `
-    <tr class="tx-row">
-      <td class="tx-date">
-        <span class="date-badge">${fechaCorta(m.fecha)}</span>
-      </td>
-      <td class="tx-main">
-        <div class="tx-concept">
-          <span class="tx-direction-icon ${esGasto ? "out" : "in"}">
-            ${esGasto ? "&darr;" : "&uarr;"}
-          </span>
-          <span class="tx-desc">${esc(m.descripcion)}</span>
-        </div>
-      </td>
-      <td class="num tx-amount">
-        ${importe(m.importe)}
-      </td>
-      <td class="tx-actions">
-        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" title="Eliminar este gasto">
-          ${icono("borrar")}
-        </button>
-      </td>
-    </tr>
-  `;
-}
 
 export default vista("gastos-tarjetas", async () => {
   const [cuentasData, botesData, categoriasData] = await Promise.all([
@@ -37,6 +11,12 @@ export default vista("gastos-tarjetas", async () => {
     API.get("/botes"),
     API.get("/categorias"),
   ]);
+
+  setGlobalCaches({
+    cuentas: cuentasData.items,
+    botes: botesData.items,
+    categorias: categoriasData.items,
+  });
 
   // Filtramos todas las tarjetas
   const tarjetas = cuentasData.items.filter(
@@ -144,20 +124,8 @@ export default vista("gastos-tarjetas", async () => {
       </div>
     `
         : `
-      <div class="card-table-wrap">
-        <table class="table-fintech">
-          <thead>
-            <tr>
-              <th style="width: 130px">Fecha</th>
-              <th>Concepto / Comercio</th>
-              <th class="num" style="width: 140px">Importe</th>
-              <th style="width: 44px"></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${movsData.items.map(filaMovimientoTarjeta).join("\n")}
-          </tbody>
-        </table>
+      <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        ${movsData.items.map(pintarFilaMovimiento).join("\n")}
       </div>
     `
     }

@@ -1,6 +1,7 @@
 // Vista de inicio: Dashboard de Control Financiero y Conciliación ("Disponible Real")
 import { esc, importe, vista, icono, fechaCorta } from "../vistas.js";
 import { esTarjetaRegalo } from "./tarjetas-regalo.js";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
 const BANCOS_CONFIG = [
   { id: "caixa", nombre: "CaixaBank", iconoKey: "caixa", color: "#0072ce" },
@@ -124,7 +125,7 @@ function tarjetaBoteMini(b) {
 }
 
 export default vista("inicio", async () => {
-  const [conc, cuentas, botes, deudasData, previsionData, inversionesData, prestamosData] = await Promise.all([
+  const [conc, cuentas, botes, deudasData, previsionData, inversionesData, prestamosData, ultimosMovs] = await Promise.all([
     API.get("/conciliacion"),
     API.get("/cuentas"),
     API.get("/botes"),
@@ -132,9 +133,11 @@ export default vista("inicio", async () => {
     API.get("/prevision-gastos").catch(() => null),
     API.get("/inversiones").catch(() => null),
     API.get("/prestamos").catch(() => null),
+    API.get("/movimientos?limit=6").catch(() => ({ items: [], total: 0 })),
   ]);
 
   const itemsCuentas = cuentas.items || [];
+  setGlobalCaches({ cuentas: itemsCuentas, botes: botes.items || [] });
 
   // 1. Cuentas reales
   const centimosCaja = itemsCuentas
@@ -456,6 +459,26 @@ export default vista("inicio", async () => {
     }
   </section>
 
+
+  <!-- SECCIÓN ÚLTIMAS TRANSACCIONES FINTECH -->
+  ${
+    ultimosMovs?.items?.length > 0
+      ? `
+  <section class="section-block">
+    <div class="section-header">
+      <div>
+        <h3 class="section-title">Últimos Movimientos</h3>
+        <p class="section-desc">Actividad reciente en tus cuentas bancarias y sobres del hogar</p>
+      </div>
+      <a href="#/movimientos" class="btn-link">Ver todo el historial (${ultimosMovs.total} movs) &rarr;</a>
+    </div>
+    <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
+      ${ultimosMovs.items.map(pintarFilaMovimiento).join("\n")}
+    </div>
+  </section>
+  `
+      : ""
+  }
 
   <!-- SECCIÓN BOTES Y SOBRES -->
   ${
