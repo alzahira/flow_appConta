@@ -1,6 +1,6 @@
 // Vista de botes: Sobres de ahorro, gastos recurrentes y proyectos con extracto y detalle individual
-import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js";
-import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
+import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js?v=33";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js?v=33";
 
 let boteSeleccionadoId = null;
 let categoriaSeleccionada = "todas";

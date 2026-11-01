@@ -9,7 +9,7 @@ import {
   clasificarMovimientoVisual,
   renderInsigniaCuenta,
   fechaTituloGrupo,
-} from "../vistas.js";
+} from "../vistas.js?v=33";
 
 let cuentasCache = [];
 let botesCache = [];

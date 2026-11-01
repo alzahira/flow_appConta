@@ -1,25 +1,25 @@
 // Router de la PWA (T023). Cada vista vive en /views y se auto-registra.
-import { rutasRegistradas, esc } from "./vistas.js";
-import { pintarNav } from "./nav.js";
+import { rutasRegistradas, esc } from "./vistas.js?v=33";
+import { pintarNav } from "./nav.js?v=33";
 
 // Import de vistas con efecto de registro (orden = orden de la navegación):
-import "./views/inicio.js";
-import "./views/cuentas.js";
-import "./views/inversiones.js";
-import "./views/tarjetas.js";
-import "./views/tarjetas-regalo.js";
-import "./views/ahorro.js";
-import "./views/botes.js";
-import "./views/prevision-gastos.js";
-import "./views/deben.js";
-import "./views/movimientos.js";
-import "./views/gastos-tarjetas.js";
-import "./views/prestamos.js";
-import "./views/categorias.js";
-import "./views/importar.js";
-import "./views/copia-seguridad.js";
-import "./views/pagos-recurrentes.js";
-import { iniciarModalesAcciones } from "./modales-acciones.js?v=32";
+import "./views/inicio.js?v=33";
+import "./views/cuentas.js?v=33";
+import "./views/inversiones.js?v=33";
+import "./views/tarjetas.js?v=33";
+import "./views/tarjetas-regalo.js?v=33";
+import "./views/ahorro.js?v=33";
+import "./views/botes.js?v=33";
+import "./views/prevision-gastos.js?v=33";
+import "./views/deben.js?v=33";
+import "./views/movimientos.js?v=33";
+import "./views/gastos-tarjetas.js?v=33";
+import "./views/prestamos.js?v=33";
+import "./views/categorias.js?v=33";
+import "./views/importar.js?v=33";
+import "./views/copia-seguridad.js?v=33";
+import "./views/pagos-recurrentes.js?v=33";
+import { iniciarModalesAcciones } from "./modales-acciones.js?v=33";
 
 async function navegar() {
   const hash = location.hash.replace("#/", "") || "inicio";

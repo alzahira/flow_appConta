@@ -1,6 +1,6 @@
 // Vista de Gastos Tarjetas: Detalle de movimientos de Tarjeta Caixa, Tarjeta Deutsche Bank, Tarjeta Carrefour...
-import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
-import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js?v=33";
+import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js?v=33";
 
 // Estado de la tarjeta seleccionada para persistir entre renders
 let tarjetaSeleccionadaId = null;
