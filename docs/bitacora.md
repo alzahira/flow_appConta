@@ -707,6 +707,31 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Service worker y assets actualizados a `app-conta-shell-v32`.
   - 158 tests en verde, 0 fallos, ruff 100% limpio.
 
+### 17. Segunda Plantilla de Reparto Recurrente: «Nómina MJ» (2026-11-01)
+
+- **Propósito y Reglas de Distribución de la Nómina MJ**:
+  - El usuario incorporó un segundo ingreso mensual recurrente correspondiente a la nómina de MJ por un importe de **731,00 €** cobrada en la cuenta de La Caixa.
+  - Reglas de reparto aplicadas con precisión milimétrica de céntimos:
+    1. **Gasolina Mes**: se extraen `40,00 €` para el sobre `Gasolina mes` (Restante: `691,00 €`).
+    2. **Retención / Provisión IRPF**: se descuenta el 4% del resto (`691,00 € × 0,04 = 27,64 €`) asignado al sobre `Bote IRPF` (Restante: `663,36 €`).
+    3. **Distribución del Remanente (663,36 €)**:
+       - **30%** (`199,01 €`) &rarr; Bote `Préstamo Coche Hyundai`.
+       - **30%** (`199,01 €`) &rarr; Bote `Guardado Resto Paro`.
+       - **20%** (`132,67 €`) &rarr; Bote `Bote ocio`.
+       - **20%** (`132,67 €`) &rarr; Bote `Mejoras del Hogar`.
+    - **Cuadre exacto al céntimo**: `40,00 + 27,64 + 199,01 + 199,01 + 132,67 + 132,67 = 731,00 €` (0 descuadre).
+- **Backend & Siembra Automática**:
+  - Función `sembrar_plantilla_nomina_mj` en `app_conta/services/plantillas_reparto.py`.
+  - Integrada en `sembrar_plantillas_defecto` y `listar_plantillas` para auto-creación inmediata tanto en entornos de producción (`conta.db`) como en pruebas automáticas.
+  - Siembra o reutiliza automáticamente los sobres correspondientes asociándolos a la cuenta de La Caixa activa.
+- **Frontend & Selección Multimodelo**:
+  - El modal de ingreso rápido (`modales-acciones.js`) permite conmutar entre `Reparto Mensual Hogar` (2.323,00 €) y `Nómina MJ` (731,00 €) adaptando en tiempo real las líneas de previsualización, importes y cuentas bancarias destino.
+- **Robustez y Aislamiento de Tests**:
+  - Se añadieron `plantillas_reparto_lineas`, `plantillas_reparto`, `pagos_recurrentes` y `prestamos` al fixture de limpieza `_aislar_bd` en `tests/conftest.py`.
+  - Nueva prueba completa `test_siembra_y_ejecucion_plantilla_nomina_mj` en `tests/api/test_plantillas_reparto.py`.
+  - **159 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global, linter ruff 100% limpio.
+
+
 
 
 
