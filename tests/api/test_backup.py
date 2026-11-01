@@ -78,3 +78,69 @@ def test_flujo_backup_vaciar_y_restaurar(client):
     assert r_bote_check.status_code == 200
     assert r_bote_check.json()["nombre"] == "Bote Para Backup"
 
+
+def test_poner_a_cero_conserva_botes_y_cuentas(client):
+    # 1. Crear una cuenta con saldo inicial 500 €
+    r_cta = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "Caixa Pruebas",
+            "tipo": "banco",
+            "entidad": "CaixaBank",
+            "saldo_inicial": "500.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta.status_code == 201
+    cuenta_id = r_cta.json()["id"]
+
+    # 2. Crear un bote
+    r_bote = client.post(
+        "/api/v1/botes",
+        json={"nombre": "Sobre Ocio Pruebas", "tipo": "ahorro", "categoria": "ocio"},
+    )
+    assert r_bote.status_code == 201
+    bote_id = r_bote.json()["id"]
+
+    # 3. Crear un movimiento (+150 € a la cuenta y al bote)
+    r_mov = client.post(
+        "/api/v1/movimientos",
+        json={
+            "fecha": "2026-11-01",
+            "importe": "150.00",
+            "descripcion": "Ingreso prueba",
+            "cuenta_id": cuenta_id,
+            "bote_id": bote_id,
+        },
+    )
+    assert r_mov.status_code == 201
+
+    # 4. Comprobar saldos previos (cuenta = 500 + 150 = 650 €, bote = 150 €)
+    assert client.get(f"/api/v1/cuentas/{cuenta_id}").json()["saldo"] == "650.00"
+    assert client.get(f"/api/v1/botes/{bote_id}").json()["saldo"] == "150.00"
+    assert len(client.get("/api/v1/movimientos").json()["items"]) == 1
+
+    # 5. Fallo al no confirmar
+    r_fail = client.post("/api/v1/backup/poner-a-cero", json={"confirmar": False})
+    assert r_fail.status_code == 400
+
+    # 6. Ejecutar poner a cero con confirmación
+    r_reset = client.post("/api/v1/backup/poner-a-cero", json={"confirmar": True})
+    assert r_reset.status_code == 200
+    assert r_reset.json()["ok"] is True
+
+    # 7. La cuenta SIGUE EXISTIENDO pero su saldo es 0.00 €
+    r_cta_despues = client.get(f"/api/v1/cuentas/{cuenta_id}")
+    assert r_cta_despues.status_code == 200
+    assert r_cta_despues.json()["saldo"] == "0.00"
+    assert r_cta_despues.json()["saldo_inicial"] == "0.00"
+
+    # 8. El bote SIGUE EXISTIENDO pero su saldo es 0.00 €
+    r_bote_despues = client.get(f"/api/v1/botes/{bote_id}")
+    assert r_bote_despues.status_code == 200
+    assert r_bote_despues.json()["saldo"] == "0.00"
+
+    # 9. No quedan movimientos vivos
+    assert len(client.get("/api/v1/movimientos").json()["items"]) == 0
+
+

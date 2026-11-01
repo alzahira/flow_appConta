@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app_conta.db import get_db
 from app_conta.services.backup import (
     exportar_datos_completos,
+    resetear_saldos_a_cero,
     restaurar_datos_completos,
     vaciar_base_de_datos,
 )
@@ -52,6 +53,19 @@ def post_vaciar_datos(
             detail="Debe confirmar explícitamente el vaciado de datos.",
         )
     return vaciar_base_de_datos(db, guardar_copia_seguridad=True)
+
+
+@router.post("/poner-a-cero", response_model=dict[str, Any])
+def post_poner_a_cero(
+    payload: VaciarConfirmacion, db: Session = Depends(get_db)
+) -> dict[str, Any]:
+    """Pone saldos y movimientos a cero conservando botes, cuentas y plantillas."""
+    if not payload.confirmar:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Debe confirmar explícitamente el reseteo a cero.",
+        )
+    return resetear_saldos_a_cero(db, guardar_copia_seguridad=True)
 
 
 @router.post("/restaurar", response_model=dict[str, Any])

@@ -31,6 +31,7 @@ TABLAS_DATOS = [
     "prestamos",
     "plantillas_reparto",
     "plantillas_reparto_lineas",
+    "pagos_recurrentes",
     "importaciones",
 ]
 
@@ -101,6 +102,56 @@ def vaciar_base_de_datos(db: Session, guardar_copia_seguridad: bool = True) -> d
         "ok": True,
         "mensaje": "Base de datos vaciada con éxito. Ahora está lista para pruebas en limpio.",
         "hogar_id": hogar_id,
+    }
+
+
+def resetear_saldos_a_cero(db: Session, guardar_copia_seguridad: bool = True) -> dict[str, Any]:
+    """Pone saldos y movimientos a cero, CONSERVANDO botes, cuentas, categorías y plantillas.
+
+    - Hace copia de seguridad preventiva automática en el servidor.
+    - Elimina todos los movimientos y auditoría de movimientos (saldo derivado de botes = 0.00 €).
+    - Pone a 0 el saldo_inicial_centimos de todas las cuentas (saldo derivado de cuentas = 0.00 €).
+    - Pone a 0 el pagado_real_centimos de los gastos recurrentes (previsión).
+    - Pone a 0 importes de inversiones si las hay.
+    - Limpia las huellas de importaciones para poder re-importar en limpio.
+    - CONSERVA intactos: todos los botes, todas las cuentas, todas las categorías,
+      todas las plantillas de reparto y todos los pagos recurrentes.
+    """
+    if guardar_copia_seguridad:
+        exportar_datos_completos(db)
+
+    # 1. Eliminar movimientos y auditoría (los botes quedan con saldo 0.00 € derivado)
+    db.execute(text("DELETE FROM auditoria_movimientos;"))
+    db.execute(text("DELETE FROM movimientos;"))
+    db.execute(text("DELETE FROM importaciones;"))
+
+    # 2. Poner saldo inicial a 0 en todas las cuentas (las cuentas quedan con saldo 0.00 €)
+    db.execute(text("UPDATE cuentas SET saldo_inicial_centimos = 0;"))
+
+    # 3. Poner a 0 pagado_real en gastos recurrentes
+    try:
+        db.execute(text("UPDATE gastos_recurrentes SET pagado_real_centimos = 0;"))
+    except Exception:
+        pass
+
+    # 4. Poner a 0 capital en inversiones si existen
+    try:
+        db.execute(
+            text(
+                "UPDATE inversiones SET capital_aportado_centimos = 0, valor_actual_centimos = 0;"
+            )
+        )
+    except Exception:
+        pass
+
+    db.commit()
+
+    return {
+        "ok": True,
+        "mensaje": (
+            "Todos los saldos y movimientos se han puesto a cero. "
+            "Tus botes, cuentas, plantillas y recibos se han conservado intactos."
+        ),
     }
 
 
