@@ -675,6 +675,38 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - **158 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global.
   - Ruff linter 100% limpio en `app_conta` y `tests`.
 
+### 16. Rediseño Fintech Ejecutivo de Movimientos y Experiencia Visual (2026-11-01)
+
+- **Propósito y Detección de Fricción Visual**:
+  - El usuario indicó que la interfaz se sentía monótona, plana y uniforme («se confunde un poco todo tan igual»), solicitando una experiencia mucho más profesional donde los movimientos, procedencias y destinos sean inmediatamente reconocibles.
+- **Avatares Temáticos Inteligentes y Badges**:
+  - Clasificación automática por conceptos y comercios en `app_conta/static/js/vistas.js` (`clasificarMovimientoVisual`):
+    - 💼 **Nóminas y Alquileres**: avatares en esmeralda con icono de ingresos.
+    - 🛒 **Supermercados y Comida** (Mercadona, Carrefour, Lidl, Día): avatares en naranja con carrito.
+    - 🏠 **Hipotecas y Hogar** (Hipoteca, Comunidad): avatares en índigo con casa.
+    - ⚡ **Luz y Suministros** (Endesa, Iberdrola, Agua): avatares en cielo/azul con rayo.
+    - 📶 **Telefonía e Internet** (Vodafone, Finetwork): avatares en violeta con señal/wifi.
+    - 🍿 **Suscripciones y Ocio** (DAZN, Netflix, Cine): avatares en rosa con ticket.
+    - 🚗 **Vehículos y Gasolina** (Repsol, Cepsa, Parking): avatares en ámbar con coche.
+    - 🛡️ **Seguros e Impuestos** (IBI, Mutua, Seguros, Cruz Roja): avatares en pizarra con escudo.
+  - **Insignias Bancarias de Origen** (`renderInsigniaCuenta`):
+    - Cada movimiento muestra visualmente la entidad de pago con su logotipo y color corporativo (CaixaBank azul, Deutsche Bank azul marino, BBVA azul rey, Revolut grafito, Efectivo esmeralda, Tarjetas púrpura).
+  - **Chips Interactivos de Sobres y Categorías**:
+    - Reemplazo de los desplegables planos por píldoras semánticas (`📦 Sobre: <Nombre>` / `🏷️ Categoría`) con selector integrado de cambio instantáneo.
+- **Feed Cronológico con Agrupación Diaria**:
+  - Las transacciones se agrupan en bloques por fecha (`fechaTituloGrupo`) mostrando el desglose del día (`+Ingresos`, `−Gastos`, `Neto del día`).
+- **Toolbar Interactiva con Búsqueda y Filtros en Tiempo Real**:
+  - Búsqueda en vivo (`filtro-mov-buscar`) por texto, comercio, concepto, importe o fecha.
+  - Píldoras segmentadas: `[ Todos ] [ 🟢 Solo Ingresos ] [ 🔴 Solo Gastos ]`.
+  - Filtros directos por cuenta y por sobre con recálculo dinámico en pantalla.
+  - Panel superior de KPIs: número de movimientos, total ingresado, total gastado y balance neto filtrado.
+- **Sección «Últimos Movimientos» en Dashboard de Inicio**:
+  - Inclusión en `#/inicio` de las últimas transacciones registradas con acceso directo al libro mayor.
+  - Integración del mismo componente de fila en fondos de ahorro (`#/ahorro`), sobres (`#/botes`) y compras con tarjeta (`#/gastos-tarjetas`).
+- **Cache y Versión**:
+  - Service worker y assets actualizados a `app-conta-shell-v32`.
+  - 158 tests en verde, 0 fallos, ruff 100% limpio.
+
 
 
 
