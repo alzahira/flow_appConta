@@ -5,61 +5,63 @@
    ========================================================================== */
 
 :root {
-  /* Paleta Base — Tonos Claros y Slate Ejecutiva */
-  --bg-app: #f8fafc;
-  --bg-gradient: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 180px);
+  /* Paleta Base — Estilo Cálido Cream & Ivory (Inspirado en Mockup) */
+  --bg-app: #f7f4ee;
+  --bg-gradient: linear-gradient(180deg, #fbf9f4 0%, #f7f4ee 200px);
   --surface-card: #ffffff;
-  --surface-elevated: #f8fafc;
-  --surface-hover: #f1f5f9;
-  --surface-glass: rgba(255, 255, 255, 0.94);
+  --surface-elevated: #faf8f3;
+  --surface-hover: #f1ece2;
+  --surface-glass: rgba(247, 244, 238, 0.94);
   --surface-input: #ffffff;
 
-  /* Bordes y Divisiones Nítidas */
-  --border-subtle: #e2e8f0;
-  --border-medium: #cbd5e1;
-  --border-highlight: #94a3b8;
-  --border-focus: #0f172a;
+  /* Bordes y Divisiones Suaves */
+  --border-subtle: #eae5dc;
+  --border-medium: #ded6c9;
+  --border-highlight: #b8ad9c;
+  --border-focus: #1e242b;
 
   /* Texto y Jerarquía Visual */
-  --text-main: #0f172a;       /* Slate 900: Grafito profundo */
-  --text-muted: #475569;      /* Slate 600: Etiquetas y secundarios */
-  --text-dim: #94a3b8;        /* Slate 400: Metadatos pequeños */
+  --text-main: #1e242b;       /* Grafito cálido profundo */
+  --text-muted: #5e6875;      /* Slate neutro */
+  --text-dim: #8c97a4;        /* Metadatos */
 
-  /* Acentos Semánticos Financieros — No estridentes */
-  --accent-brand: #0f172a;    /* Grafito corporativo */
-  --accent-brand-hover: #1e293b;
-  --accent-brand-soft: #f1f5f9;
-  --accent-brand-border: #cbd5e1;
+  /* Acentos Semánticos Financieros */
+  --accent-brand: #1e242b;
+  --accent-brand-hover: #2d3748;
+  --accent-brand-soft: #f0ece3;
+  --accent-brand-border: #ded6c9;
 
-  --accent-positive: #0d9488;         /* Teal nórdico mineral moderno */
-  --accent-positive-hover: #0f766e;
-  --accent-positive-soft: #f0fdfa;
-  --accent-positive-border: #ccfbf1;
+  --accent-positive: #16a34a;         /* Verde salvia / orgánico */
+  --accent-positive-hover: #15803d;
+  --accent-positive-soft: #eaf5ed;
+  --accent-positive-border: #bce3c8;
 
-  --accent-negative: #be123c;         /* Borgoña / Rosa profundo elegante */
-  --accent-negative-hover: #9f1239;
-  --accent-negative-soft: #fff1f2;
-  --accent-negative-border: #ffe4e6;
+  --accent-negative: #dc2626;         /* Coral / Rosa suave */
+  --accent-negative-hover: #b91c1c;
+  --accent-negative-soft: #fef2f2;
+  --accent-negative-border: #fecaca;
 
   --accent-warning: #d97706;  /* Ámbar */
   --accent-warning-soft: #fffbeb;
   --accent-warning-border: #fde68a;
 
-  --accent-info: #0284c7;     /* Azul cielo ejecutivo */
-  --accent-info-soft: #f0f9ff;
-  --accent-info-border: #bae6fd;
+  --accent-info: #0284c7;     /* Azul hielo / cielo */
+  --accent-info-soft: #f0f7fe;
+  --accent-info-border: #cfe2f4;
 
-  /* Sombras Quirúrgicas y Suaves */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --shadow-hero: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-hover: 0 8px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--border-medium);
+  /* Sombras Táctiles Neumórficas Suaves */
+  --shadow-sm: 0 2px 6px rgba(45, 35, 25, 0.04);
+  --shadow-card: 0 4px 14px rgba(45, 35, 25, 0.04), 0 1px 3px rgba(45, 35, 25, 0.02);
+  --shadow-hero: 0 6px 20px rgba(45, 35, 25, 0.05);
+  --shadow-hover: 0 10px 24px -2px rgba(45, 35, 25, 0.08), 0 0 0 1px var(--border-medium);
+  --shadow-pill: 0 4px 14px rgba(45, 35, 25, 0.05), 0 1px 3px rgba(45, 35, 25, 0.03);
 
   /* Dimensiones y Curvaturas */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
   --radius-pill: 9999px;
 
   /* Tipografías */
@@ -6530,3 +6532,239 @@ input:focus, select:focus, textarea:focus {
 
 
 
+
+
+/* ==========================================================================
+   ESTILO MOCKUP: Botones Píldora, Tarjetas Pastel Suaves y Barra Cápsula
+   ========================================================================== */
+
+/* Botones de Acción Hero estilo Píldora Cápsula */
+.btn-hero-action {
+  border-radius: var(--radius-pill) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(215, 208, 196, 0.75) !important;
+  box-shadow: 0 4px 14px rgba(45, 35, 25, 0.04), 0 1px 3px rgba(45, 35, 25, 0.02) !important;
+  padding: 0.85rem 1.45rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: var(--text-main) !important;
+}
+
+.btn-hero-action:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(45, 35, 25, 0.08) !important;
+  border-color: rgba(180, 170, 155, 0.9) !important;
+}
+
+.btn-hero-action:active {
+  transform: translateY(0) !important;
+}
+
+.btn-hero-action .action-btn-icon {
+  border-radius: 50% !important;
+}
+
+/* Tarjetas Spotlight (Dinero del Mes y Dinero de Ocio) */
+.spotlight-card {
+  border-radius: 22px !important;
+  padding: 1.4rem 1.6rem !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.spotlight-card.mes {
+  background: linear-gradient(180deg, #f2f7fd 0%, #e5f0fa 100%) !important;
+  border: 1px solid #cfe2f4 !important;
+  box-shadow: 0 12px 28px -4px rgba(180, 205, 230, 0.4) !important;
+}
+
+.spotlight-card.ocio {
+  background: linear-gradient(180deg, #fdf8f1 0%, #faeee0 100%) !important;
+  border: 1px solid #f2ded0 !important;
+  box-shadow: 0 12px 28px -4px rgba(235, 195, 160, 0.4) !important;
+}
+
+.spotlight-card:hover {
+  transform: translateY(-3px) !important;
+}
+
+.spotlight-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.spotlight-icon-circle.mes {
+  background: #dceaf8;
+  color: #4e82aa;
+  border: 1px solid #c8def2;
+}
+
+.spotlight-icon-circle.ocio {
+  background: #faebd8;
+  color: #d98236;
+  border: 1px solid #f5dac1;
+}
+
+.spotlight-label {
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  color: #222b35 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.spotlight-value {
+  font-size: 2.1rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Barra de progreso sutil en las tarjetas */
+.spotlight-progress-track {
+  height: 6px;
+  width: 100%;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.06);
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.spotlight-progress-bar.mes {
+  height: 100%;
+  border-radius: 9999px;
+  background: #6b9ec4;
+}
+
+.spotlight-progress-bar.ocio {
+  height: 100%;
+  border-radius: 9999px;
+  background: #d98236;
+}
+
+/* Status Pill ("Contabilidad al día.") */
+.status-pill {
+  border-radius: 9999px !important;
+  padding: 0.4rem 1.05rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  border: 1px solid transparent !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  background: #eaf5ed !important;
+  border-color: #bce3c8 !important;
+  color: #226338 !important;
+  box-shadow: 0 2px 6px rgba(34, 99, 56, 0.08) !important;
+}
+
+.status-pill.alerta {
+  background: #fff8e6 !important;
+  border-color: #f7dfa5 !important;
+  color: #92540c !important;
+}
+
+.status-check-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #34a853;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-pill.alerta .status-check-circle {
+  background: #f59e0b;
+}
+
+/* Barra de Resumen Cápsula (Deudas e Inversiones) */
+.capsule-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 14px rgba(45, 35, 25, 0.04);
+  margin-top: 1.35rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.capsule-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.capsule-chip:hover {
+  transform: translateY(-1px);
+}
+
+.capsule-chip-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.capsule-chip-icon.debt {
+  background: #fde8e4;
+  color: #dc2626;
+  border: 1px solid #fad2cc;
+}
+
+.capsule-chip-icon.invest {
+  background: #e6f4ea;
+  color: #16a34a;
+  border: 1px solid #c9ebd3;
+}
+
+.capsule-chip-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.capsule-chip-val {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Pestañas de navegación redondeadas */
+.nav-tab {
+  border-radius: var(--radius-pill) !important;
+}
+
+.nav-tab.activa {
+  background: #ffffff !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 2px 8px rgba(45, 35, 25, 0.06) !important;
+  font-weight: 700 !important;
+}
+
+/* Header suave con desenfoque cálido */
+.app-header {
+  background: rgba(247, 244, 238, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}

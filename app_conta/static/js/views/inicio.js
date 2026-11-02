@@ -3,10 +3,10 @@ import { esc, importe, vista, icono } from "../vistas.js";
 
 function badgeEstado(estado, texto = null) {
   const esCuadrado = estado === "cuadrado";
-  const contenido = texto || (esCuadrado ? "Contabilidad al día" : "Diferencia pendiente");
+  const contenido = texto || (esCuadrado ? "Contabilidad al día." : "Diferencia pendiente");
   return `
     <div class="status-pill ${esCuadrado ? "ok" : "alerta"}">
-      <span class="status-dot"></span>
+      <span class="status-check-circle">${esCuadrado ? "✓" : "!"}</span>
       <span class="status-text">${contenido}</span>
     </div>
   `;
@@ -126,13 +126,17 @@ export default vista("inicio", async () => {
     <div class="spotlight-grid">
       <div class="spotlight-card mes">
         <div class="spotlight-header">
-          <div class="spotlight-icon mes">${icono("efectivo")}</div>
+          <div class="spotlight-icon-circle mes">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c0-3.3 2.7-6 6-6h6c3.3 0 6 2.7 6 6 0 4.4-3.6 8-8 8H9c-4.4 0-8-3.6-8-8z"/><path d="M7 11h.01"/><path d="M11 11h.01"/><path d="M15 11h.01"/></svg>
+          </div>
           <span class="spotlight-badge">DISPONIBLE MES</span>
         </div>
         <div class="spotlight-body">
-          <span class="spotlight-label">Dinero del Mes</span>
+          <span class="spotlight-label">Dinero del Mes:</span>
           <div class="spotlight-value">${importe(dineroMes)}</div>
-          <span class="spotlight-sub">Presupuesto en efectivo y compras cotidianas (${esc(boteMes?.nombre || "Sin sobre asignado")})</span>
+          <div class="spotlight-progress-track">
+            <div class="spotlight-progress-bar mes" style="width: 70%;"></div>
+          </div>
         </div>
         <div class="spotlight-footer">
           <a href="/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">${boteMes ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
@@ -141,20 +145,41 @@ export default vista("inicio", async () => {
 
       <div class="spotlight-card ocio">
         <div class="spotlight-header">
-          <div class="spotlight-icon ocio">
+          <div class="spotlight-icon-circle ocio">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 3-7 8-7-8h14Z"/><path d="M12 11v10"/><path d="M8 21h8"/></svg>
           </div>
           <span class="spotlight-badge">LIBRE PARA OCIO</span>
         </div>
         <div class="spotlight-body">
-          <span class="spotlight-label">Dinero de Ocio</span>
+          <span class="spotlight-label">Dinero de Ocio:</span>
           <div class="spotlight-value">${importe(dineroOcio)}</div>
-          <span class="spotlight-sub">Fondo disponible para salidas, cenas y disfrute (${esc(boteOcio?.nombre || "Sin sobre asignado")})</span>
+          <div class="spotlight-progress-track">
+            <div class="spotlight-progress-bar ocio" style="width: 45%;"></div>
+          </div>
         </div>
         <div class="spotlight-footer">
           <a href="/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">${boteOcio ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
         </div>
       </div>
+    </div>
+
+    <!-- Capsule Summary Bar (Estilo Mockup) -->
+    <div class="capsule-summary-bar">
+      <a href="/prestamos" class="capsule-chip debt" title="Ver detalle de préstamos y deudas activas">
+        <span class="capsule-chip-icon debt">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
+        <span class="capsule-chip-label">Deudas Activas:</span>
+        <strong class="capsule-chip-val">${importe(Math.abs(Number(dineroPrestamos) || 0).toFixed(2))}</strong>
+      </a>
+
+      <a href="/inversiones" class="capsule-chip invest" title="Ver cartera de inversiones">
+        <span class="capsule-chip-icon invest">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </span>
+        <span class="capsule-chip-label">Inversiones Totales:</span>
+        <strong class="capsule-chip-val">${importe(inversionesData?.total_capital_aportado || "0.00")}</strong>
+      </a>
     </div>
 
     <!-- Hero Stat Pills -->
