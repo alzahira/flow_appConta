@@ -89,6 +89,15 @@ En la parte superior puedes alternar entre tus tarjetas habituales:
 * 💳 **Tarjeta Deutsche Bank**
 * 💳 **Tarjeta Pass Carrefour**
 
+#### Atajos Rápidos en 1 Clic:
+Para que no tengas que escribir ni seleccionar el sobre cada vez, tienes 4 botones directos:
+* 🛒 **Supermercado:** Escribe el concepto y descuenta automáticamente de **Dinero del Mes**.
+* ⛽ **Gasoil:** Escribe el concepto y descuenta automáticamente de **Dinero del Mes**.
+* 🍹 **Ocio:** Escribe el concepto y descuenta automáticamente de **Bote Ocio**.
+* 🏠 **Casa:** Escribe el concepto y descuenta automáticamente de **Mejoras del Hogar**.
+
+> **Detección Automática de Categoría:** Ya no tienes que elegir la categoría a mano. La aplicación la detecta y clasifica automáticamente (*Supermercado*, *Gasolina*, *Ocio*, *Hogar*...) según el concepto o el sobre utilizado.
+
 #### ¿Cómo funciona con tarjetas de crédito (ej. Carrefour Pass)?
 Cuando compras 20 € de pan con la tarjeta Carrefour Pass:
 1. En la app anotas los 20 € en la tarjeta Carrefour Pass y eliges el sobre *Dinero del Mes*.
@@ -239,3 +248,4 @@ Ve a la pestaña **Movimientos**, busca la fila correspondiente y pulsa el icono
 ---
 
 *¡Disfruta de la tranquilidad de tener la economía de tu hogar perfectamente controlada y al día!* 🏡✨
+

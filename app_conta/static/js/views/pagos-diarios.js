@@ -17,8 +17,25 @@ window.autocompletarPagoDiario = function (concepto, nombreBote) {
   }
   if (descEl) descEl.value = concepto;
   if (boteEl && nombreBote) {
+    const term = nombreBote.toLowerCase().trim();
     for (const opt of boteEl.options) {
-      if (opt.text.toLowerCase().includes(nombreBote.toLowerCase())) {
+      const txt = opt.text.toLowerCase();
+      if (
+        term === "mes" &&
+        (txt.includes("mes en curso") || txt.includes("dinero del mes") || txt.includes("bote mes"))
+      ) {
+        boteEl.value = opt.value;
+        break;
+      } else if (term === "ocio" && txt.includes("ocio")) {
+        boteEl.value = opt.value;
+        break;
+      } else if (
+        (term === "casa" || term === "mejoras") &&
+        (txt.includes("mejoras") || txt.includes("hogar") || txt.includes("casa"))
+      ) {
+        boteEl.value = opt.value;
+        break;
+      } else if (txt.includes(term)) {
         boteEl.value = opt.value;
         break;
       }
@@ -161,12 +178,6 @@ export default vista("pagos-diarios", async () => {
     .map((t) => `<option value="${t.id}" ${t.id === tarjetaActual.id ? "selected" : ""}>${esc(t.nombre)} (${esc(t.entidad)})</option>`)
     .join("");
 
-  // Opciones de categorías
-  const opcionesCategoria = [
-    `<option value="">— Detectar categoría automáticamente —</option>`,
-    ...categoriasData.items.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`),
-  ].join("");
-
   const totalGastosTarjeta = movsData.items.reduce((acc, m) => acc + Number(m.importe), 0);
 
   // Instalar escucha interactiva de cambio de tarjeta
@@ -249,11 +260,10 @@ export default vista("pagos-diarios", async () => {
         <!-- Chips de autocompletado rápido -->
         <div class="quick-pills-suggestions" style="margin-bottom: 1.25rem;">
           <span class="suggestions-label">Atajos rápidos:</span>
-          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Pan y desayuno', 'mes en curso')">🍞 Pan y Desayuno</button>
-          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Supermercado / Comida', 'mes en curso')">🛒 Supermercado</button>
-          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Gasolina', 'mes en curso')">⛽ Gasolina</button>
-          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Bar / Café / Cena', 'ocio')">🍹 Bar / Ocio</button>
-          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Farmacia', 'mes en curso')">💊 Farmacia</button>
+          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Supermercado', 'mes')">🛒 Supermercado</button>
+          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Gasoil', 'mes')">⛽ Gasoil</button>
+          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Ocio', 'ocio')">🍹 Ocio</button>
+          <button type="button" class="btn-suggestion" onclick="window.autocompletarPagoDiario('Casa', 'casa')">🏠 Casa</button>
         </div>
 
         <form data-accion="crear-movimiento" data-err="err-pago-diario" class="fintech-form">
@@ -276,7 +286,7 @@ export default vista("pagos-diarios", async () => {
           <div class="form-row-grid">
             <div class="form-group form-span-2">
               <label for="pd-desc" class="form-label">Establecimiento / Concepto *</label>
-              <input id="pd-desc" name="descripcion" placeholder="Ej. Panadería, Mercadona, Gasolinera Repsol, Restaurante..." required>
+              <input id="pd-desc" name="descripcion" placeholder="Ej. Mercadona, Gasolinera Repsol, Restaurante, Bricomart..." required>
             </div>
 
             <div class="form-group form-span-2">
@@ -299,16 +309,9 @@ export default vista("pagos-diarios", async () => {
           </div>
 
           <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="pd-fecha" class="form-label">Fecha del Pago</label>
+            <div class="form-group form-span-4">
+              <label for="pd-fecha" class="form-label">Fecha del Pago *</label>
               <input id="pd-fecha" name="fecha" type="date" value="${hoy()}" required>
-            </div>
-
-            <div class="form-group form-span-2">
-              <label for="pd-cat" class="form-label">Categoría Analítica</label>
-              <select id="pd-cat" name="categoria_id">
-                ${opcionesCategoria}
-              </select>
             </div>
           </div>
 

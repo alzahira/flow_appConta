@@ -133,3 +133,63 @@ def test_obtener_inexistente_y_archivada(db, id_hogar):
         svc.obtener_categoria(db, cat.id)
     with pytest.raises(ErrorNoEncontrado):
         svc.obtener_categoria(db, 9999)
+
+
+def test_auto_detectar_categoria_supermercado_gasoil_ocio_casa(db, id_hogar):
+    from app_conta.models.bote import Bote
+    from app_conta.services.movimientos import crear_movimiento
+
+    cuenta = _cuenta(db, id_hogar)
+
+    # 1. Por descripción "Supermercado Mercadona" -> Categoría Supermercado
+    m1 = crear_movimiento(
+        db,
+        fecha="2026-11-02",
+        importe="-45.20",
+        descripcion="Compra en Supermercado",
+        cuenta_id=cuenta.id,
+    )
+    assert m1.categoria_id is not None
+    cat1 = svc.obtener_categoria(db, m1.categoria_id)
+    assert cat1.nombre == "Supermercado"
+
+    # 2. Por descripción "Gasoil Repsol" -> Categoría Gasolina
+    m2 = crear_movimiento(
+        db,
+        fecha="2026-11-02",
+        importe="-60.00",
+        descripcion="Gasoil Repsol",
+        cuenta_id=cuenta.id,
+    )
+    assert m2.categoria_id is not None
+    cat2 = svc.obtener_categoria(db, m2.categoria_id)
+    assert cat2.nombre == "Gasolina"
+
+    # 3. Por bote "Bote ocio" -> Categoría Ocio
+    bote_ocio = Bote(hogar_id=id_hogar, nombre="Bote ocio", tipo="recurrente")
+    db.add(bote_ocio)
+    db.flush()
+    m3 = crear_movimiento(
+        db,
+        fecha="2026-11-02",
+        importe="-25.00",
+        descripcion="Cena fin de semana",
+        cuenta_id=cuenta.id,
+        bote_id=bote_ocio.id,
+    )
+    assert m3.categoria_id is not None
+    cat3 = svc.obtener_categoria(db, m3.categoria_id)
+    assert cat3.nombre == "Ocio"
+
+    # 4. Por descripción "Casa Bricomart" o bote "Mejoras del Hogar" -> Categoría Hogar
+    m4 = crear_movimiento(
+        db,
+        fecha="2026-11-02",
+        importe="-18.50",
+        descripcion="Cosas para la casa",
+        cuenta_id=cuenta.id,
+    )
+    assert m4.categoria_id is not None
+    cat4 = svc.obtener_categoria(db, m4.categoria_id)
+    assert cat4.nombre == "Hogar"
+

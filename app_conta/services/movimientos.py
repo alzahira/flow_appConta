@@ -35,6 +35,142 @@ from app_conta.services.errors import (
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 500
 
+REGLAS_AUTO_CATEGORIA: list[tuple[str, str, tuple[str, ...]]] = [
+    (
+        "Supermercado",
+        "#10b981",
+        (
+            "supermercado",
+            "mercadona",
+            "lidl",
+            "aldi",
+            "supeco",
+            "eroski",
+            "fruteria",
+            "panaderia",
+            "pan",
+            "dia ",
+            "alcampo",
+            "alimentacion",
+            "comida",
+        ),
+    ),
+    (
+        "Gasolina",
+        "#f59e0b",
+        (
+            "gasoil",
+            "gasolina",
+            "diesel",
+            "repsol",
+            "cepsa",
+            "bp",
+            "galp",
+            "shell",
+            "combustible",
+            "gasolinera",
+        ),
+    ),
+    (
+        "Ocio",
+        "#8b5cf6",
+        (
+            "ocio",
+            "restaurante",
+            "bar",
+            "cafe",
+            "cafes",
+            "cafeteria",
+            "cena",
+            "copa",
+            "cerveza",
+            "churros",
+            "mcdonalds",
+            "burger",
+            "kfc",
+            "kebab",
+            "cine",
+        ),
+    ),
+    (
+        "Hogar",
+        "#3b82f6",
+        (
+            "casa",
+            "hogar",
+            "ikea",
+            "leroy",
+            "bricomart",
+            "bricodepot",
+            "ferreteria",
+            "mueble",
+            "pintura",
+            "arreglo",
+            "mejoras",
+        ),
+    ),
+]
+
+
+def auto_detectar_categoria_id(
+    db: Session,
+    descripcion: str,
+    hogar_id: str,
+    bote_id: int | None = None,
+) -> int | None:
+    desc_clean = (descripcion or "").lower().strip()
+
+    nombre_cat_match: str | None = None
+    color_cat_match = "#64748b"
+
+    # 1. Comprobar palabras clave en la descripción
+    for cat_nombre, cat_color, palabras in REGLAS_AUTO_CATEGORIA:
+        for palabra in palabras:
+            if palabra in desc_clean:
+                nombre_cat_match = cat_nombre
+                color_cat_match = cat_color
+                break
+        if nombre_cat_match:
+            break
+
+    # 2. Si no coincide por descripción, comprobar por nombre de bote
+    if not nombre_cat_match and bote_id:
+        bote = db.get(Bote, bote_id)
+        if bote:
+            bote_nom = bote.nombre.lower()
+            if "ocio" in bote_nom:
+                nombre_cat_match = "Ocio"
+                color_cat_match = "#8b5cf6"
+            elif "mejoras" in bote_nom or "hogar" in bote_nom or "arreglos" in bote_nom:
+                nombre_cat_match = "Hogar"
+                color_cat_match = "#3b82f6"
+            elif "gasolina" in bote_nom:
+                nombre_cat_match = "Gasolina"
+                color_cat_match = "#f59e0b"
+            elif "mes" in bote_nom or "curso" in bote_nom:
+                nombre_cat_match = "Supermercado"
+                color_cat_match = "#10b981"
+
+    if not nombre_cat_match:
+        return None
+
+    # Buscar categoría activa o crearla si no existe
+    stmt = select(Categoria).where(
+        Categoria.hogar_id == hogar_id,
+        func.lower(Categoria.nombre) == nombre_cat_match.lower(),
+        Categoria.archivada.is_(False),
+    )
+    cat = db.scalars(stmt).first()
+    if cat is None:
+        cat = Categoria(
+            hogar_id=hogar_id,
+            nombre=nombre_cat_match,
+            color=color_cat_match,
+        )
+        db.add(cat)
+        db.flush()
+    return cat.id
+
 
 def _convertir_importe(importe: str | int | float) -> int:
     """String de euros → céntimos enteros; cero e inválidos → ErrorValidacion."""
@@ -87,6 +223,11 @@ def crear_movimiento(
         raise ErrorNoEncontrado(f"Cuenta {cuenta_id} no encontrada")
 
     centimos = _convertir_importe(importe)
+
+    if categoria_id is None:
+        categoria_id = auto_detectar_categoria_id(
+            db, descripcion, cuenta.hogar_id, bote_id=bote_id
+        )
 
     if categoria_id is not None and db.get(Categoria, categoria_id) is None:
         raise ErrorNoEncontrado(f"Categoría {categoria_id} no encontrada")
