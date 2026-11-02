@@ -17,7 +17,6 @@ Flujo simulado de vida real:
 from __future__ import annotations
 
 from decimal import Decimal
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -28,21 +27,11 @@ def test_flujo_integral_cuadre_produccion(client: TestClient) -> None:
     # 1. Configuración de cuentas bancarias y tarjetas
     caixa = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Caixa Nómina",
-            "tipo": "banco",
-            "saldo_inicial": "1000.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Caixa Nómina", "tipo": "banco", "saldo_inicial": "1000.00", "fecha_apertura": "2026-11-01"},
     ).json()
     carrefour = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Carrefour Pass",
-            "tipo": "tarjeta",
-            "saldo_inicial": "0.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Carrefour Pass", "tipo": "tarjeta", "saldo_inicial": "0.00", "fecha_apertura": "2026-11-01"},
     ).json()
 
     # 2. Configuración de botes
@@ -50,10 +39,10 @@ def test_flujo_integral_cuadre_produccion(client: TestClient) -> None:
         "/api/v1/botes",
         json={"nombre": "Bote del Mes", "tipo": "recurrente", "objetivo": "500.00"},
     ).json()
-    client.post(
+    bote_ocio = client.post(
         "/api/v1/botes",
         json={"nombre": "Bote Ocio", "tipo": "recurrente", "objetivo": "200.00"},
-    )
+    ).json()
 
     # Asignar saldo inicial al bote del mes desde el saldo disponible
     client.post(
@@ -133,8 +122,7 @@ def test_flujo_integral_cuadre_produccion(client: TestClient) -> None:
     assert Decimal(str(c_caixa_post["saldo"])) == Decimal("1430.00")
 
     # Bote del mes NO se volvió a restar por la liquidación (debe tener 430 €: 500 - 20 - 50)
-    todos_botes = client.get("/api/v1/botes").json()["items"]
-    b_mes_post = next(b for b in todos_botes if b["id"] == bote_mes["id"])
+    b_mes_post = next(b for b in client.get("/api/v1/botes").json()["items"] if b["id"] == bote_mes["id"])
     assert Decimal(str(b_mes_post["saldo"])) == Decimal("430.00")
 
     # Conciliación sigue 100% cuadrada
@@ -165,8 +153,7 @@ def test_flujo_integral_cuadre_produccion(client: TestClient) -> None:
     )
 
     # Verificar que el préstamo disminuyó exactamente a 4800.00 €
-    todos_prestamos = client.get("/api/v1/prestamos").json()["items"]
-    p_actual = next(p for p in todos_prestamos if p["id"] == prestamo["id"])
+    p_actual = next(p for p in client.get("/api/v1/prestamos").json()["items"] if p["id"] == prestamo["id"])
     assert Decimal(str(p_actual["importe_pendiente"])) == Decimal("4800.00")
 
     # 7. Backup y Restauración íntegra

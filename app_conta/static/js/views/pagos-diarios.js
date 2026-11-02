@@ -100,7 +100,7 @@ export default vista("pagos-diarios", async () => {
         <span class="empty-icon">${icono("tarjeta")}</span>
         <p>No se encontraron tarjetas de pago diario activas.</p>
         <span class="empty-sub">Crea primero tus tarjetas bancarias (Caixa, Deutsche Bank, Carrefour Pass) en la sección Tarjetas.</span>
-        <a href="#/tarjetas" class="btn-primary mini">+ Ir a Tarjetas</a>
+        <a href="/tarjetas" class="btn-primary mini">+ Ir a Tarjetas</a>
       </div>
     `;
   }

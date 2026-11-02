@@ -16,6 +16,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+
 pytestmark = pytest.mark.usefixtures("_migrado")
 
 
@@ -25,9 +26,7 @@ def test_seguridad_backup_tamano_maximo(client: TestClient) -> None:
     archivo_gigante = b"A" * (26 * 1024 * 1024)
     resp = client.post(
         "/api/v1/backup/restaurar",
-        files={
-            "archivo": ("backup_malicioso.json", io.BytesIO(archivo_gigante), "application/json")
-        },
+        files={"archivo": ("backup_malicioso.json", io.BytesIO(archivo_gigante), "application/json")},
     )
     assert resp.status_code == 400
     assert "supera el tamaño máximo" in resp.json()["error"]["mensaje"]
@@ -79,13 +78,7 @@ def test_seguridad_importacion_tamano_y_extension(client: TestClient) -> None:
     # Fichero vacío
     resp_vacio = client.post(
         "/api/v1/importacion/previsualizar",
-        files={
-            "fichero": (
-                "vacio.xlsx",
-                io.BytesIO(b""),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-        },
+        files={"fichero": ("vacio.xlsx", io.BytesIO(b""), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
     )
     assert resp_vacio.status_code in (400, 422)
 
@@ -94,12 +87,7 @@ def test_seguridad_importes_invalidos_nan_infinity(client: TestClient) -> None:
     """Verifica que importes con NaN, Infinity o cadenas alfanuméricas son rechazados."""
     c_resp = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Seguridad Test",
-            "tipo": "banco",
-            "saldo_inicial": "100.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Seguridad Test", "tipo": "banco", "saldo_inicial": "100.00", "fecha_apertura": "2026-11-01"},
     )
     assert c_resp.status_code == 201
     c_id = c_resp.json()["id"]
@@ -121,21 +109,11 @@ def test_seguridad_liquidacion_tarjeta_importe_positivo(client: TestClient) -> N
     """Verifica que liquidar tarjeta exige un importe estrictamente positivo."""
     c_banco = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Banco Seg",
-            "tipo": "banco",
-            "saldo_inicial": "500.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Banco Seg", "tipo": "banco", "saldo_inicial": "500.00", "fecha_apertura": "2026-11-01"},
     ).json()
     c_tarjeta = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Tarjeta Seg",
-            "tipo": "tarjeta",
-            "saldo_inicial": "-100.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Tarjeta Seg", "tipo": "tarjeta", "saldo_inicial": "-100.00", "fecha_apertura": "2026-11-01"},
     ).json()
 
     # Liquidación con importe negativo o cero
@@ -156,12 +134,7 @@ def test_seguridad_amortizacion_prestamo_importe_positivo(client: TestClient) ->
     """Verifica que amortizar un préstamo exige un importe estrictamente positivo."""
     c_banco = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": "Banco Seg 2",
-            "tipo": "banco",
-            "saldo_inicial": "1000.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": "Banco Seg 2", "tipo": "banco", "saldo_inicial": "1000.00", "fecha_apertura": "2026-11-01"},
     ).json()
     p_resp = client.post(
         "/api/v1/prestamos",
@@ -192,12 +165,7 @@ def test_seguridad_xss_en_textos_de_usuario(client: TestClient) -> None:
     payload_xss = "<script>alert('xss')</script><img src=x onerror=alert(1)>"
     c_resp = client.post(
         "/api/v1/cuentas",
-        json={
-            "nombre": f"Cuenta {payload_xss}",
-            "tipo": "banco",
-            "saldo_inicial": "100.00",
-            "fecha_apertura": "2026-11-01",
-        },
+        json={"nombre": f"Cuenta {payload_xss}", "tipo": "banco", "saldo_inicial": "100.00", "fecha_apertura": "2026-11-01"},
     )
     assert c_resp.status_code == 201
     c_data = c_resp.json()

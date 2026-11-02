@@ -157,7 +157,7 @@ document.addEventListener("click", async (e) => {
     try {
       const res = await API.post("/backup/poner-a-cero", { confirmar: true });
       alert("✅ " + (res.mensaje || "Todos los saldos y movimientos se han puesto a cero."));
-      location.hash = "#/inicio";
+      if (window.irA) window.irA("inicio"); else location.pathname = "/inicio";
     } catch (err) {
       btnPonerACero.disabled = false;
       btnPonerACero.textContent = "🔄 Poner Todo a Cero (Modo Pruebas)";
@@ -183,7 +183,7 @@ document.addEventListener("click", async (e) => {
   try {
     const res = await API.post("/backup/vaciar", { confirmar: true });
     alert("✅ " + (res.mensaje || "Base de datos vaciada con éxito. Ahora está lista para pruebas en limpio."));
-    location.hash = "#/inicio";
+    if (window.irA) window.irA("inicio"); else location.pathname = "/inicio";
   } catch (err) {
     btnVaciar.disabled = false;
     btnVaciar.textContent = "🗑️ Vaciar Todo y Empezar de Cero";
@@ -225,7 +225,7 @@ document.addEventListener("submit", async (e) => {
     }
 
     alert("🎉 " + (data.mensaje || "Copia de seguridad restaurada correctamente."));
-    location.hash = "#/inicio";
+    if (window.irA) window.irA("inicio"); else location.pathname = "/inicio";
   } catch (err) {
     btnSub.disabled = false;
     btnSub.textContent = "📤 Cargar Archivo y Restaurar Datos";

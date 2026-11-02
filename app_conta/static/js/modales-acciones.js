@@ -211,10 +211,10 @@ export async function abrirModalGasto() {
         }
         cerrarModalActivo();
         // Recargar o navegar para refrescar la pantalla
-        if (window.location.hash === "#/inicio" || window.location.hash === "") {
-          window.dispatchEvent(new HashChangeEvent("hashchange"));
+        if (window.irA) {
+          window.irA("inicio");
         } else {
-          location.hash = "#/inicio";
+          location.pathname = "/inicio";
         }
       } catch (err) {
         btnSubmit.disabled = false;
@@ -609,10 +609,10 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
             });
           }
           cerrarModalActivo();
-          if (window.location.hash === "#/inicio" || window.location.hash === "") {
-            window.dispatchEvent(new HashChangeEvent("hashchange"));
+          if (window.irA) {
+            window.irA("inicio");
           } else {
-            location.hash = "#/inicio";
+            location.pathname = "/inicio";
           }
         } catch (err) {
           btnSubmit.disabled = false;
@@ -870,10 +870,10 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           }
 
           cerrarModalActivo();
-          if (window.location.hash === "#/inicio" || window.location.hash === "") {
-            window.dispatchEvent(new HashChangeEvent("hashchange"));
+          if (window.irA) {
+            window.irA("inicio");
           } else {
-            location.hash = "#/inicio";
+            location.pathname = "/inicio";
           }
         } catch (err) {
           btnSubmit.disabled = false;
@@ -1393,10 +1393,10 @@ export async function abrirModalDesgloseCuadre() {
           </div>
 
           <div class="modal-footer" style="padding: 0; display: flex; justify-content: flex-end; gap: 0.75rem;">
-            <a href="#/copia-seguridad" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
+            <a href="/copia-seguridad" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
               Restaurar Copia de Seguridad
             </a>
-            <a href="#/prevision-gastos" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
+            <a href="/prevision-gastos" class="btn-secondary" onclick="document.getElementById('fintech-modal-overlay')?.remove()">
               Ajustar Previsión de Gastos
             </a>
             <button type="button" class="btn-primary" id="btn-entendido-cuadre">

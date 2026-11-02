@@ -60,3 +60,17 @@ def test_seed_hogar_unico_en_arranque(client):
     r = client.get("/")
     assert r.status_code == 200
     assert "Flow" in r.text
+
+
+def test_spa_fallback_rutas_limpias_y_error_api(client):
+    """Verifica que rutas limpias (/ahorro, /botes) cargan index.html y API 404 devuelve JSON."""
+    for ruta in ["/ahorro", "/pagos-diarios", "/botes", "/cuentas", "/prestamos"]:
+        res = client.get(ruta)
+        assert res.status_code == 200
+        assert "text/html" in res.headers["content-type"]
+        assert "Flow" in res.text
+
+    # Ruta de API que no existe debe dar 404 JSON, NO index.html
+    r_api_404 = client.get("/api/v1/ruta_que_no_existe")
+    assert r_api_404.status_code == 404
+    assert r_api_404.json()["error"]["codigo"] == "no_encontrado"

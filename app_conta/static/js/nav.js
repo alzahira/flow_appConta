@@ -2,12 +2,12 @@
 import { icono } from "./vistas.js";
 
 const ITEMS_PRINCIPALES = [
-  { grupo: "inicio", href: "#/inicio", label: "Resumen", iconoKey: "inicio" },
-  { grupo: "pagos-diarios", href: "#/pagos-diarios", label: "Pagos Diarios", iconoKey: "carrito" },
-  { grupo: "cuentas-grupo", href: "#/cuentas", label: "Cuentas y Tarjetas", iconoKey: "cuentas" },
-  { grupo: "ahorro-grupo", href: "#/botes", label: "Ahorro y Botes", iconoKey: "ahorro" },
-  { grupo: "prestamos", href: "#/prestamos", label: "Préstamos", iconoKey: "coche" },
-  { grupo: "movimientos", href: "#/movimientos", label: "Movimientos", iconoKey: "movimientos" },
+  { grupo: "inicio", href: "/inicio", label: "Resumen", iconoKey: "inicio" },
+  { grupo: "pagos-diarios", href: "/pagos-diarios", label: "Pagos Diarios", iconoKey: "carrito" },
+  { grupo: "cuentas-grupo", href: "/cuentas", label: "Cuentas y Tarjetas", iconoKey: "cuentas" },
+  { grupo: "ahorro-grupo", href: "/botes", label: "Ahorro y Botes", iconoKey: "ahorro" },
+  { grupo: "prestamos", href: "/prestamos", label: "Préstamos", iconoKey: "coche" },
+  { grupo: "movimientos", href: "/movimientos", label: "Movimientos", iconoKey: "movimientos" },
 ];
 
 const RUTAS_MAS = [
@@ -40,7 +40,7 @@ export function pintarNav(_rutas) {
       <div class="nav-dropdown-menu" id="nav-dropdown-menu">
         ${RUTAS_MAS.map(
           (item) => `
-          <a data-vista="${item.nombre}" href="#/${item.nombre}" class="dropdown-item">
+          <a data-vista="${item.nombre}" href="/${item.nombre}" class="dropdown-item">
             <span class="dropdown-icon">${icono(item.iconoKey)}</span>
             <div class="dropdown-item-info">
               <span class="dropdown-item-title">${item.label}</span>

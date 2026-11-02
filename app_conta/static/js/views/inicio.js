@@ -121,7 +121,7 @@ export default vista("inicio", async () => {
         </span>
       </button>
 
-      <a href="#/copia-seguridad" class="btn-hero-action backup" style="text-decoration: none;">
+      <a href="/copia-seguridad" class="btn-hero-action backup" style="text-decoration: none;">
         <span class="action-btn-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </span>
@@ -145,7 +145,7 @@ export default vista("inicio", async () => {
           <span class="spotlight-sub">Presupuesto en efectivo y compras cotidianas (${esc(boteMes?.nombre || "Sin sobre asignado")})</span>
         </div>
         <div class="spotlight-footer">
-          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">${boteMes ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
+          <a href="/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteMes?.id || ""}">${boteMes ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
         </div>
       </div>
 
@@ -162,7 +162,7 @@ export default vista("inicio", async () => {
           <span class="spotlight-sub">Fondo disponible para salidas, cenas y disfrute (${esc(boteOcio?.nombre || "Sin sobre asignado")})</span>
         </div>
         <div class="spotlight-footer">
-          <a href="#/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">${boteOcio ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
+          <a href="/botes" class="spotlight-link" data-accion="ver-detalle-bote" data-id="${boteOcio?.id || ""}">${boteOcio ? "Ver movimientos &rarr;" : "Configurar sobre &rarr;"}</a>
         </div>
       </div>
     </div>
@@ -196,7 +196,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">Pass, Carrefour, divisas...</span>
       </div>
 
-      <a href="#/ahorro" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/ahorro" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("botes")}</span>
           <span class="stat-label">Sobres y Botes</span>
@@ -205,7 +205,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">Ahorros y amortizaciones &rarr;</span>
       </a>
 
-      <a href="#/movimientos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/movimientos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("efectivo")}</span>
           <span class="stat-label">Dinero sin asignar</span>
@@ -214,7 +214,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">En cuentas, aún sin sobre &rarr;</span>
       </a>
 
-      <a href="#/prevision-gastos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/prevision-gastos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("prevision")}</span>
           <span class="stat-label">Bote Gastos Anuales</span>
@@ -223,7 +223,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">${previsionData?.gastos?.length ? `${previsionData.meses_pagados}/12 meses (${Number(dineroPrevision) >= 0 ? "Superávit" : "Déficit"})` : "Ver previsión &rarr;"}</span>
       </a>
 
-      <a href="#/deben" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/deben" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("prestamo")}</span>
           <span class="stat-label">Dinero que me deben</span>
@@ -232,7 +232,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">Ver deudores &rarr;</span>
       </a>
 
-      <a href="#/prestamos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/prestamos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("coche")}</span>
           <span class="stat-label">Préstamos que debo</span>
@@ -241,7 +241,7 @@ export default vista("inicio", async () => {
         <span class="stat-sub">Coche Hyundai, Ciclo DAM &rarr;</span>
       </a>
 
-      <a href="#/inversiones" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+      <a href="/inversiones" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("inversion")}</span>
           <span class="stat-label">Capital Invertido</span>

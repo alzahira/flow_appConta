@@ -178,7 +178,7 @@ export default vista("importar", async () => {
           try {
             await postArchivo("/importacion/aplicar", ficheroPendiente, false);
             alert("¡Importación completada con éxito!");
-            location.hash = "#/inicio";
+            if (window.irA) window.irA("inicio"); else location.pathname = "/inicio";
           } catch (e2) {
             if (e2.status === 409) {
               const ok = confirm(
@@ -187,7 +187,7 @@ export default vista("importar", async () => {
               if (ok) {
                 await postArchivo("/importacion/aplicar", ficheroPendiente, true);
                 alert("Importación duplicada aplicada.");
-                location.hash = "#/inicio";
+                if (window.irA) window.irA("inicio"); else location.pathname = "/inicio";
                 return;
               }
             }

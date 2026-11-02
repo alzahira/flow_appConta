@@ -22,9 +22,30 @@ import "./views/copia-seguridad.js";
 import "./views/pagos-recurrentes.js";
 import { iniciarModalesAcciones } from "./modales-acciones.js";
 
-async function navegar() {
-  const hash = location.hash.replace(/^#\/?/, "") || "inicio";
-  const actual = rutasRegistradas().find((v) => v.nombre === hash) || rutasRegistradas()[0];
+export function irA(ruta, reemplazar = false) {
+  const limpia = String(ruta || "").replace(/^#\/?/, "").replace(/^\//, "");
+  const targetPath = limpia && limpia !== "inicio" ? `/${limpia}` : "/";
+  if (reemplazar) {
+    window.history.replaceState(null, "", targetPath);
+  } else if (window.location.pathname !== targetPath) {
+    window.history.pushState(null, "", targetPath);
+  }
+  navegar();
+}
+window.irA = irA;
+
+export async function navegar() {
+  // 1. Obtener la ruta limpia desde pathname o hash de compatibilidad
+  let ruta = window.location.pathname.replace(/^\//, "") || "";
+  if (!ruta && window.location.hash) {
+    ruta = window.location.hash.replace(/^#\/?/, "");
+    window.history.replaceState(null, "", ruta && ruta !== "inicio" ? `/${ruta}` : "/");
+  }
+  if (!ruta || ruta === "index.html") {
+    ruta = "inicio";
+  }
+
+  const actual = rutasRegistradas().find((v) => v.nombre === ruta) || rutasRegistradas()[0];
   if (!actual) return;
 
   // Resaltar la pestaña del grupo activo en el menú superior
@@ -63,7 +84,14 @@ async function navegar() {
   } catch (e) {
     main.innerHTML = `<div class="tarjeta mensaje-error">No se pudo cargar la pantalla: ${e.message}</div>`;
   }
+
+  // Desplazar siempre al principio de la nueva pantalla (solución al scroll intermedio)
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  document.documentElement.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  document.body.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  if (main) main.scrollTop = 0;
 }
+window.navegar = navegar;
 
 /**
  * Delegación global de emits (instalada una sola vez):
@@ -307,7 +335,36 @@ document.addEventListener("submit", async (e) => {
   }
 });
 
+window.addEventListener("popstate", navegar);
 window.addEventListener("hashchange", navegar);
+
+// Interceptar clicks en enlaces internos para navegación limpia sin almohadilla (#)
+document.addEventListener("click", (e) => {
+  const link = e.target.closest("a");
+  if (!link) return;
+  const href = link.getAttribute("href");
+  if (!href) return;
+
+  // Evitar interceptar descargas o enlaces externos
+  if (
+    link.target === "_blank" ||
+    link.hasAttribute("download") ||
+    href.startsWith("http://") ||
+    href.startsWith("https://") ||
+    href.startsWith("mailto:")
+  ) {
+    return;
+  }
+
+  // Si es una ruta interna de la SPA (con almohadilla o limpia)
+  if (
+    href.startsWith("#/") ||
+    (href.startsWith("/") && !href.startsWith("/static/") && !href.startsWith("/api/"))
+  ) {
+    e.preventDefault();
+    irA(href);
+  }
+});
 
 /** Delegación única de clicks para acciones de vista (paginación, categorías, borrados…). */
 document.addEventListener("click", async (e) => {
@@ -403,7 +460,7 @@ document.addEventListener("click", async (e) => {
     const id = Number(btnVerBote.dataset.id);
     const { seleccionarBote } = await import("./views/botes.js");
     seleccionarBote(id);
-    await navegar();
+    irA("botes");
     return;
   }
 
@@ -422,7 +479,7 @@ document.addEventListener("click", async (e) => {
     const id = Number(btnVerAhorro.dataset.id);
     const { seleccionarFondoAhorro } = await import("./views/ahorro.js");
     seleccionarFondoAhorro(id);
-    await navegar();
+    irA("ahorro");
     return;
   }
 
