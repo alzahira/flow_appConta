@@ -1,4 +1,4 @@
-// Vista de Ahorro: Previsión futura, amortización de hipotecas y fondos de reserva con extracto individual
+// Vista de Fondo Ahorro Hipoteca: Previsión futura y amortizaciones
 import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js";
 import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
@@ -12,66 +12,60 @@ function tarjetaFondoAhorro(b) {
   const obj = Number(b.objetivo);
   const sal = Number(b.saldo);
   const tieneObj = b.objetivo !== null && obj !== 0;
-  const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
-  const conseguido = b.estado === "conseguido";
+  const pct = tieneObj ? Math.max(0, Math.min(100, (sal / obj) * 100)) : 0;
 
   return `
-    <article class="card-pot-full ahorro">
-      <div class="card-pot-header">
-        <div class="pot-header-main">
-          <div class="card-pot-icon ahorro">
+    <article class="glass-loan-card" data-accion="ver-detalle-ahorro" data-id="${b.id}" tabindex="0" role="button" aria-label="Fondo ${esc(b.nombre)}">
+      <div class="loan-card-top">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="acc-card-icon-wrap" style="color: var(--accent); width: 38px; height: 38px;">
             ${icono("ahorro")}
           </div>
-          <div class="pot-header-texts">
-            <h3 class="pot-title">${esc(b.nombre)}</h3>
-            ${
-              b.objetivo_fecha
-                ? `<span class="pot-meta-date">${icono("calendario")} Meta: ${fechaCorta(b.objetivo_fecha)}</span>`
-                : ""
-            }
+          <div class="loan-card-title-group">
+            <h3 class="loan-card-title">${esc(b.nombre)}</h3>
+            <span class="loan-card-entity">${b.objetivo_fecha ? `Meta: ${fechaCorta(b.objetivo_fecha)}` : "Fondo de amortización"}</span>
           </div>
         </div>
-        <div class="card-pot-actions">
-          ${
-            conseguido
-              ? `<span class="badge-tag ok">${icono("check")} Cumplido</span>`
-              : tieneObj
-              ? `<span class="badge-tag info">${pct.toFixed(0)}%</span>`
-              : ""
-          }
-          <button class="btn-action-icon delete" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}" title="Eliminar este fondo de ahorro">
-            ${icono("borrar")}
+
+        <div class="card-more-menu-wrapper" onclick="event.stopPropagation();">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(b.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
           </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}">
+              ${icono("borrar")} Eliminar fondo
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="pot-balance-section">
-        <span class="balance-sub">Ahorro acumulado</span>
-        <div class="pot-balance-value ${sal < 0 ? "negativo" : ""}">${importe(b.saldo)}</div>
+      <div class="loan-pending-block">
+        <span class="loan-pending-label">Ahorro acumulado</span>
+        <div class="loan-pending-val" style="color: var(--pos);">${importe(b.saldo)}</div>
       </div>
 
       ${
         tieneObj
           ? `
-        <div class="pot-progress-section">
-          <div class="progress-bar-large ${pct >= 100 ? "ok" : ""}">
-            <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
-          </div>
-          <div class="progress-info-row">
-            <span class="progress-pct">${pct.toFixed(0)}% completado</span>
-            <span class="progress-goal">Meta: ${b.objetivo} €</span>
-          </div>
+        <div class="loan-progress-track">
+          <div class="loan-progress-fill" style="width: ${pct}%;"></div>
+        </div>
+        <div class="loan-card-bottom-meta">
+          <span>${pct.toFixed(0)}% completado</span>
+          <span>Meta: ${importe(b.objetivo)}</span>
         </div>
       `
-          : ""
+          : `
+        <div class="loan-card-bottom-meta">
+          <span>Sin meta prefijada</span>
+          <span>Disponible para amortizar</span>
+        </div>
+      `
       }
-
-      <div class="pot-card-footer">
-        <button type="button" class="btn-pot-detail" data-accion="ver-detalle-ahorro" data-id="${b.id}">
-          <span>${icono("ojo")} Ver movimientos y extracto</span>
-          <span class="btn-arrow">&rarr;</span>
-        </button>
-      </div>
     </article>
   `;
 }
@@ -86,7 +80,7 @@ async function renderDetalleFondoAhorro(fondoId, cuentas) {
   const obj = Number(bote.objetivo);
   const sal = Number(bote.saldo);
   const tieneObj = bote.objetivo !== null && obj !== 0;
-  const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
+  const pct = tieneObj ? Math.max(0, Math.min(100, (sal / obj) * 100)) : 0;
 
   const totalAportaciones = movs
     .filter((m) => Number(m.importe) > 0)
@@ -102,110 +96,88 @@ async function renderDetalleFondoAhorro(fondoId, cuentas) {
   return `
     ${subnavAhorro("ahorro")}
 
-    <div class="detail-back-wrap">
-      <button type="button" class="btn-subtle" data-accion="cerrar-detalle-ahorro">
-        ${icono("volver")} &larr; Volver a todos los fondos de ahorro
+    <div style="margin-bottom: 1.25rem;">
+      <button type="button" class="btn-subtle" data-accion="cerrar-detalle-ahorro" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--fg-2); background: transparent; border: none; cursor: pointer; padding: 0.4rem 0;">
+        ${icono("volver")} &larr; Volver a fondos de ahorro
       </button>
     </div>
 
-    <div class="page-header-row">
-      <div class="detail-header-flex">
-        <span class="bank-group-icon ahorro">${icono("ahorro")}</span>
-        <div>
-          <h2 class="page-title">${esc(bote.nombre)}</h2>
-          <p class="page-subtitle">Extracto individual de ahorro y previsión futura</p>
-        </div>
-      </div>
-      <div class="header-total-card">
-        <span class="header-total-label">Total Ahorrado en este Fondo</span>
-        <span class="header-total-value">${importe(bote.saldo)}</span>
-        ${
-          tieneObj
-            ? `<span class="header-total-sub">${pct.toFixed(0)}% del objetivo (${bote.objetivo} €)</span>`
-            : ""
-        }
-      </div>
+    <!-- Hero detalle del fondo -->
+    <div class="accounts-hero-total">
+      <span class="hero-total-label">${esc(bote.nombre)}</span>
+      <div class="hero-total-amount text-pos">${importe(bote.saldo)}</div>
+      ${
+        tieneObj
+          ? `<span class="hero-total-sub">${pct.toFixed(0)}% completado de la meta (${bote.objetivo} €)</span>`
+          : `<span class="hero-total-sub">Sin límite de meta prefijado</span>`
+      }
     </div>
 
-    <div class="hero-pills-row">
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Saldo Acumulado en el Fondo</span>
-        <span class="pill-stat-value">${importe(bote.saldo)}</span>
+    <!-- Chips resumen -->
+    <section class="glass-summary-chips-row" style="margin-bottom: 1.5rem;">
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-green"></span>
+        <span class="chip-title">Total Aportaciones</span>
+        <strong class="chip-val" style="color: var(--pos);">${importe(totalAportaciones.toFixed(2))}</strong>
       </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Total Aportaciones Guardadas (+)</span>
-        <span class="pill-stat-value ok">${importe(totalAportaciones.toFixed(2))}</span>
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-violet"></span>
+        <span class="chip-title">Amortizaciones / Salidas</span>
+        <strong class="chip-val">${importe(Math.abs(totalSalidas).toFixed(2))}</strong>
       </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Salidas / Aplicado a Hipoteca (−)</span>
-        <span class="pill-stat-value alert">${importe(totalSalidas.toFixed(2))}</span>
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-blue"></span>
+        <span class="chip-title">Operaciones</span>
+        <strong class="chip-val">${movs.length}</strong>
       </div>
-    </div>
+    </section>
 
-    ${
-      tieneObj
-        ? `
-      <div class="card-pot-full" style="margin-bottom: 1.5rem">
-        <div class="progress-wrap-large">
-          <div class="progress-bar-large ${pct >= 100 ? "ok" : ""}">
-            <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
-          </div>
-          <div class="progress-info-row">
-            <span class="progress-pct">${pct.toFixed(0)}% conseguido</span>
-            <span class="progress-goal">Meta: ${bote.objetivo} € ${bote.objetivo_fecha ? `(Fecha límite: ${bote.objetivo_fecha})` : ""}</span>
-          </div>
-        </div>
-      </div>`
-        : ""
-    }
-
-    <!-- Formulario para meter ahorro o registrar amortización -->
-    <section class="section-block">
-      <details class="form-inversion-details">
-        <summary class="btn-nuevo-inversion-trigger">
-          ${icono("plus")} Añadir Dinero o Salida a este Fondo
+    <!-- Formulario meter/sacar -->
+    <section class="section-block" style="margin-bottom: 1.5rem;">
+      <details class="glass-accordion">
+        <summary>
+          ${icono("plus")} Aportar o Retirar Dinero de este Fondo
         </summary>
-        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-          <p class="form-desc">Registra una aportación de ahorro o aplica fondos a pagar cuota/hipoteca</p>
+        <div class="accordion-body">
           <form data-accion="crear-movimiento-ahorro" data-bote-id="${bote.id}" class="fintech-form">
-            <div class="sign-selector-row">
-              <label class="sign-option in">
-                <input type="radio" name="signo" value="+" checked>
-                <span class="sign-btn">🟢 Guardar dinero (+ Aportación al fondo)</span>
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+              <label class="glass-filter-chip" style="cursor: pointer;">
+                <input type="radio" name="signo" value="+" checked style="margin-right: 0.4rem;">
+                <span>+ Aportar dinero al fondo</span>
               </label>
-              <label class="sign-option out">
-                <input type="radio" name="signo" value="-">
-                <span class="sign-btn">🔴 Disponer de dinero (− Amortización / Gasto)</span>
+              <label class="glass-filter-chip" style="cursor: pointer;">
+                <input type="radio" name="signo" value="-" style="margin-right: 0.4rem;">
+                <span>− Retirar para amortizar</span>
               </label>
             </div>
 
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Importe (€)</label>
+            <div class="form-grid-2">
+              <div class="campo">
+                <label>Importe (€) *</label>
                 <input name="importe" inputmode="decimal" placeholder="0.00" required>
               </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Cuenta de Origen / Destino</label>
+              <div class="campo">
+                <label>Cuenta Bancaria *</label>
                 <select name="cuenta_id" required>
                   ${opcionesCuentas}
                 </select>
               </div>
             </div>
 
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Concepto / Motivo</label>
-                <input name="descripcion" placeholder="Ej. Ahorro para hipoteca mes actual, Pago amortización anticipada..." required>
+            <div class="form-grid-2">
+              <div class="campo">
+                <label>Concepto / Motivo *</label>
+                <input name="descripcion" placeholder="Ej. Aportación extraordinaria, Amortización..." required>
               </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Fecha</label>
+              <div class="campo">
+                <label>Fecha</label>
                 <input name="fecha" type="date" value="${hoy()}" required>
               </div>
             </div>
 
-            <div class="form-actions-right">
+            <div class="form-actions" style="margin-top: 1.25rem;">
               <button type="submit" class="btn-primary">
-                ${icono("plus")} Guardar en este Fondo
+                ${icono("plus")} Registrar Movimiento
               </button>
             </div>
           </form>
@@ -213,122 +185,103 @@ async function renderDetalleFondoAhorro(fondoId, cuentas) {
       </details>
     </section>
 
-    <!-- Listado separado de movimientos de este fondo -->
-    <section class="section-block">
-      <div class="section-header">
-        <div>
-          <h3 class="section-title">Movimientos Registrados en este Fondo (${movs.length})</h3>
-          <p class="section-desc">Historial exclusivo de aportaciones y disposiciones de este fondo</p>
-        </div>
+    <!-- Historial de movimientos del fondo -->
+    <section class="glass-card latest-transactions-card">
+      <div class="transactions-header">
+        <h3 class="transactions-title">Historial de este Fondo (${movs.length})</h3>
       </div>
-
-      ${
-        movs.length === 0
-          ? `
-        <div class="empty-state">
-          <span class="empty-icon">${icono("ahorro")}</span>
-          <p>Este fondo de ahorro no tiene movimientos asignados todavía.</p>
-          <span class="empty-sub">Usa el formulario superior para añadir la primera aportación.</span>
-        </div>
-      `
-          : `
-        <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
-          ${movs.map(pintarFilaMovimiento).join("\n")}
-        </div>
-      `
-      }
+      <div class="transactions-stream">
+        ${
+          movs.length === 0
+            ? `
+          <div class="empty-state-stream">
+            <span class="empty-stream-icon">${icono("movimientos")}</span>
+            <p>No hay movimientos registrados en este fondo todavía</p>
+          </div>
+          `
+            : movs.map(pintarFilaMovimiento).join("\n")
+        }
+      </div>
     </section>
   `;
 }
 
 export default vista("ahorro", async () => {
-  const [data, cuentasData] = await Promise.all([
+  const [botesData, cuentasData] = await Promise.all([
     API.get("/botes"),
     API.get("/cuentas"),
   ]);
 
-  setGlobalCaches({ cuentas: cuentasData.items, botes: data.items });
-  
-  const fondosAhorro = data.items.filter(
-    (b) => b.nombre.toLowerCase().includes("hipoteca")
-  );
-
+  setGlobalCaches({ cuentas: cuentasData.items, botes: botesData.items });
   const cuentas = cuentasData.items || [];
 
-  if (ahorroSeleccionadoId && fondosAhorro.some((b) => b.id === ahorroSeleccionadoId)) {
+  if (ahorroSeleccionadoId && botesData.items.some((b) => b.id === ahorroSeleccionadoId)) {
     return await renderDetalleFondoAhorro(ahorroSeleccionadoId, cuentas);
   }
-
   ahorroSeleccionadoId = null;
 
-  const totalAhorrado = fondosAhorro.reduce((acc, b) => acc + Number(b.saldo), 0);
-  const totalMetas = fondosAhorro.reduce((acc, b) => acc + (b.objetivo ? Number(b.objetivo) : 0), 0);
-  const pctGlobal = totalMetas > 0 ? Math.min(100, Math.round((totalAhorrado / totalMetas) * 100)) : null;
+  const fondosHipoteca = botesData.items.filter((b) =>
+    b.nombre.toLowerCase().includes("hipoteca")
+  );
+  const totalFondos = fondosHipoteca.reduce((acc, b) => acc + Number(b.saldo), 0);
 
   return `
   ${subnavAhorro("ahorro")}
 
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Fondo Ahorro Hipoteca</h2>
-      <p class="page-subtitle">Reserva de capital para amortización anticipada de hipoteca y blindaje financiero. Pulsa en el fondo para ver sus movimientos.</p>
-    </div>
+  <!-- 1. Total Acumulado Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Fondo de Ahorro para Amortización</span>
+    <div class="hero-total-amount text-pos">${importe(totalFondos.toFixed(2))}</div>
+    <span class="hero-total-sub">${fondosHipoteca.length} fondos específicos activos</span>
   </div>
 
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Fondo Ahorro Hipoteca</h3>
-        <p class="section-desc">Fondo independiente para blindar y amortizar las cuotas de la hipoteca</p>
-      </div>
-    </div>
-
-    <div class="grid-pots-large">
+  <!-- 2. Cuadrícula de Fondos -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="loans-grid">
       ${
-        fondosAhorro.length > 0
-          ? fondosAhorro.map(tarjetaFondoAhorro).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("ahorro")}</span>
-              <p>No tienes ningún fondo de ahorro registrado todavía.</p>
-              <span class="empty-sub">Crea un fondo para amortización de hipoteca con el formulario inferior.</span>
-            </div>`
+        fondosHipoteca.length > 0
+          ? fondosHipoteca.map(tarjetaFondoAhorro).join("\n")
+          : `
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("ahorro")}</div>
+            <h4>No tienes fondos de ahorro creados</h4>
+            <p>Crea un fondo destinado a la amortización anticipada de tu hipoteca o reserva de capital.</p>
+          </div>
+          `
       }
     </div>
   </section>
 
+  <!-- 3. Formulario para nuevo fondo -->
   <section class="section-block">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
-        ${icono("plus")} Crear Nuevo Fondo de Ahorro
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Crear Nuevo Fondo de Ahorro Hipoteca
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Asigna fondos para amortizar hipoteca a futuro o reservas estratégicas</p>
-        <div class="quick-pills-suggestions">
-          <span class="suggestions-label">Sugerencias rápidas:</span>
-          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Hipoteca'; document.getElementById('ah-obj').focus();">+ Amortización Hipoteca</button>
-          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Reserva Cuotas Hipoteca'; document.getElementById('ah-obj').focus();">+ Reserva Cuotas Hipoteca</button>
-          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Extraordinaria'; document.getElementById('ah-obj').focus();">+ Amortización Extraordinaria</button>
-        </div>
+      <div class="accordion-body">
+        <form data-accion="crear-bote-ahorro" data-err="err-bote-ahorro" class="fintech-form">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Crea un sobre específico para acumular fondos destinados a la amortización parcial o cancelación de hipoteca.
+          </p>
 
-        <form data-accion="crear-bote-ahorro" data-err="err-ahorro" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="ah-nombre" class="form-label">Nombre del Fondo</label>
-              <input id="ah-nombre" name="nombre" placeholder="Ej. Amortización Hipoteca, Reserva Cuotas..." required>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="bah-nombre">Nombre del Fondo *</label>
+              <input id="bah-nombre" name="nombre" placeholder="Ej. Ahorro Amortización Hipoteca..." required>
             </div>
-            <div class="form-group">
-              <label for="ah-obj" class="form-label">Objetivo de Ahorro (€) (Opcional)</label>
-              <input id="ah-obj" name="objetivo" inputmode="decimal" placeholder="Ej. 10000.00">
+            <div class="campo">
+              <label for="bah-objetivo">Objetivo (€) (Opcional)</label>
+              <input id="bah-objetivo" name="objetivo" inputmode="decimal" placeholder="Ej. 10000.00">
             </div>
-            <div class="form-group">
-              <label for="ah-fecha" class="form-label">Fecha Límite (Opcional)</label>
-              <input id="ah-fecha" name="objetivo_fecha" type="date">
+            <div class="campo">
+              <label for="bah-fecha">Fecha Límite</label>
+              <input id="bah-fecha" name="objetivo_fecha" type="date">
             </div>
           </div>
 
-          <div id="err-ahorro"></div>
+          <div id="err-bote-ahorro"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
               ${icono("plus")} Crear Fondo de Ahorro
             </button>

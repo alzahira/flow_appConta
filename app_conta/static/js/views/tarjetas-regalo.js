@@ -1,4 +1,4 @@
-// Vista de Tarjetas Regalo y Monederos: Gestión del dinero en tarjetas prepago y regalo
+// Vista de Tarjetas Regalo y Monederos: Control del saldo disponible en tarjetas prepago y regalo
 import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 
 export function esTarjetaRegalo(c) {
@@ -30,45 +30,44 @@ export function esTarjetaRegalo(c) {
   );
 }
 
-function obtenerEstiloComercio(entidad, nombre) {
-  const txt = `${entidad} ${nombre}`.toLowerCase();
-  if (txt.includes("amazon")) return { clase: "gift-amazon", badge: "Amazon", color: "#ff9900" };
-  if (txt.includes("corte") || txt.includes("eci")) return { clase: "gift-eci", badge: "El Corte Inglés", color: "#006738" };
-  if (txt.includes("carrefour")) return { clase: "gift-carrefour", badge: "Carrefour", color: "#004e9a" };
-  if (txt.includes("ikea")) return { clase: "gift-ikea", badge: "IKEA", color: "#ffcc00" };
-  if (txt.includes("decathlon")) return { clase: "gift-decathlon", badge: "Decathlon", color: "#0082c3" };
-  if (txt.includes("zalando")) return { clase: "gift-zalando", badge: "Zalando", color: "#ff6900" };
-  return { clase: "gift-generica", badge: entidad || "Tarjeta Regalo", color: "#0d9488" };
-}
-
 function tarjetaRegaloItem(c) {
-  const estilo = obtenerEstiloComercio(c.entidad || "", c.nombre || "");
-  const saldoNum = Number(c.saldo);
-
   return `
-    <article class="gift-card-fintech ${estilo.clase}">
-      <div class="gift-card-shine"></div>
-      
-      <div class="gift-card-top-row">
-        <div class="gift-card-ribbon">
-          <span class="ribbon-icon">${icono("regalo")}</span>
-          <span class="ribbon-text">${esc(estilo.badge)}</span>
+    <article class="glass-account-card">
+      <div class="acc-card-top">
+        <div class="acc-card-brand-group">
+          <div class="acc-card-icon-wrap" style="color: var(--accent-2);">
+            ${icono("regalo")}
+          </div>
+          <div class="acc-card-name-group">
+            <h3 class="acc-card-name" title="${esc(c.nombre)}">${esc(c.nombre)}</h3>
+            <span class="acc-card-badge">${esc(c.entidad || "Tarjeta Regalo")}</span>
+          </div>
         </div>
-        <button class="btn-action-icon delete dark" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}" title="Eliminar tarjeta regalo">
-          ${icono("borrar")}
-        </button>
+
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(c.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
+          </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}">
+              ${icono("borrar")} Eliminar tarjeta
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="gift-card-middle">
-        <h3 class="gift-card-title">${esc(c.nombre)}</h3>
-        <span class="gift-card-tag">${esc(c.entidad || "Tarjeta Regalo / Prepago")}</span>
+      <div class="acc-card-balance-block">
+        <span class="acc-card-balance-label">Saldo disponible</span>
+        <div class="acc-card-balance-val text-pos">${importe(c.saldo)}</div>
       </div>
 
-      <div class="gift-card-bottom-row">
-        <div class="gift-card-balance-block">
-          <span class="gift-card-balance-label">Saldo disponible</span>
-          <div class="gift-card-balance-value">${importe(c.saldo)}</div>
-        </div>
+      <div class="loan-card-bottom-meta" style="margin-top: 1rem;">
+        <span>Tarjeta prepago</span>
+        <span>Inicial: ${c.saldo_inicial} €</span>
       </div>
     </article>
   `;
@@ -82,94 +81,69 @@ export default vista("tarjetas-regalo", async () => {
   return `
   ${subnavCuentas("tarjetas-regalo")}
 
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Tarjetas Regalo y Monederos</h2>
-      <p class="page-subtitle">Control del dinero disponible en tarjetas regalo de Amazon, El Corte Inglés, Carrefour y prepago</p>
-    </div>
-    <div class="header-total-card">
-      <span class="header-total-label">Total en Tarjetas Regalo</span>
-      <span class="header-total-value">${importe(totalRegalo.toFixed(2))}</span>
-      <span class="header-total-sub">${tarjetasRegalo.length} tarjeta(s) registradas</span>
-    </div>
+  <!-- 1. Total en Tarjetas Regalo Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Total en Tarjetas Regalo</span>
+    <div class="hero-total-amount text-pos">${importe(totalRegalo.toFixed(2))}</div>
+    <span class="hero-total-sub">${tarjetasRegalo.length} tarjetas regalo activas</span>
   </div>
 
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Tus Tarjetas Regalo</h3>
-        <p class="section-desc">Saldo disponible en cada tarjeta regalo o monedero</p>
-      </div>
-    </div>
-
-    <div class="grid-gift-cards">
+  <!-- 2. Cuadrícula de Tarjetas Regalo -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="loans-grid">
       ${
         tarjetasRegalo.length > 0
           ? tarjetasRegalo.map(tarjetaRegaloItem).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("regalo")}</span>
-              <p>No tienes ninguna tarjeta regalo guardada aún.</p>
-              <span class="empty-sub">Añade tus tarjetas regalo de Amazon, El Corte Inglés u otros comercios para tener controlado tu saldo disponible.</span>
-            </div>`
+          : `
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("regalo")}</div>
+            <h4>No tienes tarjetas regalo registradas</h4>
+            <p>Añade tarjetas prepago o saldo de Amazon, El Corte Inglés, Carrefour, etc.</p>
+          </div>
+          `
       }
     </div>
   </section>
 
+  <!-- 3. Formulario para nueva tarjeta regalo -->
   <section class="section-block">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
-        ${icono("plus")} Dar de alta nueva Tarjeta Regalo o Monedero
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Dar de Alta Nueva Tarjeta Regalo
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Registra el saldo disponible para tenerlo computado en tus fondos</p>
+      <div class="accordion-body">
+        <form data-accion="crear-tarjeta-regalo" data-err="err-tarjeta-regalo" class="fintech-form">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Registra una tarjeta prepago para seguir las compras y el saldo restante.
+          </p>
 
-        <div class="template-pills-row">
-          <span class="template-label">Comercios habituales:</span>
-          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Amazon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Amazon'; document.getElementById('gr-saldo').focus();">
-            🛒 Amazon
-          </button>
-          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='El Corte Inglés (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta El Corte Inglés'; document.getElementById('gr-saldo').focus();">
-            🛍️ El Corte Inglés
-          </button>
-          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Carrefour (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo Carrefour'; document.getElementById('gr-saldo').focus();">
-            ⛽ Carrefour
-          </button>
-          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='IKEA (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo IKEA'; document.getElementById('gr-saldo').focus();">
-            🪑 IKEA
-          </button>
-          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Decathlon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Decathlon'; document.getElementById('gr-saldo').focus();">
-            🏃 Decathlon
-          </button>
-        </div>
-
-        <form data-accion="crear-tarjeta-regalo" data-err="err-regalo" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="gr-nombre" class="form-label">Nombre descriptivo</label>
-              <input id="gr-nombre" name="nombre" placeholder="Ej. Tarjeta Amazon 50€, Tarjeta Regalo El Corte Inglés..." required>
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="tjr-nombre">Nombre de la Tarjeta *</label>
+              <input id="tjr-nombre" name="nombre" placeholder="Ej. Tarjeta Amazon 50€, Cheque Regalo ECI..." required>
             </div>
-            <div class="form-group form-span-2">
-              <label for="gr-entidad" class="form-label">Comercio / Emisor</label>
-              <input id="gr-entidad" name="entidad" placeholder="Ej. Amazon, El Corte Inglés, Carrefour, IKEA, Zara..." required>
+            <div class="campo">
+              <label for="tjr-entidad">Comercio o Entidad Emisora *</label>
+              <input id="tjr-entidad" name="entidad" placeholder="Ej. Amazon, El Corte Inglés, Carrefour..." required>
             </div>
           </div>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="gr-saldo" class="form-label">Saldo Disponible en la Tarjeta (€)</label>
-              <input id="gr-saldo" name="saldo_inicial" inputmode="decimal" placeholder="Ej. 50.00" required>
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="tjr-saldo">Saldo Inicial (€) *</label>
+              <input id="tjr-saldo" name="saldo_inicial" inputmode="decimal" placeholder="50.00" required>
             </div>
-            <div class="form-group form-span-2">
-              <label for="gr-fecha" class="form-label">Fecha de Recepción / Alta</label>
-              <input id="gr-fecha" name="fecha_apertura" type="date" value="${hoy()}" required>
+            <div class="campo">
+              <label for="tjr-apertura">Fecha de Activación</label>
+              <input id="tjr-apertura" name="fecha_apertura" type="date" value="${hoy()}" required>
             </div>
           </div>
 
-          <div id="err-regalo"></div>
+          <div id="err-tarjeta-regalo"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
-              ${icono("plus")} Guardar Tarjeta Regalo
+              ${icono("plus")} Crear Tarjeta Regalo
             </button>
           </div>
         </form>

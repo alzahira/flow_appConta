@@ -1,24 +1,22 @@
-// Vista de Dinero que me deben: Gestión de préstamos, adelantos y deudas a favor del hogar
+// Vista de Dinero que me deben: Préstamos a terceros, adelantos y cobros pendientes
 import { vista, esc, importe, hoy, fechaCorta, icono, subnavAhorro } from "../vistas.js";
 
 const PERFILES_DEUDA = {
-  persona: { label: "Persona", iconoKey: "prestamo", color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
-  comercio: { label: "Comercio", iconoKey: "carrito", color: "#ea580c", bg: "#fff7ed", border: "#fed7aa" },
-  banco: { label: "Banco", iconoKey: "banco", color: "#0284c7", bg: "#e0f2fe", border: "#bae6fd" },
-  servicio: { label: "Servicio", iconoKey: "prevision", color: "#0d9488", bg: "#f0fdfa", border: "#99f6e4" },
-  bote: { label: "Bote", iconoKey: "botes", color: "#0d9488", bg: "#f0fdfa", border: "#ccfbf1" },
-  ocio: { label: "Ocio", iconoKey: "ocio", color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8" },
-  tecnologia: { label: "Tecnología", iconoKey: "telefono", color: "#4f46e5", bg: "#eef2ff", border: "#c7d2fe" },
-  seguro: { label: "Seguro", iconoKey: "seguro", color: "#0f766e", bg: "#f0fdfa", border: "#99f6e4" },
-  otros: { label: "Otros", iconoKey: "prestamo", color: "#64748b", bg: "#f8fafc", border: "#e2e8f0" },
+  persona: { label: "Persona", iconoKey: "prestamo", color: "#7c3aed" },
+  comercio: { label: "Comercio", iconoKey: "carrito", color: "#ea580c" },
+  banco: { label: "Banco", iconoKey: "banco", color: "#0284c7" },
+  servicio: { label: "Servicio", iconoKey: "prevision", color: "#0d9488" },
+  bote: { label: "Bote", iconoKey: "botes", color: "#0d9488" },
+  ocio: { label: "Ocio", iconoKey: "ocio", color: "#db2777" },
+  tecnologia: { label: "Tecnología", iconoKey: "telefono", color: "#4f46e5" },
+  seguro: { label: "Seguro", iconoKey: "seguro", color: "#0f766e" },
+  otros: { label: "Otros", iconoKey: "prestamo", color: "#64748b" },
 };
 
 function perfilDeuda(d) {
   const nombre = (d.deudor || "").toLowerCase();
   const texto = `${nombre} ${d.concepto || ""}`.toLowerCase();
 
-  // Primero manda el nombre del deudor: una persona sigue siendo persona
-  // aunque el concepto hable de una compra o de un recibo.
   if (/(bote|sobre)/.test(nombre)) return PERFILES_DEUDA.bote;
   if (/(banco|bank|exchange|nexo|hipoteca|deutsche)/.test(nombre)) return PERFILES_DEUDA.banco;
   if (/(seguro|ocaso)/.test(nombre)) return PERFILES_DEUDA.seguro;
@@ -44,192 +42,155 @@ function tarjetaDeudaItem(d, cuentas) {
     .join("");
 
   return `
-    <article class="card-debt-full ${d.estado}" style="--debt-accent: ${perfil.color};">
-      <div class="card-debt-top">
-        <div class="card-debt-icon ${d.estado}" style="background: ${perfil.bg}; color: ${perfil.color}; border: 1px solid ${perfil.border};">
-          ${icono(perfil.iconoKey)}
+    <article class="glass-loan-card">
+      <div class="loan-card-top">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="acc-card-icon-wrap" style="color: var(--accent); width: 38px; height: 38px;">
+            ${icono(perfil.iconoKey)}
+          </div>
+          <div class="loan-card-title-group">
+            <h3 class="loan-card-title">${esc(d.deudor)}</h3>
+            <span class="loan-card-entity">${esc(d.concepto)} · ${perfil.label}</span>
+          </div>
         </div>
-        <div class="card-debt-tags">
-          <span class="debt-type-chip" style="background: ${perfil.bg}; color: ${perfil.color}; border: 1px solid ${perfil.border};">
-            ${perfil.label}
-          </span>
-          ${
-            saldada
-              ? `<span class="badge-tag ok">${icono("check")} Saldado</span>`
-              : ""
-          }
-          <button class="btn-action-icon delete" data-accion="borrar-deuda" data-id="${d.id}" data-deudor="${esc(d.deudor)}" title="Eliminar este registro">
-            ${icono("borrar")}
+
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" aria-label="Opciones de deuda de ${esc(d.deudor)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
           </button>
-        </div>
-      </div>
-
-      <div class="card-debt-body">
-        <h3 class="debt-person">${esc(d.deudor)}</h3>
-        <p class="debt-concept">${esc(d.concepto)}</p>
-        <div class="debt-meta">
-          <span class="meta-item">${icono("calendario")} Fecha: ${fechaCorta(d.fecha)}</span>
-          ${
-            d.fecha_limite
-              ? `<span class="meta-item limit">Límite: ${fechaCorta(d.fecha_limite)}</span>`
-              : ""
-          }
-        </div>
-        ${d.notas ? `<p class="debt-notes">${esc(d.notas)}</p>` : ""}
-      </div>
-
-      <div class="card-debt-footer">
-        <div class="debt-balance-row">
-          <span class="debt-balance-label">
-            ${saldada ? icono("check") : icono("alerta")}
-            ${saldada ? "Saldado" : "Pendiente"}
-          </span>
-          <div class="debt-balance-value ${saldada ? "saldado" : "negativo"}">
-            ${saldada ? "0,00 €" : importe(d.importe_pendiente, "negativo")}
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-deuda" data-id="${d.id}" data-deudor="${esc(d.deudor)}">
+              ${icono("borrar")} Eliminar apunte
+            </button>
           </div>
         </div>
-
-        ${
-          !saldada
-            ? `
-          <div class="debt-cobro-box">
-            <details class="cobro-details">
-              <summary class="btn-cobro-trigger">
-                ${icono("plus")} Registrar devolución / cobro
-              </summary>
-              <form data-accion="registrar-cobro-deuda" data-deuda-id="${d.id}" class="cobro-form">
-                <div class="cobro-inputs-row">
-                  <div class="cobro-group">
-                    <label class="cobro-label">Importe devuelto (€)</label>
-                    <input name="importe" inputmode="decimal" placeholder="${d.importe_pendiente}" max="${d.importe_pendiente}" required>
-                  </div>
-                  <div class="cobro-group">
-                    <label class="cobro-label">Ingresar en cuenta bancaria</label>
-                    <select name="cuenta_id">
-                      <option value="">— No crear movimiento —</option>
-                      ${opcionesCuentas}
-                    </select>
-                  </div>
-                </div>
-                <div class="cobro-actions">
-                  <button type="submit" class="btn-primary mini">
-                    ${icono("check")} Confirmar cobro
-                  </button>
-                </div>
-              </form>
-            </details>
-          </div>
-        `
-            : ""
-        }
       </div>
+
+      <div class="loan-pending-block">
+        <span class="loan-pending-label">Importe pendiente de cobro</span>
+        <div class="loan-pending-val" style="color: ${saldada ? 'var(--pos)' : 'var(--accent-2)'};">
+          ${saldada ? "0,00 € (Saldado)" : importe(d.importe_pendiente)}
+        </div>
+      </div>
+
+      <div class="loan-card-bottom-meta">
+        <span>Fecha: ${fechaCorta(d.fecha)}</span>
+        <span>${d.fecha_limite ? `Límite: ${fechaCorta(d.fecha_limite)}` : "Sin fecha límite"}</span>
+      </div>
+
+      ${
+        !saldada
+          ? `
+        <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--divider);">
+          <details class="loan-pay-details">
+            <summary style="font-size: 0.78rem; color: var(--accent-text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500;">
+              ${icono("plus")} Registrar devolución o cobro
+            </summary>
+            <form data-accion="registrar-cobro-deuda" data-deuda-id="${d.id}" class="fintech-form" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <div class="form-grid-2">
+                <input name="importe" inputmode="decimal" placeholder="Importe (€)" value="${d.importe_pendiente}" required style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                <select name="cuenta_id" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                  <option value="">— Sin ingresar en cuenta —</option>
+                  ${opcionesCuentas}
+                </select>
+              </div>
+              <button type="submit" class="btn-primary" style="align-self: flex-end; font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+                Confirmar cobro
+              </button>
+            </form>
+          </details>
+        </div>
+      `
+          : ""
+      }
     </article>
   `;
 }
 
 export default vista("deben", async () => {
-  const [deudasData, cuentasData] = await Promise.all([
+  const [data, cuentasData] = await Promise.all([
     API.get("/deudas"),
     API.get("/cuentas"),
   ]);
 
-  const deudas = deudasData.items || [];
+  const items = data.items || [];
   const cuentas = cuentasData.items || [];
-  const totalPendiente = deudasData.total_pendiente || "0.00";
-  const numPendientes = deudas.filter((d) => d.estado !== "saldado").length;
+  const pendientes = items.filter((d) => d.estado !== "saldado");
 
   return `
   ${subnavAhorro("deben")}
 
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Dinero que me deben</h2>
-      <p class="page-subtitle">Seguimiento de dinero prestado o adelantado pendiente de que me lo devuelvan</p>
-    </div>
-    <div class="header-total-card">
-      <span class="header-total-label">Total que me deben</span>
-      <span class="header-total-value negativo">${importe(totalPendiente, "negativo")}</span>
-      <span class="header-total-sub">${numPendientes} registros pendientes</span>
-    </div>
+  <!-- 1. Total que me deben Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Total Dinero que me Deben</span>
+    <div class="hero-total-amount text-pos">${importe(data.total_pendiente)}</div>
+    <span class="hero-total-sub">${pendientes.length} préstamos pendientes de cobro</span>
   </div>
 
-  <div class="hero-pills-row">
-    <div class="hero-pill-stat">
-      <span class="pill-stat-label">Total que me deben</span>
-      <span class="pill-stat-value negativo">${importe(totalPendiente, "negativo")}</span>
-    </div>
-    <div class="hero-pill-stat">
-      <span class="pill-stat-label">Personas / Deudas</span>
-      <span class="pill-stat-value">${numPendientes} pendientes</span>
-    </div>
-  </div>
-
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Listado de Dinero que me Deben</h3>
-        <p class="section-desc">Detalle de personas y deudas pendientes</p>
-      </div>
-    </div>
-
-    <div class="grid-pots-large">
+  <!-- 2. Cuadrícula de Deudas a Favor -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="loans-grid">
       ${
-        deudas.length > 0
-          ? deudas.map((d) => tarjetaDeudaItem(d, cuentas)).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("prestamo")}</span>
-              <p>No tienes ningún dinero prestado registrado.</p>
-              <span class="empty-sub">Usa el formulario inferior para anotar dinero que te deben amigos, familiares o empresas.</span>
-            </div>`
+        items.length > 0
+          ? items.map((d) => tarjetaDeudaItem(d, cuentas)).join("\n")
+          : `
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("prestamo")}</div>
+            <h4>No tienes deudas a tu favor</h4>
+            <p>Nadie te debe dinero actualmente. Añade un apunte si prestas dinero a un conocido o tienes pagos por recuperar.</p>
+          </div>
+          `
       }
     </div>
   </section>
 
+  <!-- 3. Formulario para nuevo apunte -->
   <section class="section-block">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
-        ${icono("plus")} Añadir Dinero que te Deben
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Registrar Nuevo Dinero que me Deben
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Registra un nuevo préstamo, fianza o dinero adelantado</p>
-
+      <div class="accordion-body">
         <form data-accion="crear-deuda" data-err="err-deuda" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="deu-persona" class="form-label">¿Quién te debe el dinero? (Nombre de la persona o entidad)</label>
-              <input id="deu-persona" name="deudor" placeholder="Ej. Juan García, Hermano, Inquilino, Amigos cena..." required>
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Anota una cantidad prestada o dinero adelantado a una persona o entidad.
+          </p>
+
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="de-deudor">¿Quién te debe el dinero? *</label>
+              <input id="de-deudor" name="deudor" placeholder="Ej. Pedro, Mi madre, Carrefour..." required>
             </div>
-            <div class="form-group form-span-2">
-              <label for="deu-concepto" class="form-label">Concepto o Motivo</label>
-              <input id="deu-concepto" name="concepto" placeholder="Ej. Préstamo personal, Adelanto viaje, Fianza alquiler..." required>
+            <div class="campo">
+              <label for="de-concepto">Concepto / Motivo *</label>
+              <input id="de-concepto" name="concepto" placeholder="Ej. Cena cumpleaños, Compra compartida..." required>
+            </div>
+            <div class="campo">
+              <label for="de-importe">Importe (€) *</label>
+              <input id="de-importe" name="importe" inputmode="decimal" placeholder="50.00" required>
             </div>
           </div>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="deu-importe" class="form-label">Importe que te deben (€)</label>
-              <input id="deu-importe" name="importe" inputmode="decimal" placeholder="Ej. 150.00" required>
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="de-fecha">Fecha del préstamo</label>
+              <input id="de-fecha" name="fecha" type="date" value="${hoy()}" required>
             </div>
-            <div class="form-group">
-              <label for="deu-fecha" class="form-label">Fecha del Préstamo</label>
-              <input id="deu-fecha" name="fecha" type="date" value="${hoy()}" required>
+            <div class="campo">
+              <label for="de-limite">Fecha límite prevista (Opcional)</label>
+              <input id="de-limite" name="fecha_limite" type="date">
             </div>
-            <div class="form-group">
-              <label for="deu-limite" class="form-label">Fecha Límite Estimada (Opcional)</label>
-              <input id="deu-limite" name="fecha_limite" type="date">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="deu-notas" class="form-label">Notas Adicionales (Opcional)</label>
-            <input id="deu-notas" name="notas" placeholder="Ej. Me dijo que me lo paga a final de mes por Bizum">
           </div>
 
           <div id="err-deuda"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
-              ${icono("plus")} Guardar Deuda
+              ${icono("plus")} Guardar Registro
             </button>
           </div>
         </form>

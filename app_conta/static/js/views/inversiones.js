@@ -21,16 +21,6 @@ const NOMBRES_TIPO = {
   otros: "Otros Activos",
 };
 
-const COLORES_TIPO = {
-  fondos: "#0284c7",
-  acciones_etfs: "#6366f1",
-  renta_fija: "#d97706",
-  pensiones: "#0d9488",
-  cripto: "#db2777",
-  inmobiliario: "#ea580c",
-  otros: "#64748b",
-};
-
 let filtroActivo = "todos";
 
 export function fijarFiltroInversion(tipo) {
@@ -42,9 +32,7 @@ function iconoActivo(tipo) {
 }
 
 function tarjetaInversionItem(inv, cuentas) {
-  const colorTipo = COLORES_TIPO[inv.tipo_activo] || "#6366f1";
   const nombreTipo = NOMBRES_TIPO[inv.tipo_activo] || inv.tipo_activo;
-
   const cuentaVinculada = cuentas.find((c) => c.id === inv.cuenta_id);
   const opcionesCuentas = cuentas
     .map(
@@ -54,95 +42,81 @@ function tarjetaInversionItem(inv, cuentas) {
     .join("");
 
   return `
-    <article class="card-investment-full" data-tipo="${esc(inv.tipo_activo)}" style="--accent-color: ${colorTipo}">
-      <div class="card-investment-top">
-        <div class="investment-icon-wrap" style="background: ${colorTipo}18; color: ${colorTipo};">
-          ${iconoActivo(inv.tipo_activo)}
+    <article class="glass-loan-card">
+      <div class="loan-card-top">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="acc-card-icon-wrap" style="color: var(--accent); width: 38px; height: 38px;">
+            ${iconoActivo(inv.tipo_activo)}
+          </div>
+          <div class="loan-card-title-group">
+            <h3 class="loan-card-title">${esc(inv.nombre)}</h3>
+            <span class="loan-card-entity">${esc(inv.entidad)} · ${esc(nombreTipo)}</span>
+          </div>
         </div>
-        <div class="investment-tags-wrap">
-          <span class="badge-tag" style="background: ${colorTipo}20; color: ${colorTipo}; border-color: ${colorTipo}40;">
-            ${esc(nombreTipo)}
-          </span>
-          <span class="badge-subtle">${esc(inv.entidad)}</span>
-          <div class="investment-card-actions">
-            <button class="btn-action-icon" data-accion="actualizar-valor-inversion" data-id="${inv.id}" data-nombre="${esc(inv.nombre)}" data-valor="${inv.valor_actual}" title="Actualizar cotización / valor de mercado">
-              ${icono("editar")}
+
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(inv.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
+          </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" style="color: var(--fg);" data-accion="actualizar-valor-inversion" data-id="${inv.id}" data-nombre="${esc(inv.nombre)}" data-valor="${inv.valor_actual}">
+              ${icono("editar")} Actualizar cotización
             </button>
-            <button class="btn-action-icon delete" data-accion="borrar-inversion" data-id="${inv.id}" data-nombre="${esc(inv.nombre)}" title="Eliminar posición">
-              ${icono("borrar")}
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-inversion" data-id="${inv.id}" data-nombre="${esc(inv.nombre)}">
+              ${icono("borrar")} Eliminar posición
             </button>
           </div>
         </div>
       </div>
 
-      <div class="card-investment-body">
-        <h3 class="investment-title">${esc(inv.nombre)}</h3>
-        <div class="investment-meta">
-          <span class="meta-item">${icono("calendario")} Desde ${fechaCorta(inv.fecha_inicio)}</span>
-          ${
-            cuentaVinculada
-              ? `<span class="meta-item">${icono("banco")} Vinculada: ${esc(cuentaVinculada.nombre)}</span>`
-              : ""
-          }
-        </div>
-        ${inv.notas ? `<p class="investment-notes">${esc(inv.notas)}</p>` : ""}
+      <div class="loan-pending-block">
+        <span class="loan-pending-label">Capital invertido</span>
+        <div class="loan-pending-val" style="color: var(--fg);">${importe(inv.capital_aportado)}</div>
       </div>
 
-      <div class="card-investment-metrics solo-capital">
-        <div class="metric-box primary">
-          <span class="metric-label">Capital invertido</span>
-          <div class="metric-value-huge">${importe(inv.capital_aportado)}</div>
-        </div>
+      <div class="loan-card-bottom-meta">
+        <span>Desde ${fechaCorta(inv.fecha_inicio)}</span>
+        <span>${cuentaVinculada ? esc(cuentaVinculada.nombre) : "Sin cuenta vinculada"}</span>
       </div>
 
-      <div class="card-investment-footer">
-        <div class="inv-quick-actions">
-          <button class="btn-secondary mini" data-accion="actualizar-valor-inversion" data-id="${inv.id}" data-nombre="${esc(inv.nombre)}" data-valor="${inv.valor_actual}">
-            📊 Actualizar cotización
-          </button>
-        </div>
-
-        <details class="inv-operar-details">
-          <summary class="btn-operar-trigger">
+      <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--divider);">
+        <details class="loan-pay-details">
+          <summary style="font-size: 0.78rem; color: var(--accent-text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500;">
             ${icono("plus")} Aportar o Reembolsar capital
           </summary>
-          <div class="inv-forms-container">
+          <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.85rem;">
             <!-- Form Aportación -->
-            <form data-accion="aportar-inversion" data-id="${inv.id}" class="inv-mini-form">
-              <h5 class="mini-form-title">➕ Aportar dinero a la inversión</h5>
-              <div class="inv-form-row">
-                <div class="inv-field">
-                  <label>Importe a aportar (€)</label>
-                  <input name="importe" inputmode="decimal" placeholder="100.00" required>
-                </div>
-                <div class="inv-field">
-                  <label>Descontar de cuenta bancaria</label>
-                  <select name="cuenta_id">
-                    <option value="">— No descontar de ninguna cuenta —</option>
-                    ${opcionesCuentas}
-                  </select>
-                </div>
+            <form data-accion="aportar-inversion" data-id="${inv.id}" class="fintech-form" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--pos);">+ Aportar dinero</span>
+              <div class="form-grid-2">
+                <input name="importe" inputmode="decimal" placeholder="100.00" required style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                <select name="cuenta_id" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                  <option value="">— Sin cuenta —</option>
+                  ${opcionesCuentas}
+                </select>
               </div>
-              <button type="submit" class="btn-primary mini">Confirmar aportación</button>
+              <button type="submit" class="btn-primary" style="align-self: flex-end; font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+                Confirmar aportación
+              </button>
             </form>
 
             <!-- Form Reembolso -->
-            <form data-accion="reembolsar-inversion" data-id="${inv.id}" class="inv-mini-form">
-              <h5 class="mini-form-title">➖ Reembolsar / Vender parte o total</h5>
-              <div class="inv-form-row">
-                <div class="inv-field">
-                  <label>Importe a retirar (€)</label>
-                  <input name="importe" inputmode="decimal" placeholder="100.00" required>
-                </div>
-                <div class="inv-field">
-                  <label>Ingresar en cuenta bancaria</label>
-                  <select name="cuenta_id">
-                    <option value="">— No ingresar en ninguna cuenta —</option>
-                    ${opcionesCuentas}
-                  </select>
-                </div>
+            <form data-accion="reembolsar-inversion" data-id="${inv.id}" class="fintech-form" style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.6rem; border-top: 1px dashed var(--divider);">
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--fg-2);">− Reembolsar / Vender</span>
+              <div class="form-grid-2">
+                <input name="importe" inputmode="decimal" placeholder="100.00" required style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                <select name="cuenta_id" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                  <option value="">— Sin cuenta —</option>
+                  ${opcionesCuentas}
+                </select>
               </div>
-              <button type="submit" class="btn-primary mini">Confirmar reembolso</button>
+              <button type="submit" class="btn-secondary" style="align-self: flex-end; font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+                Confirmar reembolso
+              </button>
             </form>
           </div>
         </details>
@@ -161,201 +135,143 @@ export default vista("inversiones", async () => {
     (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
   );
 
-  const opcionesCuentas = cuentas
-    .map((c) => `<option value="${c.id}">${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
-    .join("");
-
   const posiciones = data.inversiones || [];
   const posicionesFiltradas =
     filtroActivo === "todos"
       ? posiciones
       : posiciones.filter((p) => p.tipo_activo === filtroActivo);
 
-  const distribucion = data.distribucion_tipo || [];
+  const conteos = { todos: posiciones.length };
+  for (const p of posiciones) {
+    conteos[p.tipo_activo] = (conteos[p.tipo_activo] || 0) + 1;
+  }
+
+  const tiposPills = [
+    { id: "todos", nombre: "Todas las posiciones" },
+    { id: "fondos", nombre: "Fondos Indexados" },
+    { id: "acciones_etfs", nombre: "Acciones & ETFs" },
+    { id: "renta_fija", nombre: "Renta Fija" },
+    { id: "pensiones", nombre: "Pensiones" },
+    { id: "cripto", nombre: "Cripto" },
+    { id: "inmobiliario", nombre: "Inmobiliario" },
+  ];
+
+  setTimeout(() => {
+    document.querySelectorAll("[data-filtro-inv]").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        fijarFiltroInversion(e.currentTarget.dataset.filtroInv);
+        const main = document.getElementById("vista");
+        const actual = (await import("./inversiones.js")).default;
+        main.innerHTML = await actual.render();
+      });
+    });
+  }, 50);
 
   return `
-    ${subnavCuentas("inversiones")}
+  ${subnavCuentas("inversiones")}
 
-    <div class="page-header-row">
-      <div>
-        <h2 class="page-title">Carteras de Inversión y Patrimonio</h2>
-        <p class="page-subtitle">Seguimiento de fondos indexados, acciones/ETFs, renta fija/letras, pensiones y criptoactivos</p>
-      </div>
-      <div class="header-total-card">
-        <span class="header-total-label">Capital Total Invertido</span>
-        <span class="header-total-value">${importe(data.total_capital_aportado)}</span>
-      </div>
-    </div>
+  <!-- 1. Total Invertido Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Capital Total Invertido</span>
+    <div class="hero-total-amount text-pos">${importe(data.total_capital_aportado)}</div>
+    <span class="hero-total-sub">${posiciones.length} posiciones en cartera patrimonial</span>
+  </div>
 
-    <!-- Barra de Distribución de Activos -->
-    ${
-      distribucion.length > 0
-        ? `
-      <section class="section-block inv-allocation-section">
-        <div class="section-title-row">
-          <h3 class="section-title">Distribución por Tipo de Activo</h3>
-          <span class="section-meta">${posiciones.length} ${posiciones.length === 1 ? "posición activa" : "posiciones activas"}</span>
-        </div>
-
-        <div class="inv-allocation-bar">
-          ${distribucion
-            .map((d) => {
-              const col = COLORES_TIPO[d.tipo] || "#64748b";
-              return `<div class="inv-bar-segment" style="width: ${d.pct}%; background: ${col};" title="${NOMBRES_TIPO[d.tipo] || d.tipo}: ${d.pct}% (${d.valor} €)"></div>`;
-            })
-            .join("")}
-        </div>
-
-        <div class="inv-allocation-legend">
-          ${distribucion
-            .map((d) => {
-              const col = COLORES_TIPO[d.tipo] || "#64748b";
-              const nom = NOMBRES_TIPO[d.tipo] || d.tipo;
-              return `
-              <div class="legend-item">
-                <span class="legend-dot" style="background: ${col};"></span>
-                <span class="legend-name">${esc(nom)}</span>
-                <span class="legend-pct">${d.pct}%</span>
-                <span class="legend-val">(${d.valor}&nbsp;€)</span>
-              </div>
-            `;
-            })
-            .join("")}
-        </div>
-      </section>
+  <!-- 2. Filtro en Chips -->
+  <div class="botes-filter-scroll" role="region" aria-label="Filtro de inversiones">
+    ${tiposPills
+      .filter((t) => t.id === "todos" || (conteos[t.id] && conteos[t.id] > 0))
+      .map(
+        (t) => `
+      <button type="button" class="glass-filter-chip ${filtroActivo === t.id ? "activo" : ""}" data-filtro-inv="${t.id}">
+        <span>${t.nombre}</span>
+        <span class="filter-chip-count">${conteos[t.id] || 0}</span>
+      </button>
     `
-        : ""
-    }
+      )
+      .join("")}
+  </div>
 
-    <!-- Filtros por tipo de activo -->
-    <div class="inv-filters-row">
-      <div class="inv-filter-group">
-        <button class="inv-filter-pill ${filtroActivo === "todos" ? "activa" : ""}" data-accion="filtrar-inversiones" data-tipo="todos">
-          Todos (${posiciones.length})
-        </button>
-        ${Object.keys(NOMBRES_TIPO)
-          .filter((t) => posiciones.some((p) => p.tipo_activo === t))
-          .map((t) => {
-            const count = posiciones.filter((p) => p.tipo_activo === t).length;
-            return `
-            <button class="inv-filter-pill ${filtroActivo === t ? "activa" : ""}" data-accion="filtrar-inversiones" data-tipo="${t}">
-              <span class="pill-dot" style="background: ${COLORES_TIPO[t]};"></span>
-              ${NOMBRES_TIPO[t]} (${count})
-            </button>
-          `;
-          })
-          .join("")}
-      </div>
-    </div>
-
-    <!-- Lista de Posiciones -->
-    <section class="section-block">
-      <div class="section-title-row">
-        <h3 class="section-title">Posiciones en Cartera</h3>
-        <span class="section-meta">${posicionesFiltradas.length} visibles</span>
-      </div>
-
+  <!-- 3. Cuadrícula de Posiciones de Inversión -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="loans-grid">
       ${
-        posicionesFiltradas.length === 0
-          ? `
-        <div class="tarjeta-vacia">
-          <div class="tarjeta-vacia-icon">${icono("inversion")}</div>
-          <h4>No hay inversiones registradas en este filtro</h4>
-          <p>Añade fondos indexados, ETFs, letras del tesoro, acciones o criptoactivos en el formulario inferior para seguir tu patrimonio neto y rentabilidad.</p>
-        </div>
-      `
+        posicionesFiltradas.length > 0
+          ? posicionesFiltradas.map((inv) => tarjetaInversionItem(inv, cuentas)).join("\n")
           : `
-        <div class="grid-investments">
-          ${posicionesFiltradas.map((inv) => tarjetaInversionItem(inv, cuentas)).join("")}
-        </div>
-      `
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("inversion")}</div>
+            <h4>No hay posiciones en esta categoría</h4>
+            <p>Añade un fondo indexado, acciones, letras o plan de pensiones desde el formulario inferior.</p>
+          </div>
+          `
       }
-    </section>
+    </div>
+  </section>
 
-    <!-- Formulario para dar de alta nueva posición de inversión -->
-    <section class="section-block">
-      <details class="form-inversion-details">
-        <summary class="btn-nuevo-inversion-trigger">
-          ${icono("plus")} Dar de alta nueva inversión o activo
-        </summary>
-        <div class="form-container">
-          <form data-accion="crear-inversion" class="formulario-inversion">
-            <h3 class="form-title">Nueva Inversión / Posición en Cartera</h3>
-            <p class="form-desc">Registra un activo financiero. Puedes vincular una cuenta bancaria de origen para que el capital aportado se descuente automáticamente de tu saldo contable.</p>
+  <!-- 4. Formulario desplegable para nueva inversión -->
+  <section class="section-block">
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Dar de Alta Nueva Posición de Inversión
+      </summary>
+      <div class="accordion-body">
+        <form data-accion="crear-inversion" data-err="err-inversion" class="fintech-form">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Registra un fondo, cartera de inversión o activo para seguir tu patrimonio neto.
+          </p>
 
-            <div class="form-grid-2">
-              <div class="campo">
-                <label for="inv-nombre">Nombre de la inversión o activo *</label>
-                <input id="inv-nombre" name="nombre" placeholder="Ej: Vanguard Global Stock Index Fund EUR Acc" required>
-              </div>
-
-              <div class="campo">
-                <label for="inv-entidad">Entidad / Broker / Plataforma *</label>
-                <input id="inv-entidad" name="entidad" placeholder="Ej: MyInvestor, Trade Republic, Indexa Capital, Tesoro..." required>
-              </div>
-            </div>
-
-            <div class="form-grid-3">
-              <div class="campo">
-                <label for="inv-tipo">Tipo de activo</label>
-                <select id="inv-tipo" name="tipo_activo">
-                  <option value="fondos">Fondo Indexado / Inversión</option>
-                  <option value="acciones_etfs">Acción / ETF</option>
-                  <option value="renta_fija">Renta Fija / Letras del Tesoro</option>
-                  <option value="pensiones">Plan de Pensiones</option>
-                  <option value="cripto">Criptoactivo</option>
-                  <option value="inmobiliario">Inmobiliario / Crowdfunding</option>
-                  <option value="otros">Otro activo</option>
-                </select>
-              </div>
-
-              <div class="campo">
-                <label for="inv-capital">Capital aportado inicial (€) *</label>
-                <input id="inv-capital" name="capital_aportado" inputmode="decimal" placeholder="1000.00" required>
-              </div>
-
-              <div class="campo">
-                <label for="inv-valor">Valor actual de mercado (€)</label>
-                <input id="inv-valor" name="valor_actual" inputmode="decimal" placeholder="Igual al aportado si está vacío">
-              </div>
-            </div>
-
-            <div class="form-grid-2">
-              <div class="campo">
-                <label for="inv-cuenta">Cuenta bancaria de origen (opcional)</label>
-                <select id="inv-cuenta" name="cuenta_id">
-                  <option value="">— Ninguna cuenta bancaria vinculada —</option>
-                  ${opcionesCuentas}
-                </select>
-              </div>
-
-              <div class="campo">
-                <label for="inv-fecha">Fecha de inicio</label>
-                <input id="inv-fecha" name="fecha_inicio" type="date" value="${hoy()}">
-              </div>
-            </div>
-
-            <div class="campo-checkbox">
-              <label>
-                <input type="checkbox" name="crear_movimiento_inicial" value="true">
-                <span>Registrar aportación inicial como movimiento de salida en la cuenta bancaria seleccionada</span>
-              </label>
-            </div>
-
+          <div class="form-grid-3">
             <div class="campo">
-              <label for="inv-notas">Notas / ISIN / Ticker (opcional)</label>
-              <input id="inv-notas" name="notas" placeholder="Ej: ISIN: IE00B03HD191 / Objetivo largo plazo">
+              <label for="inv-nombre">Nombre de la inversión *</label>
+              <input id="inv-nombre" name="nombre" placeholder="Ej. Indexa Capital RV, MyInvestor S&P500..." required>
             </div>
+            <div class="campo">
+              <label for="inv-entidad">Entidad o Broker *</label>
+              <input id="inv-entidad" name="entidad" placeholder="Ej. Indexa Capital, Trade Republic..." required>
+            </div>
+            <div class="campo">
+              <label for="inv-tipo">Tipo de Activo</label>
+              <select id="inv-tipo" name="tipo_activo" required>
+                <option value="fondos" selected>Fondos Indexados</option>
+                <option value="acciones_etfs">Acciones & ETFs</option>
+                <option value="renta_fija">Renta Fija / Letras</option>
+                <option value="pensiones">Planes de Pensiones</option>
+                <option value="cripto">Criptoactivos</option>
+                <option value="inmobiliario">Inmobiliario</option>
+                <option value="otros">Otros</option>
+              </select>
+            </div>
+          </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn-primary">
-                ${icono("check")} Crear Inversión
-              </button>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="inv-aportado">Capital inicial (€) *</label>
+              <input id="inv-aportado" name="capital_aportado" inputmode="decimal" placeholder="1000.00" required>
             </div>
-          </form>
-        </div>
-      </details>
-    </section>
+            <div class="campo">
+              <label for="inv-origen">Descontar de cuenta bancaria</label>
+              <select id="inv-origen" name="cuenta_id">
+                <option value="">— No registrar movimiento en cuenta —</option>
+                ${cuentas.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="campo">
+              <label for="inv-inicio">Fecha de Inicio</label>
+              <input id="inv-inicio" name="fecha_inicio" type="date" value="${hoy()}">
+            </div>
+          </div>
+
+          <div id="err-inversion"></div>
+
+          <div class="form-actions" style="margin-top: 1.25rem;">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Registrar Inversión
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
+  </section>
   `;
 });
-
