@@ -31,6 +31,7 @@ export function pintarNav(_rutas) {
       </a>`
     ).join("")}
 
+    <div class="nav-dropdown-backdrop" id="nav-dropdown-backdrop"></div>
     <div class="nav-dropdown-wrap" id="nav-dropdown-wrap">
       <button type="button" class="nav-tab nav-dropdown-btn" id="btn-nav-mas" aria-haspopup="true" aria-expanded="false" title="Extras y opciones">
         <span class="nav-icon">${icono("mas")}</span>
@@ -38,6 +39,13 @@ export function pintarNav(_rutas) {
         <span class="nav-chevron">${icono("chevron")}</span>
       </button>
       <div class="nav-dropdown-menu" id="nav-dropdown-menu">
+        <div class="dropdown-sheet-header">
+          <div class="dropdown-sheet-handle"></div>
+          <div class="dropdown-sheet-title-row">
+            <span class="dropdown-sheet-title">Opciones y Configuración</span>
+            <button type="button" class="btn-sheet-close" id="btn-close-extras" aria-label="Cerrar">&times;</button>
+          </div>
+        </div>
         ${RUTAS_MAS.map(
           (item) => `
           <a data-vista="${item.nombre}" href="/${item.nombre}" class="dropdown-item">
@@ -61,9 +69,17 @@ export function pintarNav(_rutas) {
     </div>
   `;
 
-  // Control interactivo del desplegable "Más"
+  // Control interactivo del desplegable / bottom-sheet "Más"
   const wrap = document.getElementById("nav-dropdown-wrap");
   const btn = document.getElementById("btn-nav-mas");
+  const backdrop = document.getElementById("nav-dropdown-backdrop");
+  const btnClose = document.getElementById("btn-close-extras");
+
+  const cerrarMenu = () => {
+    wrap?.classList.remove("abierto");
+    btn?.setAttribute("aria-expanded", "false");
+  };
+
   if (btn && wrap) {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -72,18 +88,17 @@ export function pintarNav(_rutas) {
     });
 
     wrap.querySelectorAll(".dropdown-item").forEach((a) => {
-      a.addEventListener("click", () => {
-        wrap.classList.remove("abierto");
-        btn.setAttribute("aria-expanded", "false");
-      });
+      a.addEventListener("click", cerrarMenu);
     });
+
+    backdrop?.addEventListener("click", cerrarMenu);
+    btnClose?.addEventListener("click", cerrarMenu);
   }
 
   // Cerrar al pulsar fuera del menú
   document.addEventListener("click", (e) => {
-    if (wrap && !wrap.contains(e.target)) {
-      wrap.classList.remove("abierto");
-      btn?.setAttribute("aria-expanded", "false");
+    if (wrap && !wrap.contains(e.target) && e.target !== backdrop) {
+      cerrarMenu();
     }
   });
 }

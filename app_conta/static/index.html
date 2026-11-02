@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=45" />
+  <link rel="stylesheet" href="/static/styles.css?v=51" />
 </head>
 <body>
   <header class="app-header">
@@ -17,9 +17,16 @@
       <div class="brand">
         <div class="brand-logo flow-logo" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7.5 18.5V7.2c0-1.2 1-2.2 2.2-2.2H17" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M7.5 11.7h6.2" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
-            <path d="M13.8 18.5c2.3 0 2.3-2.1 4.7-2.1" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.72"/>
+            <defs>
+              <linearGradient id="flowTealGrad" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0d9488"/>
+              </linearGradient>
+            </defs>
+            <path d="M6.5 19.5V7C6.5 5.343 7.843 4 9.5 4H18.5" stroke="url(#flowTealGrad)" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 11.5H15.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M11 19.5C13 19.5 13.5 16.5 16 16.5H19" stroke="url(#flowTealGrad)" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+            <circle cx="19" cy="16.5" r="1.5" fill="#38bdf8"/>
           </svg>
         </div>
         <div class="brand-text">
@@ -33,11 +40,11 @@
 
   <main id="vista" class="app-content"></main>
 
-  <script src="/static/js/api.js?v=45"></script>
-  <script type="module" src="/static/js/app.js?v=45"></script>
+  <script src="/static/js/api.js?v=51"></script>
+  <script type="module" src="/static/js/app.js?v=51"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=45").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=51").then((reg) => {
         reg.update();
       });
       let refreshing = false;
