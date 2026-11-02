@@ -5,7 +5,8 @@ import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 let tarjetaSeleccionadaId = null;
 
 // Helper global para los chips de sugerencia rápida
-window.autocompletarPagoDiario = function (concepto, nombreBote) {
+if (typeof window !== "undefined") {
+  window.autocompletarPagoDiario = function (concepto, nombreBote) {
   const descEl = document.getElementById("pd-desc");
   const boteEl = document.getElementById("pd-bote-id");
   const importeEl = document.getElementById("pd-importe");
@@ -45,6 +46,7 @@ window.autocompletarPagoDiario = function (concepto, nombreBote) {
     importeEl.select?.();
   }
 };
+}
 
 export default vista("pagos-diarios", async () => {
   const [cuentasData, botesData, categoriasData, prestamosData] = await Promise.all([

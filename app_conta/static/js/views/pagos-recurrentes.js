@@ -1,5 +1,5 @@
 // Vista de Recibos y Pagos Recurrentes: Domiciliaciones bancarias fijas (Caixa y Deutsche Bank)
-import { vista, esc, importe, hoy, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 
 export default vista("pagos-recurrentes", async () => {
   const [datosPagos, datosCuentas] = await Promise.all([
@@ -11,79 +11,104 @@ export default vista("pagos-recurrentes", async () => {
   const cuentas = datosCuentas.items || [];
   const totalGeneral = datosPagos.total_general || "0.00";
   const fechaHoy = hoy();
+  const totalRecibos = porCuenta.reduce((acc, g) => acc + g.items.length, 0);
 
   return `
     ${subnavCuentas("pagos-recurrentes")}
 
-    <div class="view-header">
-      <div class="view-header-main">
-        <div class="view-title-group">
-          <div class="view-tag-badge">DOMICILIACIONES BANCARIAS</div>
-          <h2 class="view-title">Recibos y Pagos Fijos</h2>
-          <p class="view-desc">
-            Gastos recurrentes domiciliados en tus cuentas bancarias. Aplícalos cada mes con un solo clic sin picar recibos a mano.
-          </p>
-        </div>
-      </div>
-      <div class="view-header-actions">
-        <button type="button" class="btn-primary ok" id="btn-nuevo-pago-rec">+ Añadir Recibo Fijo</button>
-      </div>
+    <!-- 1. Hero Total -->
+    <div class="accounts-hero-total">
+      <span class="hero-total-label">Total Mensual en Recibos Fijos</span>
+      <div class="hero-total-amount text-primary">${importe(totalGeneral)}</div>
+      <span class="hero-total-sub">${totalRecibos} recibos domiciliados en ${porCuenta.length} bancos</span>
     </div>
 
-    <!-- BANNER DE ENLACE CON REPARTO DE NÓMINA -->
-    <div class="banner-reparto-link" style="margin-bottom: 1.25rem; padding: 0.85rem 1.15rem; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 1.3rem;">💼</span>
-        <div>
-          <strong style="color: var(--text-main); font-size: 0.92rem;">¿Quieres pagar todos estos recibos al repartir tu nómina?</strong>
-          <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">
-            Puedes aplicar automáticamente todos los recibos fijos de Caixa y Deutsche Bank en 1 solo clic desde el Reparto de Nómina.
-          </p>
-        </div>
-      </div>
-      <button type="button" class="btn-primary mini" data-accion-fintech="abrir-nomina">
-        🚀 Abrir Reparto de Nómina
+    <!-- Barra de acciones rápidas superior -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 1.25rem;">
+      <button type="button" class="btn-primary" id="btn-nuevo-pago-rec">
+        ${icono("plus")} Añadir Recibo Fijo
       </button>
     </div>
 
-    <!-- BARRA DE ACCIÓN GLOBAL: APLICAR TODOS LOS RECIBOS DEL MES -->
-    <div class="card-ejecutar-todos-recibos">
-      <div class="cetr-info">
-        <div class="cetr-icon">⚡</div>
-        <div class="cetr-texts">
-          <strong>Aplicación Mensual de Recibos</strong>
-          <span>Genera los cargos reales en cada cuenta bancaria para que los saldos queden 100% exactos.</span>
+    <!-- 2. Banner de enlace con Reparto de Nómina -->
+    <div class="recibos-banner-link glass-card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <div class="acc-card-icon-wrap" style="color: var(--accent);">
+          ${icono("nomina")}
+        </div>
+        <div>
+          <strong style="color: var(--fg); font-size: 0.92rem; display: block;">¿Quieres pagar todos estos recibos al repartir tu nómina?</strong>
+          <span style="font-size: 0.8rem; color: var(--fg-2);">
+            Puedes aplicar automáticamente todos los recibos fijos de Caixa y Deutsche Bank en 1 solo clic desde el Reparto de Nómina.
+          </span>
         </div>
       </div>
-      <div class="cetr-actions">
-        <div class="cetr-date-wrap">
-          <label for="fecha-ejecutar-todos">Fecha del cargo:</label>
-          <input type="date" id="fecha-ejecutar-todos" value="${fechaHoy}" class="input-fecha-recibos">
-        </div>
-        <button type="button" class="btn-primary ok btn-lg" id="btn-ejecutar-todos">
-          🚀 Aplicar Todos los Recibos (${totalGeneral} €)
-        </button>
-      </div>
+      <a href="#reparto-nomina" class="btn-secondary" style="text-decoration: none; font-size: 0.82rem; padding: 0.45rem 1rem;">
+        Abrir Reparto de Nómina &rarr;
+      </a>
     </div>
 
-    <!-- TARJETAS AGRUPADAS POR ENTIDAD BANCARIA -->
+    <!-- 3. Barra de Acción Global: Aplicar Todos los Recibos del Mes -->
+    <section class="glass-card recibos-global-exec-card">
+      <div class="recibos-exec-content">
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+          <div class="acc-card-icon-wrap" style="color: var(--accent-2);">
+            ${icono("rayo")}
+          </div>
+          <div>
+            <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--fg); margin: 0;">Aplicación Mensual de Recibos</h3>
+            <p style="font-size: 0.8rem; color: var(--fg-2); margin: 2px 0 0 0;">Genera los cargos reales en cada banco para que los saldos queden 100% exactos.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <div style="display: inline-flex; align-items: center; gap: 0.45rem;">
+            <label for="fecha-ejecutar-todos" style="font-size: 0.8rem; color: var(--fg-2);">Fecha:</label>
+            <input type="date" id="fecha-ejecutar-todos" value="${fechaHoy}" class="glass-filter-chip" style="padding: 0.35rem 0.65rem; color: var(--fg); outline: none;">
+          </div>
+          <button type="button" class="btn-primary" id="btn-ejecutar-todos" style="padding: 0.55rem 1.25rem;">
+            ${icono("rayo")} Aplicar Todos (${importe(totalGeneral)})
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Tarjetas agrupadas por Entidad Bancaria -->
     <div class="grid-pagos-cuentas">
       ${
         porCuenta.length === 0
           ? `
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          <h3>No hay recibos recurrentes configurados</h3>
-          <p>Añade los recibos fijos domiciliados en tus bancos para pagarlos cada mes.</p>
+        <div class="glass-card tarjeta-vacia">
+          <div class="tarjeta-vacia-icon">${icono("movimientos")}</div>
+          <h4>No hay recibos recurrentes configurados</h4>
+          <p>Añade los recibos fijos domiciliados en tus bancos para controlarlos y pagarlos cada mes con un solo clic.</p>
         </div>
         `
           : porCuenta
-              .map(
-                (g) => `
-        <section class="card-banco-recibos" data-cuenta-id="${g.cuenta_id}">
+              .map((g) => {
+                const nombreLower = (g.cuenta_nombre || "").toLowerCase();
+                let bankIconKey = "banco";
+                let bankClass = "";
+                if (nombreLower.includes("caixa")) {
+                  bankIconKey = "caixa";
+                  bankClass = "caixa";
+                } else if (nombreLower.includes("deutsche") || nombreLower.includes("db")) {
+                  bankIconKey = "deutsche";
+                  bankClass = "deutsche";
+                } else if (nombreLower.includes("bbva")) {
+                  bankIconKey = "bbva";
+                  bankClass = "bbva";
+                } else if (nombreLower.includes("revolut")) {
+                  bankIconKey = "revolut";
+                  bankClass = "revolut";
+                }
+
+                return `
+        <section class="glass-card card-banco-recibos" data-cuenta-id="${g.cuenta_id}">
           <div class="cbr-header">
             <div class="cbr-header-title">
-              <span class="cbr-bank-icon">🏛️</span>
+              <div class="acc-card-icon-wrap ${bankClass}">
+                ${icono(bankIconKey)}
+              </div>
               <div>
                 <h3 class="cbr-bank-name">${esc(g.cuenta_nombre)}</h3>
                 <span class="cbr-bank-sub">${g.items.length} recibos domiciliados</span>
@@ -95,13 +120,15 @@ export default vista("pagos-recurrentes", async () => {
             </div>
           </div>
 
-          <div class="cbr-table-wrap">
-            <table class="table-recibos">
+          <div class="glass-table-wrap">
+            <table class="table-recibos glass-table">
               <thead>
                 <tr>
-                  <th style="width: 32px;"><input type="checkbox" class="chk-select-all-banco" checked title="Seleccionar todos"></th>
+                  <th style="width: 36px; text-align: center;">
+                    <input type="checkbox" class="chk-select-all-banco" checked title="Seleccionar todos">
+                  </th>
                   <th>Concepto</th>
-                  <th style="width: 130px; text-align: right;">Importe (€)</th>
+                  <th style="width: 140px; text-align: right;">Importe (€)</th>
                   <th style="width: 80px; text-align: center;">Acciones</th>
                 </tr>
               </thead>
@@ -110,25 +137,29 @@ export default vista("pagos-recurrentes", async () => {
                   .map(
                     (item) => `
                   <tr class="row-pago-rec" data-pago-id="${item.id}">
-                    <td>
+                    <td style="text-align: center;">
                       <input type="checkbox" class="chk-pago-item" data-id="${item.id}" ${item.activo ? "checked" : ""}>
                     </td>
                     <td>
                       <div class="pago-concepto-cell">
                         <strong class="pago-concepto-text">${esc(item.concepto)}</strong>
-                        ${item.ultimo_pago ? `<span class="badge-mini-pago">Último: ${item.ultimo_pago}</span>` : ""}
+                        ${item.ultimo_pago ? `<span class="badge-mini-pago">Último cargo: ${esc(item.ultimo_pago)}</span>` : ""}
                       </div>
                     </td>
                     <td style="text-align: right;">
                       <div class="pago-importe-input-wrap">
                         <input type="number" step="0.01" min="0" class="input-importe-pago" value="${item.importe}" data-id="${item.id}">
-                        <span>€</span>
+                        <span style="font-size: 0.82rem; color: var(--fg-2);">€</span>
                       </div>
                     </td>
                     <td style="text-align: center;">
                       <div class="pago-row-actions">
-                        <button type="button" class="btn-icon btn-editar-pago" data-id="${item.id}" title="Editar">✏️</button>
-                        <button type="button" class="btn-icon danger btn-borrar-pago" data-id="${item.id}" title="Eliminar">&times;</button>
+                        <button type="button" class="btn-card-more btn-editar-pago" data-id="${item.id}" title="Editar">
+                          ${icono("editar")}
+                        </button>
+                        <button type="button" class="btn-card-more dropdown-item-danger btn-borrar-pago" data-id="${item.id}" title="Eliminar">
+                          ${icono("borrar")}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -140,49 +171,48 @@ export default vista("pagos-recurrentes", async () => {
           </div>
 
           <div class="cbr-footer">
-            <button type="button" class="btn-secondary mini btn-add-pago-a-cuenta" data-cuenta-id="${g.cuenta_id}">
-              + Añadir a ${esc(g.cuenta_nombre)}
+            <button type="button" class="btn-secondary btn-add-pago-a-cuenta" data-cuenta-id="${g.cuenta_id}" style="padding: 0.4rem 0.9rem; font-size: 0.82rem;">
+              ${icono("plus")} Añadir a ${esc(g.cuenta_nombre)}
             </button>
-            <button type="button" class="btn-primary ok btn-ejecutar-banco" data-cuenta-id="${g.cuenta_id}" data-cuenta-nombre="${esc(g.cuenta_nombre)}">
-              ⚡ Aplicar Recibos ${esc(g.cuenta_nombre)} (<span class="sum-banco">${g.total}</span> €)
+            <button type="button" class="btn-primary btn-ejecutar-banco" data-cuenta-id="${g.cuenta_id}" data-cuenta-nombre="${esc(g.cuenta_nombre)}" style="padding: 0.45rem 1rem; font-size: 0.82rem;">
+              ${icono("rayo")} Aplicar ${esc(g.cuenta_nombre)} (<span class="sum-banco">${g.total}</span> €)
             </button>
           </div>
         </section>
-      `
-              )
+      `;
+              })
               .join("")
       }
     </div>
 
-    <!-- MODAL DE CREAR / EDITAR RECIBO FIJO -->
+    <!-- 5. Modal de Crear / Editar Recibo Fijo -->
     <div id="modal-pago-overlay" class="modal-overlay" style="display: none;">
       <div class="modal-card">
         <div class="modal-header">
           <div class="modal-title-group">
-            <span class="modal-badge-action neutral">RECIBO FIJO</span>
             <h3 class="modal-title" id="modal-pago-titulo">Nuevo Recibo Recurrente</h3>
           </div>
           <button type="button" class="modal-btn-close" id="btn-cerrar-modal-pago">&times;</button>
         </div>
 
-        <form id="form-pago-rec" class="modal-form">
+        <form id="form-pago-rec" class="modal-form fintech-form">
           <input type="hidden" id="pago-id" value="">
 
-          <div class="modal-grid-fields">
-            <div class="modal-field modal-span-2">
-              <label for="pago-concepto" class="form-label">Concepto del recibo</label>
-              <input id="pago-concepto" required placeholder="Ej. Luz piso, Comunidad, Vodafone, etc.">
-            </div>
+          <div class="campo">
+            <label for="pago-concepto">Concepto del recibo *</label>
+            <input id="pago-concepto" required placeholder="Ej. Luz Endesa, Comunidad, Vodafone...">
+          </div>
 
-            <div class="modal-field">
-              <label for="pago-cuenta" class="form-label">Banco donde está domiciliado</label>
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="pago-cuenta">Banco domiciliado *</label>
               <select id="pago-cuenta" required>
                 ${cuentas
                   .filter((c) => c.tipo === "banco" || c.tipo === "efectivo" || !c.tipo)
                   .map(
                     (c) => `
                   <option value="${c.id}">
-                    🏛️ ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
+                    ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""}
                   </option>
                 `
                   )
@@ -190,22 +220,22 @@ export default vista("pagos-recurrentes", async () => {
               </select>
             </div>
 
-            <div class="modal-field">
-              <label for="pago-importe" class="form-label">Importe habitual (€)</label>
+            <div class="campo">
+              <label for="pago-importe">Importe habitual (€) *</label>
               <input id="pago-importe" type="number" step="0.01" min="0.01" required placeholder="0.00">
             </div>
+          </div>
 
-            <div class="modal-field modal-span-2">
-              <label for="pago-notas" class="form-label">Notas u observaciones (opcional)</label>
-              <input id="pago-notas" placeholder="Ej. Se cobra el día 5 de cada mes">
-            </div>
+          <div class="campo">
+            <label for="pago-notas">Notas u observaciones (opcional)</label>
+            <input id="pago-notas" placeholder="Ej. Se cobra el día 5 de cada mes">
           </div>
 
           <div id="modal-pago-err" class="modal-error-box" style="display: none;"></div>
 
-          <div class="modal-footer">
+          <div class="modal-footer" style="margin-top: 1.25rem;">
             <button type="button" class="btn-secondary" id="btn-cancelar-modal-pago">Cancelar</button>
-            <button type="submit" class="btn-primary ok" id="btn-guardar-pago">Guardar Recibo</button>
+            <button type="submit" class="btn-primary" id="btn-guardar-pago">Guardar Recibo</button>
           </div>
         </form>
       </div>
@@ -448,4 +478,3 @@ export default vista("pagos-recurrentes", async () => {
     });
   }
 });
-

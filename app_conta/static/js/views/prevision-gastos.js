@@ -25,12 +25,12 @@ function filaGasto(g, mesActivoNombre) {
 
   return `
     <tr class="tx-row ${g.activo ? "" : "row-inactivo"}">
-      <td style="width: 120px">
+      <td style="width: 110px">
         ${badgeEstadoGasto(g.estado)}
       </td>
       <td class="tx-main">
         <div class="table-row-title">
-          <strong>${esc(g.concepto)}</strong>
+          <strong style="color: var(--fg);">${esc(g.concepto)}</strong>
           ${g.notas ? `<span class="table-row-sub">${esc(g.notas)}</span>` : ""}
         </div>
       </td>
@@ -85,43 +85,36 @@ export default vista("prevision-gastos", async () => {
   const esSuperavitTotal = saldoTotalNum >= 0;
 
   return `
-    <div class="page-header-row">
-      <div>
-        <h2 class="page-title">Previsión de Gastos y Bote Anual</h2>
-        <p class="page-subtitle">Planificación de recibos periódicos (IBI, basuras, seguros, sellos...) y control de cuotas</p>
-      </div>
-      <div class="header-total-card">
-        <span class="header-total-label">Total a Guardar al Mes</span>
-        <span class="header-total-value">${importe(data.total_mensual)} <span style="font-size: 0.9rem; font-weight: 500;">/mes</span></span>
-        <span class="header-total-sub">Total anual estimado: ${importe(data.total_anual)}</span>
-      </div>
-    </div>
+  <!-- 1. Hero Total -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Total a Guardar al Mes para Bote Anual</span>
+    <div class="hero-total-amount text-pos">${importe(data.total_mensual)} <span style="font-size: 0.5em; color: var(--fg-2);">/mes</span></div>
+    <span class="hero-total-sub">Total anual presupuestado: ${importe(data.total_anual)} · Año ${data.anio}</span>
+  </div>
 
-    <!-- Stepper de control de meses transcurridos/pagados -->
-    <div class="prevision-stepper-card">
-      <div class="prevision-stepper-left">
-        <div class="prevision-stepper-icon">
+  <!-- 2. Stepper de control de meses transcurridos -->
+  <section class="glass-card" style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <div class="acc-card-icon-wrap" style="color: var(--accent);">
           ${icono("calendario")}
         </div>
         <div>
-          <h3 class="prevision-stepper-title">Bote de Gastos Anual — Año ${data.anio}</h3>
-          <p class="prevision-stepper-sub">Mes de provisión acumulada: <strong>${mesActualNombre}</strong> (${meses} de 12 meses aportados)</p>
+          <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--fg); margin: 0;">Provisión del Bote Anual</h3>
+          <p style="font-size: 0.8rem; color: var(--fg-2); margin: 2px 0 0 0;">Mes acumulado: <strong style="color: var(--fg);">${mesActualNombre}</strong> (${meses} de 12 meses guardados)</p>
         </div>
       </div>
 
-      <div class="prevision-stepper-controls">
-        <button type="button" class="btn-stepper" data-accion="ajustar-mes-prevision" data-delta="-1" ${meses <= 0 ? "disabled" : ""} title="Mes anterior">
-          &minus;
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button type="button" class="btn-secondary" data-accion="ajustar-mes-prevision" data-delta="-1" ${meses <= 0 ? "disabled" : ""} style="padding: 0.35rem 0.75rem;">
+          &minus; Mes
         </button>
-        <div class="stepper-value-wrap">
-          <span class="stepper-month-name">${mesActualNombre}</span>
-          <span class="stepper-count-tag">${meses} / 12 meses</span>
-        </div>
-        <button type="button" class="btn-stepper" data-accion="ajustar-mes-prevision" data-delta="1" ${meses >= 12 ? "disabled" : ""} title="Mes siguiente">
-          &plus;
+        <span class="glass-filter-chip" style="font-weight: 600;">${mesActualNombre}</span>
+        <button type="button" class="btn-secondary" data-accion="ajustar-mes-prevision" data-delta="1" ${meses >= 12 ? "disabled" : ""} style="padding: 0.35rem 0.75rem;">
+          &plus; Mes
         </button>
 
-        <select class="sel-mes-directo" data-accion="cambiar-mes-directo" style="margin-left: 0.5rem; background: var(--surface-card); color: var(--text-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.3rem 0.5rem; font-size: 0.82rem;">
+        <select class="sel-mes-directo glass-filter-chip" data-accion="cambiar-mes-directo" style="padding: 0.35rem 0.65rem; outline: none; margin-left: 0.5rem;">
           <option value="0" ${meses === 0 ? "selected" : ""}>0. Sin provisión acumulada</option>
           ${MESES_NOMBRES.map(
             (m, idx) => `
@@ -132,167 +125,132 @@ export default vista("prevision-gastos", async () => {
         </select>
       </div>
     </div>
+  </section>
 
-    <!-- Ecuación Visual de Cuadre del Bote Anual -->
-    <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.9rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-        <div style="text-align: left;">
-          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Provisión Acumulada (${mesActualNombre})</span>
-          <strong style="font-size: 1.15rem; color: var(--accent-positive);">${importe(data.total_provision)}</strong>
-        </div>
-        <span style="font-size: 1.25rem; color: var(--text-muted); font-weight: 700;">−</span>
-        <div style="text-align: left;">
-          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Facturas Pagadas Reales</span>
-          <strong style="font-size: 1.15rem;">${importe(data.total_pagado)}</strong>
-        </div>
-        <span style="font-size: 1.25rem; color: var(--text-muted); font-weight: 700;">=</span>
-        <div style="text-align: left;">
-          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 600;">Saldo Neto del Bote</span>
-          <strong style="font-size: 1.25rem;" class="${esSuperavitTotal ? "positivo" : "negativo"}">${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}</strong>
-        </div>
-      </div>
-      <div>
-        <span class="badge-tag ${esSuperavitTotal ? "ok" : "alerta"}">
-          ${esSuperavitTotal ? `${icono("check")} Superávit acumulado` : `${icono("alerta")} Déficit temporal (${meses} de 12 meses)`}
-        </span>
-      </div>
+  <!-- 3. Ecuación Visual y Resumen en Chips -->
+  <section class="glass-summary-chips-row" style="margin-bottom: 1.5rem;">
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-cyan"></span>
+      <span class="chip-title">Provisión (${mesActualNombre})</span>
+      <strong class="chip-val" style="color: var(--pos);">${importe(data.total_provision)}</strong>
+    </div>
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-violet"></span>
+      <span class="chip-title">Facturas Pagadas</span>
+      <strong class="chip-val">${importe(data.total_pagado)}</strong>
+    </div>
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-blue"></span>
+      <span class="chip-title">Saldo Neto Bote</span>
+      <strong class="chip-val ${esSuperavitTotal ? 'text-pos' : 'text-neg'}">${importe(data.total_saldo)}</strong>
+    </div>
+  </section>
+
+  <!-- 4. Tabla Detallada de Gastos Periódicos -->
+  <section class="glass-card" style="padding: 1.4rem 1.6rem; margin-bottom: 1.5rem;">
+    <div class="transactions-header">
+      <h3 class="transactions-title">Detalle de Recibos y Gastos Anuales (${gastos.length})</h3>
+      <button type="button" class="btn-subtle mini" data-accion="restablecer-semilla-prevision" title="Cargar los gastos habituales" style="background: transparent; border: none; font-size: 0.8rem; color: var(--fg-2); cursor: pointer;">
+        ${icono("volver")} Restablecer plantilla
+      </button>
     </div>
 
-    <!-- Resumen de KPIs / Métricas -->
-    <div class="hero-pills-row" style="margin-bottom: 2rem;">
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Total Anual Presupuestado</span>
-        <span class="pill-stat-value">${importe(data.total_anual)}</span>
-      </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Cuota Mensual Fija</span>
-        <span class="pill-stat-value">${importe(data.total_mensual)} <span style="font-size: 0.75rem;">/mes</span></span>
-      </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Provisión Acumulada (${mesActualNombre})</span>
-        <span class="pill-stat-value ok">${importe(data.total_provision)}</span>
-      </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Facturas Pagadas Reales</span>
-        <span class="pill-stat-value">${importe(data.total_pagado)}</span>
-      </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Saldo Neto del Bote</span>
-        <span class="pill-stat-value ${esSuperavitTotal ? "ok" : "negativo"}">
-          ${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}
-        </span>
-      </div>
-    </div>
-
-    <!-- Tabla de gastos recurrentes -->
-    <section class="section-block">
-      <div class="section-header">
-        <div>
-          <h3 class="section-title">Detalle de Recibos y Gastos Anuales (${gastos.length})</h3>
-          <p class="section-desc">Comparativa entre provisión guardada mes a mes y facturas realmente cobradas</p>
-        </div>
-        <div>
-          <button type="button" class="btn-subtle mini" data-accion="restablecer-semilla-prevision" title="Cargar los 16 gastos habituales del Excel">
-            ${icono("volver")} Restablecer plantilla Excel
-          </button>
-        </div>
-      </div>
-
-      <div class="card-table-wrap">
-        <table class="table-fintech table-prevision">
-          <thead>
-            <tr>
-              <th>Estado</th>
-              <th>Concepto / Notas</th>
-              <th>Cobro Habitual</th>
-              <th class="num">Anual (€)</th>
-              <th class="num">Cuota/Mes</th>
-              <th class="num">Provisión hasta ${mesActualNombre}</th>
-              <th class="num">Pagado Real</th>
-              <th class="num">Saldo</th>
-              <th class="th-actions">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              gastos.length === 0
-                ? `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay gastos registrados. Usa el botón "Restablecer plantilla Excel" o el formulario inferior.</td></tr>`
-                : gastos.map((g) => filaGasto(g, mesActualNombre)).join("")
-            }
-          </tbody>
+    <div class="card-table-wrap" style="overflow-x: auto;">
+      <table class="table-fintech table-prevision" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--divider); text-align: left; font-size: 0.76rem; color: var(--fg-2); text-transform: uppercase;">
+            <th style="padding: 0.75rem 0.5rem;">Estado</th>
+            <th style="padding: 0.75rem 0.5rem;">Concepto</th>
+            <th style="padding: 0.75rem 0.5rem;">Mes Cobro</th>
+            <th class="num" style="padding: 0.75rem 0.5rem; text-align: right;">Anual (€)</th>
+            <th class="num" style="padding: 0.75rem 0.5rem; text-align: right;">Cuota/Mes</th>
+            <th class="num" style="padding: 0.75rem 0.5rem; text-align: right;">Provisión</th>
+            <th class="num" style="padding: 0.75rem 0.5rem; text-align: right;">Pagado</th>
+            <th class="num" style="padding: 0.75rem 0.5rem; text-align: right;">Saldo</th>
+            <th style="padding: 0.75rem 0.5rem; text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
           ${
-            gastos.length > 0
-              ? `
-            <tfoot>
-              <tr style="background: var(--surface-elevated); font-weight: 700;">
-                <td colspan="3" style="padding: 1rem 1.15rem;">TOTALES</td>
-                <td class="num">${importe(data.total_anual)}</td>
-                <td class="num">${importe(data.total_mensual)}</td>
-                <td class="num ok">${importe(data.total_provision)}</td>
-                <td class="num">${importe(data.total_pagado)}</td>
-                <td class="num ${esSuperavitTotal ? "ok" : "negativo"}">${importe(data.total_saldo, esSuperavitTotal ? "" : "negativo")}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          `
-              : ""
+            gastos.length === 0
+              ? `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--fg-2);">No hay gastos registrados. Usa el botón "Restablecer plantilla" o el formulario inferior.</td></tr>`
+              : gastos.map((g) => filaGasto(g, mesActualNombre)).join("")
           }
-        </table>
+        </tbody>
+        ${
+          gastos.length > 0
+            ? `
+          <tfoot>
+            <tr style="border-top: 2px solid var(--divider); font-weight: 700; font-variant-numeric: tabular-nums;">
+              <td colspan="3" style="padding: 1rem 0.5rem;">TOTALES</td>
+              <td class="num" style="text-align: right; padding: 1rem 0.5rem;">${importe(data.total_anual)}</td>
+              <td class="num" style="text-align: right; padding: 1rem 0.5rem;">${importe(data.total_mensual)}</td>
+              <td class="num ok" style="text-align: right; padding: 1rem 0.5rem; color: var(--pos);">${importe(data.total_provision)}</td>
+              <td class="num" style="text-align: right; padding: 1rem 0.5rem;">${importe(data.total_pagado)}</td>
+              <td class="num ${esSuperavitTotal ? "ok" : "negativo"}" style="text-align: right; padding: 1rem 0.5rem; color: ${esSuperavitTotal ? 'var(--pos)' : 'var(--neg)'};">${importe(data.total_saldo)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        `
+            : ""
+        }
+      </table>
+    </div>
+  </section>
+
+  <!-- 5. Formulario desplegable para nuevo gasto periódico -->
+  <section class="section-block">
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Añadir Nuevo Gasto Anual / Periódico
+      </summary>
+      <div class="accordion-body">
+        <form data-accion="crear-gasto-recurrente" class="fintech-form">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Registra un impuesto, seguro o recibo periódico para calcular su cuota mensual a guardar.
+          </p>
+
+          <div class="form-grid-2">
+            <div class="campo">
+              <label>Concepto del Gasto *</label>
+              <input name="concepto" placeholder="Ej. Seguro Dental, IBI Vivienda..." required>
+            </div>
+            <div class="campo">
+              <label>Mes de Cobro Habitual *</label>
+              <input name="fecha_cobro" placeholder="Ej. Octubre, Trimestral..." required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="campo">
+              <label>Importe Anual Estimado (€) *</label>
+              <input name="importe_anual" inputmode="decimal" placeholder="180.00" required>
+            </div>
+            <div class="campo">
+              <label>Cuota Mensual (Opcional, se calcula automáticamente)</label>
+              <input name="cuota_mensual" inputmode="decimal" placeholder="Dejar vacío para dividir entre 12">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="campo">
+              <label>Pagado Real hasta ahora (€)</label>
+              <input name="pagado_real" inputmode="decimal" placeholder="0.00">
+            </div>
+            <div class="campo">
+              <label>Notas</label>
+              <input name="notas" placeholder="Ej. Domiciliado en CaixaBank...">
+            </div>
+          </div>
+
+          <div class="form-actions" style="margin-top: 1.25rem;">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Guardar Gasto
+            </button>
+          </div>
+        </form>
       </div>
-    </section>
-
-    <!-- Formulario para dar de alta nuevo gasto periódico -->
-    <section class="section-block">
-      <details class="form-inversion-details">
-        <summary class="btn-nuevo-inversion-trigger">
-          ${icono("plus")} Añadir Nuevo Gasto Anual / Recurrente
-        </summary>
-        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-          <p class="form-desc">Registra un nuevo impuesto, seguro o cuota periódica para integrarlo en la cuota mensual</p>
-
-          <form data-accion="crear-gasto-recurrente" class="fintech-form">
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Concepto del Gasto</label>
-                <input name="concepto" placeholder="Ej. Seguro Dental Sanitas, Tasa de Vado..." required>
-              </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Fecha o Mes de Cobro Habitual</label>
-                <input name="fecha_cobro" placeholder="Ej. Octubre, Trimestral, Marzo / Julio..." required>
-              </div>
-            </div>
-
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Importe Anual Estimado (€)</label>
-                <input name="importe_anual" inputmode="decimal" placeholder="Ej. 180.00" required>
-              </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Cuota Mensual a Guardar (€, opcional)</label>
-                <input name="cuota_mensual" inputmode="decimal" placeholder="Si se deja vacío, se divide entre 12">
-              </div>
-            </div>
-
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Pagado Real hasta ahora (€, opcional)</label>
-                <input name="pagado_real" inputmode="decimal" placeholder="0.00">
-              </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Notas o Referencia (opcional)</label>
-                <input name="notas" placeholder="Ej. Domiciliado en Caixa, póliza 12345...">
-              </div>
-            </div>
-
-            <div class="form-actions-right">
-              <button type="submit" class="btn-primary">
-                ${icono("plus")} Guardar Gasto Recurrente
-              </button>
-            </div>
-          </form>
-        </div>
-      </details>
-    </section>
+    </details>
+  </section>
   `;
 });
-
