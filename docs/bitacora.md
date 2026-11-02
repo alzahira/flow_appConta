@@ -856,16 +856,21 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - **167 tests pasando en verde (100% éxito)** con 88% de cobertura global.
   - Versión del Service Worker actualizada a `app-conta-shell-v45`.
 
-### 26. Fusión Definitiva de Bote Ahorro Extras en Bote Emergencias (2026-11-02)
+### 27. Modernización Integral de la Paleta de Colores Fintech (2026-11-02)
 
-- **Fusión completa de saldos y movimientos**:
-  - Todo el contenido histórico de `Bote ahorro extras` (id 4, 186,00 €) se traspasó al único **`Bote emergencias`** (id 24, que pasa a tener 296,00 € acumulados: 186 € de remanente + 110 € de nómina).
-  - Eliminado el bote duplicado `Bote ahorro extras` de la base de datos.
-  - Fórmula de conciliación ajustada y verificada: estado **`cuadrado` (🟢 Contabilidad al día)**.
-- **Corrección de Modal de Liquidación**:
-  - Importado helper `hoy` en `modales-acciones.js` para inicializar correctamente la fecha del cargo bancario en la liquidación de tarjetas.
-  - PWA shell bump a `v47`.
-- **Suite de Pruebas**: **168 tests en verde**, 0 fallos, 88% de cobertura.
+- **Sustitución de colores estridentes tradicionales por paleta ejecutiva moderna**:
+  - **Positivos / Ingresos / Ahorro**: Se eliminó el verde estridente de "semáforo" (`#059669` / `#10b981`) y se adoptó un **Teal nórdico mineral** (`#0d9488`, hover `#0f766e`, fondos suaves `#f0fdfa`, bordes `#ccfbf1`).
+  - **Negativos / Gastos / Alertas**: Se reemplazó el rojo chillón de alarma (`#ef4444` / `#dc2626` / `#e11d48`) por un **Borgoña / Rosa profundo elegante** (`#be123c`, hover `#9f1239`, fondos suaves `#fff1f2`, bordes `#ffe4e6`).
+- **Rediseño de los Botones de Acción del Hero (`+ Ingreso`, `− Gasto`)**:
+  - Reemplazados los bloques degradados saturados por tarjetas blancas de estilo ejecutivo unificado con bordes sutiles y cajas de iconos delicadamente tintadas, integrándose armónicamente con `Reparto Nómina` y `Copia & Vaciar`.
+- **Limpieza de estilos inline y reglas CSS**:
+  - Eliminado el atributo inline forzado `#ef4444 !important` en `vistas.js`.
+  - Reemplazados selectores rígidos en `styles.css` por variables CSS dinámicas `--accent-positive` y `--accent-negative`.
+  - Actualizadas las insignias y vistas (`botes.js`, `cuentas.js`, `deben.js`, `copia-seguridad.js`, `inversiones.js`, `tarjetas-regalo.js`).
+- **Control de Caché y Calidad**:
+  - Versión del Service Worker actualizada a `app-conta-shell-v48`.
+  - **168 tests pasando en verde (100% de éxito)** con 88% de cobertura global.
+
 
 
 
