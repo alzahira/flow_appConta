@@ -90,16 +90,41 @@ document.addEventListener("submit", async (e) => {
     } else if (form.dataset.accion === "crear-movimiento") {
       const signo = datos.get("signo") || form.querySelector("[name=signo]:checked")?.value || "-";
       const valor = String(datos.get("importe") || "").replace(",", ".").trim();
-      const boteId = datos.get("bote_id");
+      const rawBoteId = String(datos.get("bote_id") || datos.get("destino") || "");
       const categoriaId = datos.get("categoria_id");
-      await API.post("/movimientos", {
-        fecha: datos.get("fecha"),
-        importe: `${signo}${valor}`,
-        descripcion: datos.get("descripcion"),
-        cuenta_id: Number(datos.get("cuenta_id")),
-        bote_id: boteId ? Number(boteId) : null,
-        categoria_id: categoriaId ? Number(categoriaId) : null,
-      });
+      const cuentaId = Number(datos.get("cuenta_id"));
+      const fecha = datos.get("fecha");
+      const desc = datos.get("descripcion");
+
+      if (rawBoteId.startsWith("prestamo:")) {
+        const prestamoId = Number(rawBoteId.split(":")[1]);
+        if (signo === "+") {
+          // Si es ingreso, primero anotamos la entrada en cuenta y luego amortizamos el préstamo
+          await API.post("/movimientos", {
+            fecha,
+            importe: `+${valor}`,
+            descripcion: desc,
+            cuenta_id: cuentaId,
+            categoria_id: categoriaId ? Number(categoriaId) : null,
+          });
+        }
+        await API.post(`/prestamos/${prestamoId}/pagar`, {
+          importe: valor,
+          cuenta_id: cuentaId,
+          concepto: `Amortización préstamo: ${desc}`,
+          fecha,
+        });
+      } else {
+        const boteId = rawBoteId && rawBoteId !== "cuenta" ? Number(rawBoteId) : null;
+        await API.post("/movimientos", {
+          fecha,
+          importe: `${signo}${valor}`,
+          descripcion: desc,
+          cuenta_id: cuentaId,
+          bote_id: boteId,
+          categoria_id: categoriaId ? Number(categoriaId) : null,
+        });
+      }
       form.reset();
       await navegar();
     } else if (form.dataset.accion === "crear-categoria") {

@@ -266,11 +266,12 @@ function filtrarMovimientosDOM() {
 }
 
 export default vista("movimientos", async () => {
-  const [data, cuentas, botes, categorias] = await Promise.all([
+  const [data, cuentas, botes, categorias, prestamos] = await Promise.all([
     API.get("/movimientos?limit=100"),
     API.get("/cuentas"),
     API.get("/botes"),
     API.get("/categorias"),
+    API.get("/prestamos"),
   ]);
 
   cuentasCache = cuentas.items || [];
@@ -286,6 +287,10 @@ export default vista("movimientos", async () => {
     .join("");
   const opcionesCategoria = categoriasCache
     .map((c) => `<option value="${c.id}">🏷️ ${esc(c.nombre)}</option>`)
+    .join("");
+  const opcionesPrestamos = (prestamos.items || [])
+    .filter((p) => p.activo && Number(p.importe_pendiente) > 0)
+    .map((p) => `<option value="prestamo:${p.id}">🚗 Amortizar ${esc(p.nombre)} (${esc(p.entidad)}) — Pendiente: ${p.importe_pendiente} €</option>`)
     .join("");
 
   const hayMas = data.offset + data.items.length < data.total;
@@ -357,82 +362,94 @@ export default vista("movimientos", async () => {
 
   <!-- PANEL DESPLEGABLE / FORMULARIO RÁPIDO -->
   <section id="panel-nuevo-movimiento" class="section-block" style="display: none;">
-    <div class="form-card-container modern-elevated">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Añadir Operación al Libro Contable</h3>
-          <p class="form-card-subtitle">Registra un ingreso o gasto y clasifícalo en su cuenta y sobre</p>
-        </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Añadir Operación al Libro Contable
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Registra un ingreso o gasto y clasifícalo en su cuenta, sobre de ahorro o amortización de préstamo.</p>
+
+        <form data-accion="crear-movimiento" data-err="err-movimiento" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label class="form-label">Tipo de Movimiento</label>
+              <div class="segmented-control modern">
+                <label class="segment-item">
+                  <input type="radio" name="signo" value="-" checked>
+                  <span class="segment-btn out">🔴 Gasto (− Salida de dinero)</span>
+                </label>
+                <label class="segment-item">
+                  <input type="radio" name="signo" value="+">
+                  <span class="segment-btn in">🟢 Ingreso (+ Entrada de dinero)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group form-span-2">
+              <label for="mov-importe" class="form-label">Importe (€)</label>
+              <div class="input-currency-wrapper">
+                <input id="mov-importe" name="importe" inputmode="decimal" placeholder="0.00" class="input-large" required autofocus>
+                <span class="currency-symbol">€</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="mov-desc" class="form-label">Concepto o Comercio</label>
+              <input id="mov-desc" name="descripcion" placeholder="Ej. Compra Mercadona, Nómina Javier, Recibo Vodafone..." required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="mov-cuenta" class="form-label">Cuenta Bancaria / Tarjeta de Origen</label>
+              <select id="mov-cuenta" name="cuenta_id" required>
+                ${opcionesCuenta || '<option value="">Crea primero una cuenta</option>'}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="mov-fecha" class="form-label">Fecha</label>
+              <input id="mov-fecha" name="fecha" type="date" value="${hoy()}" required>
+            </div>
+            <div class="form-group">
+              <label for="mov-bote" class="form-label">Sobre / Bote o Préstamo (Opcional)</label>
+              <select id="mov-bote" name="bote_id">
+                <optgroup label="Cuenta Corriente">
+                  <option value="">— Ninguno (Libre en cuenta) —</option>
+                </optgroup>
+                <optgroup label="Sobres y Botes">
+                  ${opcionesBote}
+                </optgroup>
+                ${
+                  opcionesPrestamos
+                    ? `
+                <optgroup label="Préstamos (Amortizar / Reducir deuda)">
+                  ${opcionesPrestamos}
+                </optgroup>`
+                    : ""
+                }
+              </select>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="mov-cat" class="form-label">Categoría Analítica (Opcional)</label>
+              <select id="mov-cat" name="categoria_id">
+                <option value="">— Sin categoría —</option>
+                ${opcionesCategoria}
+              </select>
+            </div>
+          </div>
+
+          <div id="err-movimiento"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Guardar Movimiento
+            </button>
+          </div>
+        </form>
       </div>
-      <form data-accion="crear-movimiento" data-err="err-movimiento" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label class="form-label">Tipo de Movimiento</label>
-            <div class="segmented-control modern">
-              <label class="segment-item">
-                <input type="radio" name="signo" value="-" checked>
-                <span class="segment-btn out">🔴 Gasto (− Salida de dinero)</span>
-              </label>
-              <label class="segment-item">
-                <input type="radio" name="signo" value="+">
-                <span class="segment-btn in">🟢 Ingreso (+ Entrada de dinero)</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group form-span-2">
-            <label for="mov-importe" class="form-label">Importe (€)</label>
-            <div class="input-currency-wrapper">
-              <input id="mov-importe" name="importe" inputmode="decimal" placeholder="0.00" class="input-large" required autofocus>
-              <span class="currency-symbol">€</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="mov-desc" class="form-label">Concepto o Comercio</label>
-            <input id="mov-desc" name="descripcion" placeholder="Ej. Compra Mercadona, Nómina Javier, Recibo Vodafone..." required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="mov-cuenta" class="form-label">Cuenta Bancaria / Tarjeta de Origen</label>
-            <select id="mov-cuenta" name="cuenta_id" required>
-              ${opcionesCuenta || '<option value="">Crea primero una cuenta</option>'}
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group">
-            <label for="mov-fecha" class="form-label">Fecha</label>
-            <input id="mov-fecha" name="fecha" type="date" value="${hoy()}" required>
-          </div>
-          <div class="form-group">
-            <label for="mov-bote" class="form-label">Sobre / Bote (Opcional)</label>
-            <select id="mov-bote" name="bote_id">
-              <option value="">— Ninguno (Libre en cuenta) —</option>
-              ${opcionesBote}
-            </select>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="mov-cat" class="form-label">Categoría Analítica (Opcional)</label>
-            <select id="mov-cat" name="categoria_id">
-              <option value="">— Sin categoría —</option>
-              ${opcionesCategoria}
-            </select>
-          </div>
-        </div>
-
-        <div id="err-movimiento"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Guardar Movimiento
-          </button>
-        </div>
-      </form>
-    </div>
+    </details>
   </section>
 
   <!-- BARRA DE KPIS DEL LISTADO -->

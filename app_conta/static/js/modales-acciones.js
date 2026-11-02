@@ -41,15 +41,19 @@ export async function abrirModalGasto() {
   `;
 
   try {
-    const [resCuentas, resBotes, resCats] = await Promise.all([
+    const [resCuentas, resBotes, resCats, resPrestamos] = await Promise.all([
       API.get("/cuentas"),
       API.get("/botes"),
       API.get("/categorias"),
+      API.get("/prestamos"),
     ]);
 
     const cuentas = resCuentas.items || [];
     const botes = resBotes.items || [];
     const categorias = resCats.items || [];
+    const prestamos = (resPrestamos.items || []).filter(
+      (p) => p.activo && Number(p.importe_pendiente) > 0
+    );
     const hoy = new Date().toISOString().slice(0, 10);
 
     overlay.innerHTML = `
@@ -89,18 +93,43 @@ export async function abrirModalGasto() {
             </div>
 
             <div class="modal-field">
-              <label for="mg-bote" class="form-label">¿A qué sobre o bote se descuenta?</label>
+              <label for="mg-bote" class="form-label">¿A qué sobre o préstamo se descuenta?</label>
               <select id="mg-bote" name="bote_id">
-                <option value="">— Ninguno (Gasto general directo de cuenta) —</option>
-                ${botes
-                  .map(
-                    (b) => `
-                  <option value="${b.id}">
-                    ${esc(b.nombre)} (${b.saldo} € disponible)
-                  </option>
-                `
-                  )
-                  .join("")}
+                <optgroup label="General">
+                  <option value="">— Ninguno (Gasto general directo de cuenta) —</option>
+                </optgroup>
+                ${
+                  botes.length > 0
+                    ? `
+                <optgroup label="Sobres y Botes">
+                  ${botes
+                    .map(
+                      (b) => `
+                    <option value="${b.id}">
+                      🐷 ${esc(b.nombre)} (${b.saldo} € disponible)
+                    </option>
+                  `
+                    )
+                    .join("")}
+                </optgroup>`
+                    : ""
+                }
+                ${
+                  prestamos.length > 0
+                    ? `
+                <optgroup label="Préstamos que debo (Amortizar / Pago de cuota)">
+                  ${prestamos
+                    .map(
+                      (p) => `
+                    <option value="prestamo:${p.id}">
+                      🚗 ${esc(p.nombre)} (${esc(p.entidad)}) — Pendiente: ${p.importe_pendiente} €
+                    </option>
+                  `
+                    )
+                    .join("")}
+                </optgroup>`
+                    : ""
+                }
               </select>
             </div>
 
@@ -156,18 +185,30 @@ export async function abrirModalGasto() {
       const fData = new FormData(form);
       const valor = String(fData.get("importe") || "").replace(",", ".").trim();
       const cuentaId = fData.get("cuenta_id");
-      const boteId = fData.get("bote_id");
+      const boteId = String(fData.get("bote_id") || "");
       const categoriaId = fData.get("categoria_id");
+      const desc = fData.get("descripcion");
+      const fecha = fData.get("fecha");
 
       try {
-        await API.post("/movimientos", {
-          fecha: fData.get("fecha"),
-          importe: `-${valor}`,
-          descripcion: fData.get("descripcion"),
-          cuenta_id: Number(cuentaId),
-          bote_id: boteId ? Number(boteId) : null,
-          categoria_id: categoriaId ? Number(categoriaId) : null,
-        });
+        if (boteId.startsWith("prestamo:")) {
+          const prestamoId = Number(boteId.split(":")[1]);
+          await API.post(`/prestamos/${prestamoId}/pagar`, {
+            importe: valor,
+            cuenta_id: Number(cuentaId),
+            concepto: desc || "Pago de cuota de préstamo",
+            fecha: fecha,
+          });
+        } else {
+          await API.post("/movimientos", {
+            fecha: fecha,
+            importe: `-${valor}`,
+            descripcion: desc,
+            cuenta_id: Number(cuentaId),
+            bote_id: boteId ? Number(boteId) : null,
+            categoria_id: categoriaId ? Number(categoriaId) : null,
+          });
+        }
         cerrarModalActivo();
         // Recargar o navegar para refrescar la pantalla
         if (window.location.hash === "#/inicio" || window.location.hash === "") {
@@ -207,16 +248,20 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
   `;
 
   try {
-    const [resCuentas, resBotes, resPlantillas, resPagos] = await Promise.all([
+    const [resCuentas, resBotes, resPlantillas, resPagos, resPrestamos] = await Promise.all([
       API.get("/cuentas"),
       API.get("/botes"),
       API.get("/plantillas-reparto"),
       API.get("/pagos-recurrentes"),
+      API.get("/prestamos"),
     ]);
 
     const cuentas = resCuentas.items || [];
     const botes = resBotes.items || [];
     const plantillas = resPlantillas || [];
+    const prestamos = (resPrestamos.items || []).filter(
+      (p) => p.activo && Number(p.importe_pendiente) > 0
+    );
     const datosRecibos = resPagos || {
       por_cuenta: [],
       total_general: "0.00",
@@ -315,19 +360,47 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               </div>
 
               <div class="modal-field">
-                <label for="mi-bote" class="form-label">¿Asignar a un sobre/bote? (Opcional)</label>
-                <select id="mi-bote" name="bote_id">
-                  <option value="">— Dejar en la cuenta corriente (Sin asignar a bote) —</option>
-                  ${botes
-                    .map(
-                      (b) => `
-                    <option value="${b.id}">
-                      ${esc(b.nombre)} (${b.saldo} € actual)
-                    </option>
-                  `
-                    )
-                    .join("")}
+                <label for="mi-destino" class="form-label">¿A qué destinar este ingreso? *</label>
+                <select id="mi-destino" name="destino">
+                  <optgroup label="Cuenta Bancaria">
+                    <option value="cuenta" selected>— Dejar libre en la cuenta corriente (Sin asignar) —</option>
+                  </optgroup>
+                  ${
+                    botes.length > 0
+                      ? `
+                  <optgroup label="Sobres y Botes de Ahorro">
+                    ${botes
+                      .map(
+                        (b) => `
+                      <option value="bote:${b.id}">
+                        🐷 ${esc(b.nombre)} (${b.saldo} € actual)
+                      </option>
+                    `
+                      )
+                      .join("")}
+                  </optgroup>`
+                      : ""
+                  }
+                  ${
+                    prestamos.length > 0
+                      ? `
+                  <optgroup label="Préstamos y Financiaciones (Amortizar / Ingresar en préstamo)">
+                    ${prestamos
+                      .map(
+                        (p) => `
+                      <option value="prestamo:${p.id}">
+                        🚗 Ingresar en préstamo ${esc(p.nombre)} (${esc(p.entidad)}) — Deuda: ${p.importe_pendiente} €
+                      </option>
+                    `
+                      )
+                      .join("")}
+                  </optgroup>`
+                      : ""
+                  }
                 </select>
+                <div id="mi-destino-info" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+                  🏦 El dinero quedará como saldo libre en la cuenta seleccionada.
+                </div>
               </div>
 
               <div class="modal-field">
@@ -462,6 +535,25 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
       });
     });
 
+    // Escucha de cambio de destino para actualizar ayuda visual
+    const selectDestino = overlay.querySelector("#mi-destino");
+    const infoDestino = overlay.querySelector("#mi-destino-info");
+    if (selectDestino && infoDestino) {
+      selectDestino.addEventListener("change", () => {
+        const val = selectDestino.value;
+        if (val.startsWith("prestamo:")) {
+          infoDestino.innerHTML = `🚗 <strong>Ingreso destinado a Préstamo:</strong> Se registrará la entrada del dinero y se amortizará automáticamente la deuda del préstamo seleccionado.`;
+          infoDestino.style.color = "#0284c7";
+        } else if (val.startsWith("bote:")) {
+          infoDestino.innerHTML = `🐷 <strong>Ingreso en Sobre:</strong> El dinero se asignará directamente a este sobre de ahorro.`;
+          infoDestino.style.color = "#10b981";
+        } else {
+          infoDestino.innerHTML = `🏦 El dinero quedará como saldo libre en la cuenta seleccionada.`;
+          infoDestino.style.color = "var(--text-muted)";
+        }
+      });
+    }
+
     // Envío Ingreso Libre
     const formLibre = overlay.querySelector("#form-modal-ingreso-libre");
     if (formLibre) {
@@ -476,16 +568,46 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         const fData = new FormData(formLibre);
         const valor = String(fData.get("importe") || "").replace(",", ".").trim();
         const cuentaId = fData.get("cuenta_id");
-        const boteId = fData.get("bote_id");
+        const destino = String(fData.get("destino") || fData.get("bote_id") || "");
+        const fecha = fData.get("fecha");
+        const descripcion = fData.get("descripcion");
 
         try {
-          await API.post("/movimientos", {
-            fecha: fData.get("fecha"),
-            importe: `+${valor}`,
-            descripcion: fData.get("descripcion"),
-            cuenta_id: Number(cuentaId),
-            bote_id: boteId ? Number(boteId) : null,
-          });
+          if (destino.startsWith("prestamo:")) {
+            const prestamoId = Number(destino.split(":")[1]);
+            // 1. Registramos la entrada del dinero en la cuenta elegida
+            await API.post("/movimientos", {
+              fecha: fecha,
+              importe: `+${valor}`,
+              descripcion: descripcion,
+              cuenta_id: Number(cuentaId),
+            });
+            // 2. Destinamos y amortizamos el dinero en el préstamo
+            await API.post(`/prestamos/${prestamoId}/pagar`, {
+              importe: valor,
+              cuenta_id: Number(cuentaId),
+              concepto: `Amortización préstamo: ${descripcion}`,
+              fecha: fecha,
+            });
+          } else if (destino.startsWith("bote:")) {
+            const boteId = Number(destino.split(":")[1]);
+            await API.post("/movimientos", {
+              fecha: fecha,
+              importe: `+${valor}`,
+              descripcion: descripcion,
+              cuenta_id: Number(cuentaId),
+              bote_id: boteId,
+            });
+          } else {
+            const boteId = destino && destino !== "cuenta" ? Number(destino) : null;
+            await API.post("/movimientos", {
+              fecha: fecha,
+              importe: `+${valor}`,
+              descripcion: descripcion,
+              cuenta_id: Number(cuentaId),
+              bote_id: boteId,
+            });
+          }
           cerrarModalActivo();
           if (window.location.hash === "#/inicio" || window.location.hash === "") {
             window.dispatchEvent(new HashChangeEvent("hashchange"));

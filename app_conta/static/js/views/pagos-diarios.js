@@ -31,10 +31,11 @@ window.autocompletarPagoDiario = function (concepto, nombreBote) {
 };
 
 export default vista("pagos-diarios", async () => {
-  const [cuentasData, botesData, categoriasData] = await Promise.all([
+  const [cuentasData, botesData, categoriasData, prestamosData] = await Promise.all([
     API.get("/cuentas"),
     API.get("/botes"),
     API.get("/categorias"),
+    API.get("/prestamos"),
   ]);
 
   setGlobalCaches({
@@ -42,6 +43,10 @@ export default vista("pagos-diarios", async () => {
     botes: botesData.items,
     categorias: categoriasData.items,
   });
+
+  const prestamosActivos = (prestamosData.items || []).filter(
+    (p) => p.activo && Number(p.importe_pendiente) > 0
+  );
 
   // Filtramos las tarjetas principales de compras diarias (excluyendo tarjetas regalo / monedero)
   const todasTarjetas = cuentasData.items.filter(
@@ -136,6 +141,12 @@ export default vista("pagos-diarios", async () => {
     if (esMesA !== esMesB) return esMesA - esMesB;
     return a.nombre.localeCompare(b.nombre);
   });
+
+  const opcionesPrestamosHtml = prestamosActivos
+    .map(
+      (p) => `<option value="prestamo:${p.id}">🚗 ${esc(p.nombre)} (${esc(p.entidad)}) — Pendiente: ${p.importe_pendiente} €</option>`
+    )
+    .join("");
 
   const opcionesBoteHtml = opcionesBotesList
     .map((b) => {
@@ -269,10 +280,20 @@ export default vista("pagos-diarios", async () => {
             </div>
 
             <div class="form-group form-span-2">
-              <label for="pd-bote-id" class="form-label">Descontar del Sobre / Bote *</label>
+              <label for="pd-bote-id" class="form-label">Descontar del Sobre / Bote o Préstamo *</label>
               <select id="pd-bote-id" name="bote_id">
                 <option value="">(Opcional) No descontar de ningún bote</option>
-                ${opcionesBoteHtml}
+                <optgroup label="Sobres y Botes">
+                  ${opcionesBoteHtml}
+                </optgroup>
+                ${
+                  opcionesPrestamosHtml
+                    ? `
+                <optgroup label="Amortizar Préstamo (Reducir deuda)">
+                  ${opcionesPrestamosHtml}
+                </optgroup>`
+                    : ""
+                }
               </select>
             </div>
           </div>
@@ -330,3 +351,4 @@ export default vista("pagos-diarios", async () => {
   </section>
   `;
 });
+
