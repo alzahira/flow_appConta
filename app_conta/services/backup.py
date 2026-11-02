@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -209,6 +210,8 @@ def restaurar_datos_completos(db: Session, backup_dict: dict[str, Any]) -> dict[
 
             for fila in filas:
                 columnas = list(fila.keys())
+                if not all(re.match(r"^[a-zA-Z0-9_]+$", c) for c in columnas):
+                    raise ErrorValidacion("Nombres de columna no válidos en el archivo de copia")
                 placeholders = [f":{c}" for c in columnas]
                 col_str = ", ".join(columnas)
                 val_str = ", ".join(placeholders)

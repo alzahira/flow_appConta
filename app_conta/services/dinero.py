@@ -7,11 +7,13 @@ from __future__ import annotations
 
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
+from app_conta.services.errors import ErrorValidacion
+
 CENTIMOS_POR_EURO = 100
 _EXPONENTE = Decimal("0.01")
 
 
-class ErrorImporte(ValueError):
+class ErrorImporte(ErrorValidacion, ValueError):
     """Importe no válido (formato o valor cero)."""
 
 
@@ -22,11 +24,12 @@ def euros_a_centimos(importe: Decimal | str) -> int:
     """
     try:
         valor = Decimal(str(importe).strip())
+        if not valor.is_finite():
+            raise ErrorImporte(f"Importe no finito: {importe!r}")
+        centimos = (valor * CENTIMOS_POR_EURO).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        return int(centimos)
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ErrorImporte(f"Importe no válido: {importe!r}") from exc
-    if not valor.is_finite():
-        raise ErrorImporte(f"Importe no finito: {importe!r}")
-    return int((valor * CENTIMOS_POR_EURO).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 def centimos_a_euros(centimos: int) -> Decimal:

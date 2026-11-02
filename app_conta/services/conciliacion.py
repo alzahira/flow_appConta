@@ -86,12 +86,14 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     botes_activos_pares, tot_botes_formula = listar_botes_activos(db)
 
     hogar = db.scalars(select(Hogar)).first()
-    hogar_id = str(hogar.id) if hogar else "1"
-    try:
-        prev = obtener_resumen_prevision(db, hogar_id)
-        tot_prevision_formula = int(prev.get("total_saldo_centimos", 0))
-    except Exception:
-        tot_prevision_formula = 0
+    tot_prevision_formula = 0
+    if hogar is not None:
+        try:
+            prev = obtener_resumen_prevision(db, str(hogar.id))
+            tot_prevision_formula = int(prev.get("total_saldo_centimos", 0))
+        except Exception:
+            db.rollback()
+            tot_prevision_formula = 0
 
     deudas = list(db.scalars(select(Deuda).where(Deuda.archivada.is_(False))))
     tot_me_deben_formula = sum(

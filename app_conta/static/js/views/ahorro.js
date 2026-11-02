@@ -307,7 +307,7 @@ export default vista("ahorro", async () => {
           <span class="suggestions-label">Sugerencias rápidas:</span>
           <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Hipoteca'; document.getElementById('ah-obj').focus();">+ Amortización Hipoteca</button>
           <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Reserva Cuotas Hipoteca'; document.getElementById('ah-obj').focus();">+ Reserva Cuotas Hipoteca</button>
-          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Colchón de Emergencia (6 meses)'; document.getElementById('ah-obj').focus();">+ Colchón de Emergencia</button>
+          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Extraordinaria'; document.getElementById('ah-obj').focus();">+ Amortización Extraordinaria</button>
         </div>
 
         <form data-accion="crear-bote-ahorro" data-err="err-ahorro" class="fintech-form">

@@ -80,8 +80,19 @@ async def post_restaurar_backup(
             detail="Debe proporcionar un archivo de copia de seguridad (.json).",
         )
 
+    if not archivo.filename or not archivo.filename.lower().endswith(".json"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El archivo debe tener extensión .json",
+        )
+
     try:
         raw_bytes = await archivo.read()
+        if len(raw_bytes) > 25 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El archivo supera el tamaño máximo permitido de 25 MB.",
+            )
         texto = raw_bytes.decode("utf-8")
         backup_dict = json.loads(texto)
     except Exception as exc:
@@ -94,10 +105,12 @@ async def post_restaurar_backup(
         resultado = restaurar_datos_completos(db, backup_dict)
         return resultado
     except ErrorValidacion as exc:
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from exc
     except Exception as exc:
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error durante la restauración: {exc}",

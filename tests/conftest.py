@@ -107,7 +107,11 @@ def client(_migrado, db_module):
         session = db_module.SessionLocal()
         try:
             yield session
+        except Exception:
+            session.rollback()
+            raise
         finally:
+            session.rollback()
             session.close()
 
     main.app.dependency_overrides[db_module.get_db] = _override_get_db
@@ -117,17 +121,12 @@ def client(_migrado, db_module):
 
 @pytest.fixture()
 def hogar_id(_migrado, db_module) -> str:
-    """ID del Hogar único, como string UUID plano (evita binding type 'UUID' de SQLite)."""
+    """ID real (str) del Hogar único, creado si no existe."""
     from app_conta.services.hogar import asegurar_hogar_unico
 
     session = db_module.SessionLocal()
     try:
-        # Crear/obtener el Hogar único
-        asegurar_hogar_unico(session)
-        # Devolver el ID como string UUID "plano" — sin usar el módulo uuid de Python
-        # para evitar que SQLAlchemy lo interprete como tipo nativo 'UUID'.
-        # Usamos un string UUID generado de forma determinista.
-        uuid_plano = "00000000-0000-0000-0000-000000000001"
-        return uuid_plano
+        h = asegurar_hogar_unico(session)
+        return str(h.id)
     finally:
         session.close()

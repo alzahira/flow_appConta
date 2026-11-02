@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -215,6 +216,15 @@ def post_pago_prestamo(
     hogar_id = obtener_hogar_unico(db)
     importe_cent = _parse_imp(payload.importe)
 
+    fecha_obj: date | None = None
+    if payload.fecha:
+        try:
+            fecha_obj = date.fromisoformat(str(payload.fecha))
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"Fecha no válida: {payload.fecha}"
+            ) from exc
+
     try:
         prestamo = registrar_pago_prestamo(
             db,
@@ -223,7 +233,7 @@ def post_pago_prestamo(
             importe_cent,
             cuenta_id=payload.cuenta_id,
             concepto=payload.concepto,
-            fecha=payload.fecha,  # type: ignore[arg-type]
+            fecha=fecha_obj,
         )
         db.commit()
     except (ErrorValidacion, ErrorNoEncontrado) as exc:
