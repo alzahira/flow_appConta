@@ -84,7 +84,7 @@ export default vista("inicio", async () => {
       <div class="hero-status-container" style="cursor: pointer;" data-accion-fintech="ver-cuadre" title="Pulsar para ver el desglose del cuadre">
         ${badgeEstado(
           esCuadrado ? "cuadrado" : "revisar",
-          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia, esCuadrado ? "" : "negativo")} (ver detalle)`
+          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia)} (ver detalle)`
         )}
       </div>
     </div>

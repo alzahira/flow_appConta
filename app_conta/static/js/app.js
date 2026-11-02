@@ -28,8 +28,8 @@ async function navegar() {
 
   // Resaltar la pestaña del grupo activo en el menú superior
   const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "gastos-tarjetas", "pagos-recurrentes"];
-  const grupoAhorro = ["ahorro", "botes", "prevision-gastos", "deben"];
-  const grupoMas = ["categorias", "importar", "copia-seguridad", "pagos-recurrentes"];
+  const grupoAhorro = ["ahorro", "botes", "deben"];
+  const grupoMas = ["prevision-gastos", "categorias", "importar", "copia-seguridad", "pagos-recurrentes"];
 
 
   document.querySelectorAll("nav a[data-nav-group]").forEach((a) => {

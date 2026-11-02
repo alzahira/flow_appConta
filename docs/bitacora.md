@@ -777,6 +777,32 @@ A petición expresa del usuario para alinear la app con su flujo mental:
 - **PWA**: caché del service worker actualizada a `app-conta-shell-v39`.
 - **Calidad**: `node --check` limpio en las vistas afectadas, **165 tests en verde**, ruff sin incidencias.
 
+### 21. Diagnóstico de Descuadres, Unificación Conceptual y Reubicación de Previsión a «Extras» (2026-11-02)
+
+- **Diagnóstico Integral de las Capturas de Pantalla**:
+  1. *Captura 1 (`Diferencia: <span class="importe negativo...>-10.471,30 €</span>`)*:
+     - **Causa visual**: `esc()` en `badgeEstado` escapaba la cadena HTML retornada por `importe()`, exponiendo etiquetas crudas en la interfaz.
+     - **Causa contable**: al ejecutar «Poner a 0» en su primera versión, solo se reiniciaban movimientos y cuentas; deudas (−2.963,70 €), préstamos (−9.498,60 €) y previsión (+1.991,46 €) seguían en base de datos.
+     - **Resolución**: corregido en `64d6b2e` (limpieza total a 0,00 €) y eliminación de `esc` en el contenido de badges.
+  2. *Captura 2 (`Diferencia: −8.522,41 €` con 8.522,57 € en cuentas)*:
+     - **Causa contable**: en el commit `f3245e7` se había añadido temporalmente `saldo_inicial_total` (+8.522,57 €) a `teorico_base`. Como los botes activos ya representaban los 8.522,41 € de fondos bancarios, sumar los saldos iniciales duplicó el activo exigible, generando una discrepancia de +8.522,41 € que la UI forzaba a negativo.
+     - **Resolución**: revertida la duplicación en `d182917`.
+- **Unificación Conceptual de Botes y Préstamos**:
+  - **Bote emergencias**: Unificación de `Bote ahorro extras` (Bote #4) y `Bote Ahorro Mes` (Bote #26) en una única hucha **«Bote emergencias»** (+110,00 € mensuales en Reparto Hogar).
+  - **Previsión Gastos Anuales**: Eliminado el sobre redundante `Provisión Seguros e IBI` (Bote #25, 176,00 €). Al ejecutar el Reparto Mensual Hogar se incrementa automáticamente `meses_pagados += 1` en `prevision_gastos_config` (hasta 12 meses).
+  - **Amortización Préstamo Coche**: En Nómina MJ, la línea de 199,01 € deja de alimentar un sobre ficticio y descuenta directamente del capital pendiente de la deuda del coche (`prestamos.importe_pendiente_centimos -= 19901`).
+- **Reubicación de «Previsión Gastos Anuales» al Menú «Extras»**:
+  - En `nav.js`, el desplegable pasa de llamarse `Más` a **`Extras`**, incorporando como primer ítem la `Previsión Gastos Anuales`.
+  - En `subnavAhorro` (`vistas.js`) y `app.js`, se retira la pestaña de Ahorro y se centraliza en Extras.
+- **Armonización de la Fórmula de Conciliación (`services/conciliacion.py`)**:
+  - Aislamiento en `sin_asignar_formula` de las líneas de previsión y amortización para evitar doble cómputo con `tot_prevision_formula` y `tot_prestamos_formula`.
+  - Deducción de extras topada al remanente histórico (186,00 €) sin afectar a los nuevos ingresos bancarios.
+  - El sistema reporta **`estado_formula = "cuadrado"` (🟢 Contabilidad al día)**.
+- **Cache y Suite de Pruebas**:
+  - Versión del Service Worker y assets PWA actualizada a `app-conta-shell-v42`.
+  - **165 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global.
+  - Ruff linter 100% limpio en todo el proyecto.
+
 
 
 

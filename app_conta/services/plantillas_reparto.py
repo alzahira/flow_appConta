@@ -10,8 +10,10 @@ from sqlalchemy.orm import Session
 
 from app_conta.models.bote import Bote
 from app_conta.models.cuenta import Cuenta
+from app_conta.models.gasto_recurrente import PrevisionGastosConfig
 from app_conta.models.movimiento import Movimiento
 from app_conta.models.plantilla_reparto import PlantillaReparto, PlantillaRepartoLinea
+from app_conta.models.prestamo import Prestamo
 from app_conta.services.botes import saldo_bote
 from app_conta.services.dinero import centimos_a_euros, euros_a_centimos
 from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
@@ -109,8 +111,7 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
 
     bote_hipoteca = obtener_o_crear_bote("Amortización Hipoteca", "ahorro")
     bote_dazn = obtener_o_crear_bote("Bote DAZN", "recurrente", "suscripciones")
-    bote_seguros = obtener_o_crear_bote("Provisión Seguros e IBI", "recurrente", "impuestos")
-    bote_ahorro = obtener_o_crear_bote("Bote Ahorro Mes", "ahorro", "ahorro")
+    bote_emergencias = obtener_o_crear_bote("Bote emergencias", "ahorro", "ahorro")
     bote_arreglos = obtener_o_crear_bote("Bote Arreglos Pisos", "proyecto")
     bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro")
     bote_mes = obtener_o_crear_bote("Cash para el mes en curso", "ahorro")
@@ -125,15 +126,15 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
             "importe": "526.00",
         },
         {
-            "bote_id": bote_seguros.id,
+            "bote_id": None,
             "cuenta_id": cta_caixa.id,
-            "concepto": "Provisión Seguros e IBI",
+            "concepto": "Previsión Gastos Anuales",
             "importe": "176.00",
         },
         {
-            "bote_id": bote_ahorro.id,
+            "bote_id": bote_emergencias.id,
             "cuenta_id": cta_caixa.id,
-            "concepto": "Bote ahorro mes",
+            "concepto": "Bote emergencias",
             "importe": "110.00",
         },
         {
@@ -239,7 +240,6 @@ def sembrar_plantilla_nomina_mj(db: Session, hogar_id: int) -> PlantillaReparto 
 
     bote_gasolina = obtener_o_crear_bote("Gasolina mes", "ahorro", "gasolina")
     bote_irpf = obtener_o_crear_bote("Bote IRPF", "ajeno", "reserva")
-    bote_coche = obtener_o_crear_bote("Préstamo Coche Hyundai", "ahorro", "personal")
     bote_paro = obtener_o_crear_bote("Guardado Resto Paro", "ahorro", "reserva")
     bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro", "ocio")
     bote_mejoras = obtener_o_crear_bote("Mejoras del Hogar", "ahorro", "mantenimiento")
@@ -258,9 +258,9 @@ def sembrar_plantilla_nomina_mj(db: Session, hogar_id: int) -> PlantillaReparto 
             "importe": "27.64",
         },
         {
-            "bote_id": bote_coche.id,
+            "bote_id": None,
             "cuenta_id": cta_caixa.id,
-            "concepto": "Préstamo Coche (30%)",
+            "concepto": "Amortización Préstamo Coche (30%)",
             "importe": "199.01",
         },
         {
@@ -604,6 +604,44 @@ def ejecutar_reparto(
         )
         movimientos_creados.append(mov)
         total_centimos += item["centimos"]
+
+        concepto_low = str(item.get("concepto") or "").lower()
+
+        # 1. Si la línea es de previsión anual: sumar 1 mes a Previsión Gastos Anuales
+        es_prev = (
+            "previsi" in concepto_low
+            or "seguros e ibi" in concepto_low
+            or "gastos anuales" in concepto_low
+        )
+        if es_prev:
+            cfg_prev = db.scalar(
+                select(PrevisionGastosConfig).where(
+                    PrevisionGastosConfig.hogar_id == str(cuenta.hogar_id)
+                )
+            )
+            if cfg_prev and cfg_prev.meses_pagados < 12:
+                cfg_prev.meses_pagados += 1
+
+        # 2. Si la línea es de amortización de préstamo coche:
+        # Descontar el importe directamente de la deuda del préstamo coche
+        if "coche" in concepto_low and (
+            "prstamo" in concepto_low
+            or "prestamo" in concepto_low
+            or "amortizaci" in concepto_low
+        ):
+            prestamo_coche = db.scalar(
+                select(Prestamo).where(
+                    Prestamo.hogar_id == str(cuenta.hogar_id),
+                    Prestamo.activo.is_(True),
+                    Prestamo.nombre.ilike("%coche%"),
+                )
+            )
+            if prestamo_coche:
+                prestamo_coche.importe_pendiente_centimos = max(
+                    0, prestamo_coche.importe_pendiente_centimos - item["centimos"]
+                )
+                if prestamo_coche.importe_pendiente_centimos == 0:
+                    prestamo_coche.activo = False
 
     db.commit()
 

@@ -404,7 +404,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
                       <div class="card-nomina-sub">Cobro íntegro en La Caixa</div>
                       <div class="card-nomina-cifra">+${plantillaMJ.importe_estimado} €</div>
                       <div class="card-nomina-tags">
-                        <span class="tag-simple">📦 6 Botes personales</span>
+                        <span class="tag-simple">📦 5 Botes + Amortización Coche</span>
                         <span class="tag-bancos">La Caixa</span>
                       </div>
                     </div>
@@ -641,7 +641,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
             <div class="nomina-info-alert info">
               <span class="alert-icon">ℹ️</span>
               <span class="alert-text">
-                Se reparte íntegramente en sus 6 botes personales: Gasolina (40 €), IRPF (27,64 €), Coche (199,01 €), Paro (199,01 €), Ocio (132,67 €) y Mejoras (132,67 €).
+                Se reparte en La Caixa: Gasolina (40 €), IRPF (27,64 €), Paro (199,01 €), Ocio (132,67 €), Mejoras (132,67 €) y amortiza directamente −199,01 € del préstamo del coche.
               </span>
             </div>
           </div>

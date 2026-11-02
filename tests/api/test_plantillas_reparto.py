@@ -236,7 +236,7 @@ def test_siembra_y_ejecucion_plantilla_nomina_mj(client):
     botes_map = {b["nombre"]: b["saldo"] for b in r_botes.json()["items"]}
     assert botes_map.get("Gasolina mes") == "40.00"
     assert botes_map.get("Bote IRPF") == "27.64"
-    assert botes_map.get("Préstamo Coche Hyundai") == "199.01"
+    assert "Préstamo Coche Hyundai" not in botes_map
     assert botes_map.get("Guardado Resto Paro") == "199.01"
     assert botes_map.get("Bote ocio") == "132.67"
     assert botes_map.get("Mejoras del Hogar") == "132.67"

@@ -164,7 +164,6 @@ export function subnavAhorro(activa) {
   const tabs = [
     { id: "ahorro", href: "#/ahorro", label: "Fondos de Ahorro e Hipotecas", iconoKey: "ahorro" },
     { id: "botes", href: "#/botes", label: "Sobres y Botes", iconoKey: "botes" },
-    { id: "prevision-gastos", href: "#/prevision-gastos", label: "Previsión Gastos Anuales", iconoKey: "prevision" },
     { id: "deben", href: "#/deben", label: "Dinero que me deben", iconoKey: "prestamo" },
   ];
 

@@ -10,6 +10,7 @@ const ITEMS_PRINCIPALES = [
 ];
 
 const RUTAS_MAS = [
+  { nombre: "prevision-gastos", desc: "Planificación y provisión de gastos anuales (IBI, seguros...)", label: "Previsión Gastos Anuales", iconoKey: "prevision" },
   { nombre: "pagos-recurrentes", desc: "Recibos y domiciliaciones fijas bancarias", label: "Recibos Fijos", iconoKey: "prevision" },
   { nombre: "categorias", desc: "Clasificación analítica de gastos", label: "Categorías", iconoKey: "categorias" },
   { nombre: "importar", desc: "Ingesta y conciliación de libros", label: "Importar Excel", iconoKey: "importar" },
@@ -30,9 +31,9 @@ export function pintarNav(_rutas) {
     ).join("")}
 
     <div class="nav-dropdown-wrap" id="nav-dropdown-wrap">
-      <button type="button" class="nav-tab nav-dropdown-btn" id="btn-nav-mas" aria-haspopup="true" aria-expanded="false" title="Más opciones">
+      <button type="button" class="nav-tab nav-dropdown-btn" id="btn-nav-mas" aria-haspopup="true" aria-expanded="false" title="Extras y opciones">
         <span class="nav-icon">${icono("mas")}</span>
-        <span class="nav-label">Más</span>
+        <span class="nav-label">Extras</span>
         <span class="nav-chevron">${icono("chevron")}</span>
       </button>
       <div class="nav-dropdown-menu" id="nav-dropdown-menu">

@@ -1,5 +1,5 @@
 // Vista de Previsión de Gastos y Bote Anual (IBI, Seguros, Basuras, Sellos...)
-import { esc, importe, vista, icono, subnavAhorro } from "../vistas.js";
+import { esc, importe, vista, icono } from "../vistas.js";
 
 const MESES_NOMBRES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -85,8 +85,6 @@ export default vista("prevision-gastos", async () => {
   const esSuperavitTotal = saldoTotalNum >= 0;
 
   return `
-    ${subnavAhorro("prevision-gastos")}
-
     <div class="page-header-row">
       <div>
         <h2 class="page-title">Previsión de Gastos y Bote Anual</h2>
