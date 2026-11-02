@@ -856,6 +856,18 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - **167 tests pasando en verde (100% éxito)** con 88% de cobertura global.
   - Versión del Service Worker actualizada a `app-conta-shell-v45`.
 
+### 26. Fusión Definitiva de Bote Ahorro Extras en Bote Emergencias (2026-11-02)
+
+- **Fusión completa de saldos y movimientos**:
+  - Todo el contenido histórico de `Bote ahorro extras` (id 4, 186,00 €) se traspasó al único **`Bote emergencias`** (id 24, que pasa a tener 296,00 € acumulados: 186 € de remanente + 110 € de nómina).
+  - Eliminado el bote duplicado `Bote ahorro extras` de la base de datos.
+  - Fórmula de conciliación ajustada y verificada: estado **`cuadrado` (🟢 Contabilidad al día)**.
+- **Corrección de Modal de Liquidación**:
+  - Importado helper `hoy` en `modales-acciones.js` para inicializar correctamente la fecha del cargo bancario en la liquidación de tarjetas.
+  - PWA shell bump a `v47`.
+- **Suite de Pruebas**: **168 tests en verde**, 0 fallos, 88% de cobertura.
+
+
 
 
 
