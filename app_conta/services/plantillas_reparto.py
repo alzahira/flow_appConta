@@ -12,8 +12,9 @@ from app_conta.models.bote import Bote
 from app_conta.models.cuenta import Cuenta
 from app_conta.models.movimiento import Movimiento
 from app_conta.models.plantilla_reparto import PlantillaReparto, PlantillaRepartoLinea
+from app_conta.services.botes import saldo_bote
 from app_conta.services.dinero import centimos_a_euros, euros_a_centimos
-from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.movimientos import crear_movimiento
 
 
@@ -468,8 +469,15 @@ def ejecutar_reparto(
     cuenta_id: int | None = None,
     lineas: list[dict[str, Any]] | None = None,
     descripcion_general: str | None = None,
+    confirmar_repetido: bool = False,
 ) -> dict[str, Any]:
-    """Ejecuta el reparto generando los movimientos de ingreso correspondientes."""
+    """Ejecuta el reparto generando los movimientos de ingreso correspondientes.
+
+    - Protección anti-duplicado: si ya hay un reparto con el mismo nombre en el
+      mismo mes, lanza `ErrorConflicto` salvo que `confirmar_repetido=True`.
+    - Devuelve `avisos` (sin bloquear) cuando alguna línea negativa deja un bote
+      con saldo negativo, para que el cliente pueda avisar al usuario.
+    """
     plantilla = obtener_plantilla(db, plantilla_id)
     target_cuenta_id = cuenta_id if cuenta_id is not None else plantilla.cuenta_id
 
@@ -477,9 +485,32 @@ def ejecutar_reparto(
     if cuenta is None:
         raise ErrorNoEncontrado(f"Cuenta {target_cuenta_id} no encontrada")
 
+    try:
+        fecha_obj = fecha if isinstance(fecha, date) else date.fromisoformat(str(fecha))
+    except ValueError as exc:
+        raise ErrorValidacion(f"Fecha no válida: {fecha!r}") from exc
+
     prefijo = str(descripcion_general or plantilla.nombre).strip()
-    movimientos_creados: list[Movimiento] = []
-    total_centimos = 0
+
+    # Protección anti-duplicado por doble clic: mismo prefijo y mismo mes.
+    inicio_mes = fecha_obj.replace(day=1)
+    if fecha_obj.month == 12:
+        inicio_mes_siguiente = date(fecha_obj.year + 1, 1, 1)
+    else:
+        inicio_mes_siguiente = date(fecha_obj.year, fecha_obj.month + 1, 1)
+    ya_ejecutado = db.scalars(
+        select(Movimiento).where(
+            Movimiento.eliminado.is_(False),
+            Movimiento.descripcion.like(f"{prefijo}: %"),
+            Movimiento.fecha >= inicio_mes,
+            Movimiento.fecha < inicio_mes_siguiente,
+        )
+    ).first()
+    if ya_ejecutado is not None and not confirmar_repetido:
+        raise ErrorConflicto(
+            f"Ya existe un reparto «{prefijo}» en {fecha_obj.strftime('%m/%Y')}. "
+            "Confirma la acción para repetirlo."
+        )
 
     # Si se pasan líneas personalizadas en la llamada, usamos esas; si no, las de la plantilla
     lineas_a_ejecutar = (
@@ -496,6 +527,8 @@ def ejecutar_reparto(
         ]
     )
 
+    # Normalizamos las líneas una sola vez (importes en céntimos y destino resuelto).
+    lineas_normalizadas: list[dict[str, Any]] = []
     for ld in lineas_a_ejecutar:
         importe_str = str(ld.get("importe", "0.00")).replace(",", ".").strip()
         centimos = euros_a_centimos(importe_str)
@@ -504,11 +537,10 @@ def ejecutar_reparto(
 
         concepto = str(ld.get("concepto") or "").strip()
         bote_id = ld.get("bote_id")
-        if bote_id:
-            bote_id = int(bote_id)
+        bote_id = int(bote_id) if bote_id else None
 
         # Destino de cuenta bancaria: si la línea especifica un banco concreto,
-        # se ingresa ahí; si no, al principal
+        # se ingresa ahí; si no, al principal.
         linea_cuenta_id = ld.get("cuenta_id")
         destino_cuenta_id = target_cuenta_id
         if linea_cuenta_id:
@@ -516,18 +548,62 @@ def ejecutar_reparto(
             if cta_test is not None:
                 destino_cuenta_id = cta_test.id
 
-        desc = f"{prefijo}: {concepto}" if concepto else prefijo
+        lineas_normalizadas.append(
+            {
+                "bote_id": bote_id,
+                "cuenta_id": destino_cuenta_id,
+                "concepto": concepto,
+                "centimos": centimos,
+            }
+        )
 
+    # Aviso (no bloqueante) si una deducción deja un bote en negativo. La regla
+    # del hogar permite tirar de la reserva, pero el usuario debe verlo.
+    variacion_por_bote: dict[int, int] = {}
+    for item in lineas_normalizadas:
+        if item["bote_id"]:
+            variacion_por_bote[item["bote_id"]] = (
+                variacion_por_bote.get(item["bote_id"], 0) + item["centimos"]
+            )
+
+    avisos: list[dict[str, Any]] = []
+    for bote_id, variacion in variacion_por_bote.items():
+        bote = db.get(Bote, bote_id)
+        if bote is None:
+            continue
+        saldo_actual = saldo_bote(db, bote)
+        saldo_proyectado = saldo_actual + variacion
+        if saldo_proyectado >= 0:
+            continue
+        avisos.append(
+            {
+                "bote_id": bote.id,
+                "bote_nombre": bote.nombre,
+                "saldo_actual": f"{centimos_a_euros(saldo_actual):.2f}",
+                "saldo_proyectado": f"{centimos_a_euros(saldo_proyectado):.2f}",
+                "mensaje": (
+                    f"El bote «{bote.nombre}» quedará en "
+                    f"{centimos_a_euros(saldo_proyectado):.2f} € "
+                    f"(saldo actual {centimos_a_euros(saldo_actual):.2f} €)."
+                ),
+            }
+        )
+
+    movimientos_creados: list[Movimiento] = []
+    total_centimos = 0
+
+    for item in lineas_normalizadas:
+        desc = f"{prefijo}: {item['concepto']}" if item["concepto"] else prefijo
         mov = crear_movimiento(
             db,
-            fecha=fecha,
-            importe=centimos_a_euros(centimos),
+            fecha=fecha_obj,
+            importe=centimos_a_euros(item["centimos"]),
             descripcion=desc,
-            cuenta_id=destino_cuenta_id,
-            bote_id=bote_id,
+            cuenta_id=item["cuenta_id"],
+            bote_id=item["bote_id"],
         )
         movimientos_creados.append(mov)
-        total_centimos += centimos
+        total_centimos += item["centimos"]
 
     db.commit()
 
@@ -537,7 +613,9 @@ def ejecutar_reparto(
         "plantilla_nombre": plantilla.nombre,
         "cuenta_id": target_cuenta_id,
         "cuenta_nombre": cuenta.nombre,
+        "fecha": fecha_obj.isoformat(),
         "total_ingresado": f"{centimos_a_euros(total_centimos):.2f}",
         "movimientos_count": len(movimientos_creados),
         "movimiento_ids": [m.id for m in movimientos_creados],
+        "avisos": avisos,
     }

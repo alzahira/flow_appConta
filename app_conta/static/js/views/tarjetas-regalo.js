@@ -1,5 +1,5 @@
 // Vista de Tarjetas Regalo y Monederos: Gestión del dinero en tarjetas prepago y regalo
-import { vista, esc, importe, hoy, fechaCorta, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 
 export function esTarjetaRegalo(c) {
   if (c.tipo !== "tarjeta") return false;
@@ -69,10 +69,6 @@ function tarjetaRegaloItem(c) {
           <span class="gift-card-balance-label">Saldo disponible</span>
           <div class="gift-card-balance-value">${importe(c.saldo)}</div>
         </div>
-        <div class="gift-card-meta">
-          <span>Carga inicial: ${c.saldo_inicial} €</span>
-          <span>Fecha: ${fechaCorta(c.fecha_apertura)}</span>
-        </div>
       </div>
     </article>
   `;
@@ -94,15 +90,15 @@ export default vista("tarjetas-regalo", async () => {
     <div class="header-total-card">
       <span class="header-total-label">Total en Tarjetas Regalo</span>
       <span class="header-total-value">${importe(totalRegalo.toFixed(2))}</span>
-      <span class="header-total-sub">${tarjetasRegalo.length} tarjeta(s) con saldo activo</span>
+      <span class="header-total-sub">${tarjetasRegalo.length} tarjeta(s) registradas</span>
     </div>
   </div>
 
   <section class="section-block">
     <div class="section-header">
       <div>
-        <h3 class="section-title">Tus Tarjetas Regalo con Saldo</h3>
-        <p class="section-desc">Dinero real prepagado listo para consumir en comercios</p>
+        <h3 class="section-title">Tus Tarjetas Regalo</h3>
+        <p class="section-desc">Saldo disponible en cada tarjeta regalo o monedero</p>
       </div>
     </div>
 

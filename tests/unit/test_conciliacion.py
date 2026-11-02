@@ -158,3 +158,37 @@ def test_conciliacion_signos_mixtos_y_inicial_negativo(db):
     assert r["sin_asignar"] == 4000
     assert r["diferencia"] == 0  # −60.00 − (−100.00) − 40.00 = 0
     assert r["estado"] == "cuadrado"
+
+
+def test_formula_ingreso_sin_bote_no_es_descuadre(db):
+    """Un ingreso sin bote (recibos aún pendientes) es dinero real: fórmula cuadrada."""
+    cuenta = _cuenta(db, inicial_centimos=0)
+    _movimiento(db, cuenta, 232_300)  # +2.323,00 € sin asignar
+    r = calcular_conciliacion(db)
+    assert r["sin_asignar"] == 232_300
+    assert r["diferencia"] == 0
+    assert r["diferencia_formula"] == 0
+    assert r["estado_formula"] == "cuadrado"
+
+
+def test_formula_incluye_saldo_inicial(db):
+    """El saldo inicial es dinero real explicado: no debe marcar descuadre."""
+    _cuenta(db, inicial_centimos=150_000)  # 1.500,00 € iniciales, sin movimientos
+    r = calcular_conciliacion(db)
+    assert r["saldo_inicial_total"] == 150_000
+    assert r["diferencia_formula"] == 0
+    assert r["estado_formula"] == "cuadrado"
+
+
+def test_formula_reparto_con_recibos_pendientes_cuadra(db):
+    """Reparto tipo nómina: botes + sin asignar (recibos por pagar) = cuentas."""
+    cuenta = _cuenta(db, inicial_centimos=0)
+    bote = _bote(db, nombre="Amortización Hipoteca")
+    _movimiento(db, cuenta, 124_900, bote=bote)  # 1.249,00 € a botes
+    _movimiento(db, cuenta, 107_400)  # 1.074,00 € libres para recibos
+    r = calcular_conciliacion(db)
+    assert r["total_botes_formula"] == 124_900
+    assert r["sin_asignar"] == 107_400
+    assert r["diferencia"] == 0
+    assert r["diferencia_formula"] == 0
+    assert r["estado_formula"] == "cuadrado"

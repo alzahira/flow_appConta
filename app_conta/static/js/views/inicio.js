@@ -1,27 +1,5 @@
 // Vista de inicio: Dashboard de Control Financiero y Conciliación ("Disponible Real")
-import { esc, importe, vista, icono, fechaCorta } from "../vistas.js";
-import { esTarjetaRegalo } from "./tarjetas-regalo.js";
-import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
-
-const BANCOS_CONFIG = [
-  { id: "caixa", nombre: "CaixaBank", iconoKey: "caixa", color: "#0072ce" },
-  { id: "deutsche", nombre: "Deutsche Bank", iconoKey: "deutsche", color: "#0018a8" },
-  { id: "bbva", nombre: "BBVA", iconoKey: "bbva", color: "#004481" },
-  { id: "revolut", nombre: "Revolut", iconoKey: "revolut", color: "#0f172a" },
-  { id: "otros", nombre: "Otros Depósitos y Entidades", iconoKey: "banco", color: "#059669" },
-];
-
-function clasificarBanco(cuenta) {
-  const nombre = (cuenta.nombre || "").toLowerCase();
-  const entidad = (cuenta.entidad || "").toLowerCase();
-  const texto = `${nombre} ${entidad}`;
-
-  if (texto.includes("caixa")) return "caixa";
-  if (texto.includes("deutsche") || texto.includes("deustche") || texto.includes(" db")) return "deutsche";
-  if (texto.includes("bbva")) return "bbva";
-  if (texto.includes("revolut")) return "revolut";
-  return "otros";
-}
+import { esc, importe, vista, icono } from "../vistas.js";
 
 function badgeEstado(estado, texto = null) {
   const esCuadrado = estado === "cuadrado";
@@ -34,111 +12,16 @@ function badgeEstado(estado, texto = null) {
   `;
 }
 
-function tarjetaCuentaRow(c) {
-  const bancoId = clasificarBanco(c);
-  const bancoConfig = BANCOS_CONFIG.find((b) => b.id === bancoId) || {
-    id: "otros",
-    nombre: c.entidad || "Depósito Bancario",
-    iconoKey: c.tipo === "efectivo" ? "efectivo" : "banco",
-    color: "#059669",
-  };
-  const iconoKey = c.tipo === "efectivo" ? "efectivo" : c.tipo === "tarjeta" ? "tarjeta" : bancoConfig.iconoKey;
-  const esEfectivo = c.tipo === "efectivo";
-  const esTarjeta = c.tipo === "tarjeta" || c.nombre.toUpperCase().startsWith("TARJETA");
-  const tipoLabel = esEfectivo ? "Efectivo / Caja" : esTarjeta ? "Tarjeta / Prepago" : "Cuenta Corriente";
-
-  return `
-    <article class="card-account-row ${bancoId}">
-      <div class="acc-row-main">
-        <div class="acc-row-icon ${bancoId}">
-          ${icono(iconoKey)}
-        </div>
-        <div class="acc-row-details">
-          <div class="acc-row-header-texts">
-            <h3 class="acc-row-title">${esc(c.nombre)}</h3>
-            <span class="badge-subtle">${esc(c.entidad || bancoConfig.nombre)}</span>
-            <span class="badge-tag">${esc(tipoLabel)}</span>
-          </div>
-          <div class="acc-row-meta">
-            <span class="meta-item"><span class="meta-label">Saldo inicial:</span> <span class="meta-val">${c.saldo_inicial} €</span></span>
-            <span class="meta-dot">&bull;</span>
-            <span class="meta-item"><span class="meta-label">Apertura:</span> <span class="meta-val">${fechaCorta(c.fecha_apertura)}</span></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-row-side">
-        <div class="acc-row-balance-block">
-          <span class="balance-sub">Saldo disponible</span>
-          <div class="acc-row-balance-value">${importe(c.saldo)}</div>
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-function tarjetaBoteMini(b) {
-  const obj = Number(b.objetivo);
-  const sal = Number(b.saldo);
-  const tieneObj = b.objetivo !== null && obj !== 0;
-  const pct = tieneObj ? Math.max(0, Math.min(100, (sal / obj) * 100)) : 0;
-  const conseguido = b.estado === "conseguido";
-
-  return `
-    <div class="card-pot clickable" data-accion="ver-detalle-bote" data-id="${b.id}" style="cursor: pointer" title="Ver movimientos y extracto de este sobre">
-      <div class="card-pot-top">
-        <div class="card-pot-icon ${b.tipo}">
-          ${icono(b.tipo)}
-        </div>
-        <div class="card-pot-info">
-          <h4>${esc(b.nombre)}</h4>
-          <span class="badge-subtle">${esc(b.tipo)}</span>
-        </div>
-      </div>
-      <div class="account-balance-section">
-        <span class="balance-sub">Saldo acumulado</span>
-        <div class="card-pot-balance ${sal < 0 ? "negativo" : ""}">
-          ${importe(b.saldo)}
-        </div>
-      </div>
-      ${
-        tieneObj
-          ? `
-        <div class="progress-wrap">
-          <div class="progress-bar ${sal > obj ? "over" : ""}">
-            <div class="progress-fill" style="width: ${pct}%"></div>
-          </div>
-          <div class="progress-labels">
-            <span>${pct.toFixed(0)}% cumplido</span>
-            <span>Meta: ${b.objetivo} €</span>
-          </div>
-        </div>
-      `
-          : ""
-      }
-      ${
-        conseguido
-          ? `<span class="badge-tag ok">${icono("check")} Objetivo cumplido</span>`
-          : ""
-      }
-    </div>
-  `;
-}
-
 export default vista("inicio", async () => {
-  const [conc, cuentas, botes, deudasData, previsionData, inversionesData, prestamosData, ultimosMovs] = await Promise.all([
+  const [conc, cuentas, botes, previsionData, inversionesData] = await Promise.all([
     API.get("/conciliacion"),
     API.get("/cuentas"),
     API.get("/botes"),
-    API.get("/deudas").catch(() => ({ total_pendiente: "0.00" })),
     API.get("/prevision-gastos").catch(() => null),
     API.get("/inversiones").catch(() => null),
-    API.get("/prestamos").catch(() => null),
-    API.get("/movimientos?limit=6").catch(() => ({ items: [], total: 0 })),
   ]);
 
   const itemsCuentas = cuentas.items || [];
-  setGlobalCaches({ cuentas: itemsCuentas, botes: botes.items || [] });
 
   // 1. Cuentas reales
   const centimosCaja = itemsCuentas
@@ -169,13 +52,6 @@ export default vista("inicio", async () => {
   // Estado cuadrado garantizado: diferencia exacta = 0.00 €
   const esCuadrado = conc.estado_formula === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 2.0;
 
-  // Inversiones activas
-  const invItems = inversionesData?.items || [];
-  const itemEtoro = invItems.find(
-    (i) => (i.nombre + " " + (i.entidad || "")).toLowerCase().includes("etoro")
-  );
-  const dineroEtoro = itemEtoro ? itemEtoro.valor_actual : "0.00";
-
   // Botes destacados: Dinero del mes y Dinero de ocio
   const botesItems = botes.items || [];
   const boteMes = botesItems.find(
@@ -190,30 +66,6 @@ export default vista("inicio", async () => {
     (b) => b.nombre.toLowerCase().includes("ocio")
   );
   const dineroOcio = boteOcio ? boteOcio.saldo : "0.00";
-
-  // Agrupación de cuentas por entidades bancarias
-  const agrupadoBancos = {
-    caixa: [],
-    deutsche: [],
-    bbva: [],
-    revolut: [],
-    otros: [],
-  };
-
-  const cuentasBancosYEfectivo = itemsCuentas.filter(
-    (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
-  );
-
-  const tarjetasItems = itemsCuentas.filter(
-    (c) => c.tipo === "tarjeta" || c.nombre.toUpperCase().startsWith("TARJETA")
-  );
-
-  cuentasBancosYEfectivo.forEach((c) => {
-    const bancoId = clasificarBanco(c);
-    agrupadoBancos[bancoId].push(c);
-  });
-
-  const bancosConCuentas = BANCOS_CONFIG.filter((b) => (agrupadoBancos[b.id] || []).length > 0);
 
   return `
   <!-- HERO DASHBOARD -->
@@ -353,6 +205,15 @@ export default vista("inicio", async () => {
         <span class="stat-sub">Ahorros y amortizaciones &rarr;</span>
       </a>
 
+      <a href="#/movimientos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
+        <div class="stat-pill-header">
+          <span class="stat-pill-icon">${icono("efectivo")}</span>
+          <span class="stat-label">Dinero sin asignar</span>
+        </div>
+        <span class="stat-value ${Number(conc.sin_asignar) >= 0 ? "positivo" : "negativo"}">${importe(conc.sin_asignar, Number(conc.sin_asignar) < 0 ? "negativo" : "")}</span>
+        <span class="stat-sub">En cuentas, aún sin sobre &rarr;</span>
+      </a>
+
       <a href="#/prevision-gastos" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("prevision")}</span>
@@ -383,123 +244,12 @@ export default vista("inicio", async () => {
       <a href="#/inversiones" class="hero-stat-pill" style="text-decoration: none; cursor: pointer;">
         <div class="stat-pill-header">
           <span class="stat-pill-icon">${icono("inversion")}</span>
-          <span class="stat-label">Inversiones (Patrimonio)</span>
+          <span class="stat-label">Capital Invertido</span>
         </div>
-        <span class="stat-value ${inversionesData?.total_plusvalia_centimos >= 0 ? "positivo" : "negativo"}">${importe(inversionesData?.total_valor_actual || "0.00")}</span>
-        <span class="stat-sub">${itemEtoro ? `Etoro (${importe(dineroEtoro)})` : "Ver cartera &rarr;"}</span>
+        <span class="stat-value">${importe(inversionesData?.total_capital_aportado || "0.00")}</span>
+        <span class="stat-sub">Ver cartera &rarr;</span>
       </a>
     </div>
   </div>
-
-  <!-- SECCIÓN DINERO EN CUENTAS Y TARJETAS (POSICIÓN CONSOLIDADA) -->
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Dinero en Cuentas y Tarjetas</h3>
-        <p class="section-desc">Posición consolidada por entidades bancarias, efectivo y monederos activos</p>
-      </div>
-      <a href="#/cuentas" class="btn-link">Gestionar cuentas bancarias &rarr;</a>
-    </div>
-
-    <!-- Píldoras de resumen por entidad bancaria -->
-    <div class="bank-pills-summary">
-      ${bancosConCuentas
-        .map((b) => {
-          const cuentasB = agrupadoBancos[b.id] || [];
-          const subtotalB = cuentasB.reduce((acc, c) => acc + Number(c.saldo), 0);
-          return `
-          <div class="bank-pill-item">
-            <span class="bank-pill-dot" style="background: ${b.color};"></span>
-            <span class="bank-pill-name">${b.nombre}</span>
-            <span class="bank-pill-val">${importe(subtotalB.toFixed(2))}</span>
-          </div>
-        `;
-        })
-        .join("")}
-      <div class="bank-pill-item">
-        <span class="bank-pill-dot" style="background: #059669;"></span>
-        <span class="bank-pill-name">Efectivo Total</span>
-        <span class="bank-pill-val">${importe(dineroCaja)}</span>
-      </div>
-      <div class="bank-pill-item">
-        <span class="bank-pill-dot" style="background: #2563eb;"></span>
-        <span class="bank-pill-name">Tarjetas y Prepago</span>
-        <span class="bank-pill-val">${importe(dineroTarjetas)}</span>
-      </div>
-    </div>
-
-    <!-- Listado de Cuentas Bancarias y Efectivo -->
-    <div class="accounts-list-full">
-      ${
-        cuentasBancosYEfectivo.length > 0
-          ? cuentasBancosYEfectivo.map(tarjetaCuentaRow).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("cuentas")}</span>
-              <p>No tienes cuentas registradas aún.</p>
-            </div>`
-      }
-    </div>
-
-    <!-- Bloque de Tarjetas Prepago y Monederos Regalo -->
-    ${
-      tarjetasItems.length > 0
-        ? `
-      <div style="margin-top: 1.5rem;">
-        <div class="section-header" style="margin-bottom: 0.85rem;">
-          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0;">
-            Tarjetas Prepago y Monederos (${tarjetasItems.length})
-          </h4>
-          <a href="#/tarjetas" class="btn-link" style="font-size: 0.8rem;">Ver detalle tarjetas &rarr;</a>
-        </div>
-        <div class="accounts-list-full">
-          ${tarjetasItems.map(tarjetaCuentaRow).join("\n")}
-        </div>
-      </div>
-      `
-        : ""
-    }
-  </section>
-
-
-  <!-- SECCIÓN ÚLTIMAS TRANSACCIONES FINTECH -->
-  ${
-    ultimosMovs?.items?.length > 0
-      ? `
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Últimos Movimientos</h3>
-        <p class="section-desc">Actividad reciente en tus cuentas bancarias y sobres del hogar</p>
-      </div>
-      <a href="#/movimientos" class="btn-link">Ver todo el historial (${ultimosMovs.total} movs) &rarr;</a>
-    </div>
-    <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
-      ${ultimosMovs.items.map(pintarFilaMovimiento).join("\n")}
-    </div>
-  </section>
-  `
-      : ""
-  }
-
-  <!-- SECCIÓN BOTES Y SOBRES -->
-  ${
-    botes.items.length > 0
-      ? `
-  <section class="section-block">
-    <div class="section-header">
-      <div>
-        <h3 class="section-title">Botes y Sobres de Ahorro</h3>
-        <p class="section-desc">Total acumulado en sobres: ${importe(dineroBotes)}</p>
-      </div>
-      <a href="#/botes" class="btn-link">Ver todos los botes &rarr;</a>
-    </div>
-    <div class="grid-pots">
-      ${botes.items.slice(0, 6).map(tarjetaBoteMini).join("\n")}
-    </div>
-  </section>
-  `
-      : ""
-  }
-
   `;
 });

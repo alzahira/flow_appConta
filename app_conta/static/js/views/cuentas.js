@@ -1,5 +1,5 @@
 // Vista de Cuentas y Depósitos: Organización clara y elegante por entidades bancarias activas
-import { vista, esc, importe, hoy, fechaCorta, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 
 const BANCOS_CONFIG = [
   { id: "caixa", nombre: "CaixaBank / Caixa", iconoKey: "caixa", color: "#0072ce" },
@@ -47,8 +47,6 @@ function tarjetaCuentaRow(c) {
           </div>
           <div class="acc-row-meta">
             <span class="meta-item"><span class="meta-label">Saldo inicial:</span> <span class="meta-val">${c.saldo_inicial} €</span></span>
-            <span class="meta-dot">&bull;</span>
-            <span class="meta-item"><span class="meta-label">Apertura:</span> <span class="meta-val">${fechaCorta(c.fecha_apertura)}</span></span>
           </div>
         </div>
       </div>
@@ -76,24 +74,7 @@ export default vista("cuentas", async () => {
     (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
   );
 
-  // Agrupamos por banco para la barra de resumen superior
-  const agrupado = {
-    caixa: [],
-    deutsche: [],
-    bbva: [],
-    revolut: [],
-    otros: [],
-  };
-
-  cuentasValidas.forEach((c) => {
-    const bancoId = clasificarBanco(c);
-    agrupado[bancoId].push(c);
-  });
-
   const totalCuentas = cuentasValidas.reduce((acc, c) => acc + Number(c.saldo), 0);
-
-  // Filtramos SOLO las entidades bancarias que tienen cuentas registradas
-  const bancosConCuentas = BANCOS_CONFIG.filter((b) => (agrupado[b.id] || []).length > 0);
 
   return `
   ${subnavCuentas("cuentas")}
@@ -108,29 +89,6 @@ export default vista("cuentas", async () => {
       <span class="header-total-value">${importe(totalCuentas.toFixed(2))}</span>
     </div>
   </div>
-
-  <!-- Resumen de entidades activas -->
-  ${
-    bancosConCuentas.length > 1
-      ? `
-    <div class="bank-pills-summary">
-      ${bancosConCuentas
-        .map((b) => {
-          const cuentasB = agrupado[b.id] || [];
-          const subtotalB = cuentasB.reduce((acc, c) => acc + Number(c.saldo), 0);
-          return `
-          <div class="bank-pill-item">
-            <span class="bank-pill-dot" style="background: ${b.color};"></span>
-            <span class="bank-pill-name">${b.nombre}</span>
-            <span class="bank-pill-val">${importe(subtotalB.toFixed(2))}</span>
-          </div>
-        `;
-        })
-        .join("")}
-    </div>
-  `
-      : ""
-  }
 
   <!-- Listado de cuentas a ancho completo -->
   <section class="section-block">

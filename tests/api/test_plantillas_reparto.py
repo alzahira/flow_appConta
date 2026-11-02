@@ -242,3 +242,112 @@ def test_siembra_y_ejecucion_plantilla_nomina_mj(client):
     assert botes_map.get("Mejoras del Hogar") == "132.67"
 
 
+def test_reparto_sin_recibos_deja_formula_cuadrada(client):
+    """Entrar la nómina sin marcar recibos no debe producir un falso descuadre."""
+    r_cta = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "Cuenta Fórmula",
+            "tipo": "banco",
+            "saldo_inicial": "0.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta.status_code == 201
+    cuenta_id = r_cta.json()["id"]
+
+    r_bote = client.post(
+        "/api/v1/botes",
+        json={"nombre": "Bote Fórmula", "tipo": "ahorro", "categoria": "ahorro"},
+    )
+    assert r_bote.status_code == 201
+    bote_id = r_bote.json()["id"]
+
+    r_p = client.post(
+        "/api/v1/plantillas-reparto",
+        json={
+            "nombre": "Reparto Fórmula",
+            "cuenta_id": cuenta_id,
+            "importe_estimado": "1500.00",
+            "lineas": [
+                {"bote_id": bote_id, "concepto": "A bote", "importe": "1000.00"},
+                {"bote_id": None, "concepto": "Recibos pendientes", "importe": "500.00"},
+            ],
+        },
+    )
+    assert r_p.status_code == 201
+    plantilla_id = r_p.json()["id"]
+
+    r_ej = client.post(
+        f"/api/v1/plantillas-reparto/{plantilla_id}/ejecutar",
+        json={"fecha": "2026-11-05", "descripcion_general": "Reparto Fórmula"},
+    )
+    assert r_ej.status_code == 200, r_ej.text
+
+    conc = client.get("/api/v1/conciliacion").json()
+    assert conc["sin_asignar"] == "500.00"
+    assert conc["diferencia"] == "0.00"
+    assert conc["diferencia_formula"] == "0.00"
+    assert conc["estado_formula"] == "cuadrado"
+
+
+def test_reparto_avisa_bote_negativo_y_protege_duplicado(client):
+    """Una deducción que deja un bote en negativo avisa; repetir el mes da 409."""
+    r_cta = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "Cuenta Paro",
+            "tipo": "banco",
+            "saldo_inicial": "0.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta.status_code == 201
+    cuenta_id = r_cta.json()["id"]
+
+    r_bote = client.post(
+        "/api/v1/botes",
+        json={"nombre": "Reserva Paro Test", "tipo": "ahorro", "categoria": "ahorro"},
+    )
+    assert r_bote.status_code == 201
+    bote_id = r_bote.json()["id"]
+
+    r_p = client.post(
+        "/api/v1/plantillas-reparto",
+        json={
+            "nombre": "Reparto Paro Test",
+            "cuenta_id": cuenta_id,
+            "importe_estimado": "0.00",
+            "lineas": [
+                {"bote_id": bote_id, "concepto": "Aporte interno", "importe": "-522.00"},
+            ],
+        },
+    )
+    assert r_p.status_code == 201
+    plantilla_id = r_p.json()["id"]
+
+    payload = {"fecha": "2026-11-06", "descripcion_general": "Reparto Paro Test"}
+
+    r1 = client.post(f"/api/v1/plantillas-reparto/{plantilla_id}/ejecutar", json=payload)
+    assert r1.status_code == 200, r1.text
+    avisos = r1.json()["avisos"]
+    assert len(avisos) == 1
+    assert avisos[0]["bote_id"] == bote_id
+    assert avisos[0]["saldo_actual"] == "0.00"
+    assert avisos[0]["saldo_proyectado"] == "-522.00"
+    assert "Reserva Paro Test" in avisos[0]["mensaje"]
+
+    # Doble clic: mismo reparto y mes → conflicto sin confirmar
+    r2 = client.post(f"/api/v1/plantillas-reparto/{plantilla_id}/ejecutar", json=payload)
+    assert r2.status_code == 409, r2.text
+    assert "Ya existe un reparto" in r2.json()["error"]["mensaje"]
+
+    # Confirmado: se permite repetir
+    r3 = client.post(
+        f"/api/v1/plantillas-reparto/{plantilla_id}/ejecutar",
+        json={**payload, "confirmar_repetido": True},
+    )
+    assert r3.status_code == 200, r3.text
+    assert r3.json()["movimientos_count"] == 1
+
+

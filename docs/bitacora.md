@@ -731,6 +731,52 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Nueva prueba completa `test_siembra_y_ejecucion_plantilla_nomina_mj` en `tests/api/test_plantillas_reparto.py`.
   - **159 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global, linter ruff 100% limpio.
 
+### 18. Corrección del Falso Descuadre al Meter la Nómina (2026-11-02)
+
+- **Síntoma**: al aplicar el reparto mensual sin marcar "Aplicar también los Recibos Fijos" (opción desmarcada por defecto), Inicio mostraba `Diferencia: −1.074,00 €` y estado `revisar`, aunque las cuentas y los botes eran correctos.
+- **Causa**: la Fórmula Global comparaba `Botes + Previsión − Me deben − Préstamos` contra el dinero real en cuentas, pero **ignoraba el dinero sin asignar** (526 € en Caixa + 548 € en DB reservados para recibos) y los **saldos iniciales**. La identidad técnica (`diferencia`) sí daba 0: era un falso descuadre de la fórmula.
+- **Arreglo de la fórmula** (`services/conciliacion.py`):
+  - `Dinero teórico = Saldos iniciales + Botes + Sin asignar + Previsión − Me deben − Préstamos`.
+  - El modal de desglose muestra ahora "Saldos iniciales" y "Dinero sin asignar".
+  - Verificado sobre una copia de la BD real: tras el Reparto Mensual Hogar sin recibos, `diferencia_formula = 0,00` y estado `cuadrado` (antes −1.074,00).
+- **Aviso de botes negativos** (`services/plantillas_reparto.py` + modal):
+  - `ejecutar_reparto` devuelve `avisos` cuando una línea negativa deja un bote por debajo de 0 (p. ej. `Guardado Resto Paro` a −322,99 € tras un reinicio a cero).
+  - El modal avisa antes de aplicar y permite continuar; no bloquea (la reserva puede reponerse después).
+- **Protección anti-duplicado**:
+  - Si ya existe un reparto con el mismo nombre en el mismo mes, la API responde **409**; el modal pide confirmación y reintenta con `confirmar_repetido: true`.
+  - El cliente API (`static/js/api.js`) expone ahora `err.status` y `err.codigo`.
+- **Tests**: 3 unitarios de la fórmula + 2 de API (fórmula cuadrada sin recibos; avisos y 409). **165 tests en verde**, 88% de cobertura global, ruff 100% limpio.
+- **PWA**: caché del service worker actualizada a `app-conta-shell-v37` para forzar la recarga de los JS modificados.
+
+### 19. Limpieza visual de Inicio, Cuentas y Inversiones (2026-11-02)
+
+- **Inicio (`views/inicio.js`)**: se eliminan las secciones inferiores «Dinero en Cuentas y Tarjetas», «Tarjetas Prepago y Monederos», «Últimos Movimientos» y «Botes y Sobres de Ahorro». La pantalla queda reducida al resumen superior (hero, acciones rápidas, spotlight y píldoras). También se dejan de pedir a la API `/deudas`, `/prestamos` y `/movimientos?limit=6`, que ya no se usaban en esta vista.
+- **Píldora de inversiones**: pasa de «Inversiones (Patrimonio)» con valor de mercado a **«Capital Invertido»** con `total_capital_aportado`, coherente con la nueva vista.
+- **Cuentas y Depósitos (`views/cuentas.js`)**: se elimina la barra de píldoras por entidad bancaria (`bank-pills-summary`) y la fecha de apertura de cada fila; se conserva el saldo inicial.
+- **Inversiones (`views/inversiones.js`)**: se quitan el KPI «Valor de Mercado Total», «Plusvalía Neta» y «Rentabilidad Ponderada (ROI)», y las métricas por posición de valor de mercado, plusvalía y rentabilidad. El total de cabecera pasa a **«Capital Total Invertido»** y cada tarjeta muestra solo el **capital invertido**.
+- **CSS (`styles.css`)**: nueva variante `.card-investment-metrics.solo-capital` para una única métrica a ancho completo.
+- **PWA**: caché del service worker actualizada a `app-conta-shell-v38`.
+- **Calidad**: `node --check` limpio en las tres vistas, **165 tests en verde**, ruff sin incidencias.
+
+### 20. Ajustes visuales de Tarjetas, Gastos y Botes (2026-11-02)
+
+- **Tarjetas Bancarias (`views/tarjetas.js`)**:
+  - Eliminada la fila duplicada «Mis Tarjetas / Gastos de Tarjetas / Ver Tarjetas Regalo», que repetía la subnavegación superior.
+  - Eliminada la fecha de apertura de la tarjeta; se mantiene «Inicial».
+  - El formulario «Dar de Alta Nueva Tarjeta» pasa a estar plegado por defecto con el patrón `<details class="form-inversion-details">`.
+- **Tarjetas Regalo (`views/tarjetas-regalo.js`)**:
+  - Eliminados «Carga inicial» y «Fecha» de cada tarjeta; solo queda el saldo disponible.
+  - Corregido el subtotal: «N tarjeta(s) registradas» en vez de «con saldo activo».
+  - Sección renombrada a «Tus Tarjetas Regalo» y subtítulo ajustado al saldo real.
+- **Gastos Tarjetas (`views/gastos-tarjetas.js`)**:
+  - El formulario «Añadir Gasto a …» pasa a estar plegado por defecto con el mismo patrón.
+- **Botes (`views/botes.js` + `styles.css`)**:
+  - Eliminada la píldora de categoría bajo el nombre del bote (el icono sigue indicando la categoría) y el badge redundante de porcentaje/«Cumplido» de la cabecera (la barra de progreso ya lo muestra).
+  - El título ahora ocupa hasta 3 líneas, la cabecera tiene altura mínima común y las acciones quedan alineadas a la derecha, evitando solapes y saltos entre tarjetas.
+  - Eliminadas las reglas CSS huérfanas `.card-pot-category-badge` y `.gift-card-meta`.
+- **PWA**: caché del service worker actualizada a `app-conta-shell-v39`.
+- **Calidad**: `node --check` limpio en las vistas afectadas, **165 tests en verde**, ruff sin incidencias.
+
 
 
 

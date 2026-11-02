@@ -1,5 +1,5 @@
 // Vista de Tarjetas: Gestión de tarjetas de crédito y débito del hogar
-import { vista, esc, importe, hoy, fechaCorta, icono, subnavCuentas } from "../vistas.js";
+import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 import { esTarjetaRegalo } from "./tarjetas-regalo.js";
 
 function tarjetaCreditoItem(c) {
@@ -35,7 +35,6 @@ function tarjetaCreditoItem(c) {
         </div>
         <div class="credit-card-meta">
           <span>Inicial: ${c.saldo_inicial} €</span>
-          <span>Apertura: ${fechaCorta(c.fecha_apertura)}</span>
         </div>
       </div>
     </article>
@@ -68,12 +67,6 @@ export default vista("tarjetas", async () => {
     </div>
   </div>
 
-  <div class="tabs-subnav-row">
-    <a href="#/tarjetas" class="tab-subnav-pill activa">Mis Tarjetas</a>
-    <a href="#/gastos-tarjetas" class="tab-subnav-pill">Gastos de Tarjetas &rarr;</a>
-    <a href="#/tarjetas-regalo" class="tab-subnav-pill">Ver Tarjetas Regalo &rarr;</a>
-  </div>
-
   <section class="section-block">
     <div class="grid-credit-cards">
       ${
@@ -89,56 +82,55 @@ export default vista("tarjetas", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Dar de Alta Nueva Tarjeta</h3>
-          <p class="form-card-subtitle">Registra una tarjeta de crédito o débito para seguir sus gastos y recibos</p>
-        </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Dar de Alta Nueva Tarjeta
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Registra una tarjeta de crédito o débito para seguir sus gastos y recibos.</p>
+
+        <form data-accion="crear-cuenta" data-err="err-tarjeta" class="fintech-form">
+          <input type="hidden" name="tipo" value="tarjeta">
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="tj-nombre" class="form-label">Nombre de la Tarjeta</label>
+              <input id="tj-nombre" name="nombre" placeholder="Ej. Tarjeta Caixa Oro, Tarjeta Carrefour Pass, Tarjeta DB..." required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="tj-entidad" class="form-label">Entidad Emisora</label>
+              <select id="tj-entidad" name="entidad" required>
+                <option value="Caixa">Caixa</option>
+                <option value="Deutsche Bank">Deutsche Bank</option>
+                <option value="Carrefour">Carrefour</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Revolut">Revolut</option>
+                <option value="Otras">Otra Entidad</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="tj-saldo" class="form-label">Saldo Inicial o Deuda Pendiente (€)</label>
+              <input id="tj-saldo" name="saldo_inicial" inputmode="decimal" placeholder="0.00 o -50.00 (deuda)" value="0.00">
+            </div>
+            <div class="form-group form-span-2">
+              <label for="tj-apertura" class="form-label">Fecha de Apertura / Activación</label>
+              <input id="tj-apertura" name="fecha_apertura" type="date" value="${hoy()}" required>
+            </div>
+          </div>
+
+          <div id="err-tarjeta"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Crear Tarjeta
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form data-accion="crear-cuenta" data-err="err-tarjeta" class="fintech-form">
-        <input type="hidden" name="tipo" value="tarjeta">
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="tj-nombre" class="form-label">Nombre de la Tarjeta</label>
-            <input id="tj-nombre" name="nombre" placeholder="Ej. Tarjeta Caixa Oro, Tarjeta Carrefour Pass, Tarjeta DB..." required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="tj-entidad" class="form-label">Entidad Emisora</label>
-            <select id="tj-entidad" name="entidad" required>
-              <option value="Caixa">Caixa</option>
-              <option value="Deutsche Bank">Deutsche Bank</option>
-              <option value="Carrefour">Carrefour</option>
-              <option value="BBVA">BBVA</option>
-              <option value="Revolut">Revolut</option>
-              <option value="Otras">Otra Entidad</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="tj-saldo" class="form-label">Saldo Inicial o Deuda Pendiente (€)</label>
-            <input id="tj-saldo" name="saldo_inicial" inputmode="decimal" placeholder="0.00 o -50.00 (deuda)" value="0.00">
-          </div>
-          <div class="form-group form-span-2">
-            <label for="tj-apertura" class="form-label">Fecha de Apertura / Activación</label>
-            <input id="tj-apertura" name="fecha_apertura" type="date" value="${hoy()}" required>
-          </div>
-        </div>
-
-        <div id="err-tarjeta"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Crear Tarjeta
-          </button>
-        </div>
-      </form>
-    </div>
+    </details>
   </section>
   `;
 });

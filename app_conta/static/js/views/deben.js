@@ -1,20 +1,58 @@
 // Vista de Dinero que me deben: Gestión de préstamos, adelantos y deudas a favor del hogar
 import { vista, esc, importe, hoy, fechaCorta, icono, subnavAhorro } from "../vistas.js";
 
+const PERFILES_DEUDA = {
+  persona: { label: "Persona", iconoKey: "prestamo", color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+  comercio: { label: "Comercio", iconoKey: "carrito", color: "#ea580c", bg: "#fff7ed", border: "#fed7aa" },
+  banco: { label: "Banco", iconoKey: "banco", color: "#0284c7", bg: "#e0f2fe", border: "#bae6fd" },
+  servicio: { label: "Servicio", iconoKey: "prevision", color: "#0d9488", bg: "#f0fdfa", border: "#99f6e4" },
+  bote: { label: "Bote", iconoKey: "botes", color: "#059669", bg: "#ecfdf5", border: "#a7f3d0" },
+  ocio: { label: "Ocio", iconoKey: "ocio", color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8" },
+  tecnologia: { label: "Tecnología", iconoKey: "telefono", color: "#4f46e5", bg: "#eef2ff", border: "#c7d2fe" },
+  seguro: { label: "Seguro", iconoKey: "seguro", color: "#0f766e", bg: "#f0fdfa", border: "#99f6e4" },
+  otros: { label: "Otros", iconoKey: "prestamo", color: "#64748b", bg: "#f8fafc", border: "#e2e8f0" },
+};
+
+function perfilDeuda(d) {
+  const nombre = (d.deudor || "").toLowerCase();
+  const texto = `${nombre} ${d.concepto || ""}`.toLowerCase();
+
+  // Primero manda el nombre del deudor: una persona sigue siendo persona
+  // aunque el concepto hable de una compra o de un recibo.
+  if (/(bote|sobre)/.test(nombre)) return PERFILES_DEUDA.bote;
+  if (/(banco|bank|exchange|nexo|hipoteca|deutsche)/.test(nombre)) return PERFILES_DEUDA.banco;
+  if (/(seguro|ocaso)/.test(nombre)) return PERFILES_DEUDA.seguro;
+  if (/(boda|entrada|viaje|fiesta|regalo|ocio|concierto)/.test(nombre)) return PERFILES_DEUDA.ocio;
+  if (/(redmi|movil|móvil|galaxy|telefono|teléfono)/.test(nombre)) return PERFILES_DEUDA.tecnologia;
+  if (/(mi madre|mi suegra|nerea|pedro|javier|marijose|aitor)/.test(nombre)) return PERFILES_DEUDA.persona;
+
+  if (/(banco|bank|exchange|nexo|hipoteca|caixa|bbva|santander|deutsche)/.test(texto)) return PERFILES_DEUDA.banco;
+  if (/(seguro|ocaso|fianza)/.test(texto)) return PERFILES_DEUDA.seguro;
+  if (/(aldi|carrefour|pepco|amazon|groupon|mercadona|compra|tienda)/.test(texto)) return PERFILES_DEUDA.comercio;
+  if (/(endesa|dazn|agua|luz|recibo|telefon|movistar|vodafone|orange|internet)/.test(texto)) return PERFILES_DEUDA.servicio;
+  if (/(redmi|movil|móvil|galaxy|telefono|teléfono|ordenador|portatil)/.test(texto)) return PERFILES_DEUDA.tecnologia;
+  if (/(boda|entrada|viaje|fiesta|regalo|ocio|concierto)/.test(texto)) return PERFILES_DEUDA.ocio;
+  return PERFILES_DEUDA.persona;
+}
+
 function tarjetaDeudaItem(d, cuentas) {
   const saldada = d.estado === "saldado";
+  const perfil = perfilDeuda(d);
 
   const opcionesCuentas = cuentas
     .map((c) => `<option value="${c.id}">${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
     .join("");
 
   return `
-    <article class="card-debt-full ${d.estado}">
+    <article class="card-debt-full ${d.estado}" style="--debt-accent: ${perfil.color};">
       <div class="card-debt-top">
-        <div class="card-debt-icon ${d.estado}">
-          ${icono("prestamo")}
+        <div class="card-debt-icon ${d.estado}" style="background: ${perfil.bg}; color: ${perfil.color}; border: 1px solid ${perfil.border};">
+          ${icono(perfil.iconoKey)}
         </div>
         <div class="card-debt-tags">
+          <span class="debt-type-chip" style="background: ${perfil.bg}; color: ${perfil.color}; border: 1px solid ${perfil.border};">
+            ${perfil.label}
+          </span>
           ${
             saldada
               ? `<span class="badge-tag ok">${icono("check")} Saldado</span>`
@@ -42,6 +80,10 @@ function tarjetaDeudaItem(d, cuentas) {
 
       <div class="card-debt-footer">
         <div class="debt-balance-row">
+          <span class="debt-balance-label">
+            ${saldada ? icono("check") : icono("alerta")}
+            ${saldada ? "Saldado" : "Pendiente"}
+          </span>
           <div class="debt-balance-value ${saldada ? "saldado" : "negativo"}">
             ${saldada ? "0,00 €" : importe(d.importe_pendiente, "negativo")}
           </div>

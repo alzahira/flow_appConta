@@ -132,63 +132,62 @@ export default vista("gastos-tarjetas", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Añadir Gasto a ${esc(tarjetaActual.nombre)}</h3>
-          <p class="form-card-subtitle">Registra un pago con esta tarjeta para actualizar su saldo y recibo</p>
-        </div>
-      </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Añadir Gasto a ${esc(tarjetaActual.nombre)}
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Registra un pago con esta tarjeta para actualizar su saldo y recibo.</p>
 
-      <form data-accion="crear-movimiento" data-err="err-gasto-tarjeta" class="fintech-form">
-        <input type="hidden" name="cuenta_id" value="${tarjetaActual.id}">
-        <input type="hidden" name="signo" value="-">
+        <form data-accion="crear-movimiento" data-err="err-gasto-tarjeta" class="fintech-form">
+          <input type="hidden" name="cuenta_id" value="${tarjetaActual.id}">
+          <input type="hidden" name="signo" value="-">
 
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="gt-desc" class="form-label">Comercio / Concepto de la Compra</label>
-            <input id="gt-desc" name="descripcion" placeholder="Ej. Gasolinera Repsol, Restaurante, Amazon..." required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="gt-importe" class="form-label">Importe del Gasto (€)</label>
-            <div class="input-currency-wrapper">
-              <input id="gt-importe" name="importe" inputmode="decimal" placeholder="0.00" class="input-large" required>
-              <span class="currency-symbol">€</span>
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="gt-desc" class="form-label">Comercio / Concepto de la Compra</label>
+              <input id="gt-desc" name="descripcion" placeholder="Ej. Gasolinera Repsol, Restaurante, Amazon..." required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="gt-importe" class="form-label">Importe del Gasto (€)</label>
+              <div class="input-currency-wrapper">
+                <input id="gt-importe" name="importe" inputmode="decimal" placeholder="0.00" class="input-large" required>
+                <span class="currency-symbol">€</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="form-row-grid">
-          <div class="form-group">
-            <label for="gt-fecha" class="form-label">Fecha del Pago</label>
-            <input id="gt-fecha" name="fecha" type="date" value="${hoy()}" required>
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="gt-fecha" class="form-label">Fecha del Pago</label>
+              <input id="gt-fecha" name="fecha" type="date" value="${hoy()}" required>
+            </div>
+            <div class="form-group">
+              <label for="gt-bote" class="form-label">Bote / Sobre (Opcional)</label>
+              <select id="gt-bote" name="bote_id">
+                <option value="">— Sin bote asignado —</option>
+                ${opcionesBote}
+              </select>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="gt-cat" class="form-label">Categoría (Opcional)</label>
+              <select id="gt-cat" name="categoria_id">
+                <option value="">— Sin categoría —</option>
+                ${opcionesCategoria}
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="gt-bote" class="form-label">Bote / Sobre (Opcional)</label>
-            <select id="gt-bote" name="bote_id">
-              <option value="">— Sin bote asignado —</option>
-              ${opcionesBote}
-            </select>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="gt-cat" class="form-label">Categoría (Opcional)</label>
-            <select id="gt-cat" name="categoria_id">
-              <option value="">— Sin categoría —</option>
-              ${opcionesCategoria}
-            </select>
-          </div>
-        </div>
 
-        <div id="err-gasto-tarjeta"></div>
+          <div id="err-gasto-tarjeta"></div>
 
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Registrar Gasto en ${esc(tarjetaActual.nombre)}
-          </button>
-        </div>
-      </form>
-    </div>
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Registrar Gasto en ${esc(tarjetaActual.nombre)}
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
   </section>
   `;
 });

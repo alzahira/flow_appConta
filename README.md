@@ -67,7 +67,7 @@ uv run pytest
 uv run ruff check .
 ```
 
-* Estado actual: **158 tests en verde** (0 fallos).
+* Estado actual: **165 tests en verde** (0 fallos).
 * Cobertura de tests: **88% global** en todo el backend y lógica contable.
 
 

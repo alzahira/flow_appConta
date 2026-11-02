@@ -1577,15 +1577,6 @@ body {
   font-family: var(--font-mono);
 }
 
-.gift-card-meta {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  gap: 0.15rem;
-}
-
 /* ==========================================================================
    Tarjetas de Botes y Sobres
    ========================================================================== */
@@ -1706,19 +1697,11 @@ body {
   color: #ffffff;
 }
 
-.card-pot-category-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-pill);
-}
-
 /* Tarjeta Completa (Botes y Fondos de Ahorro) */
 .card-pot-full {
-  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.4rem 1.45rem;
@@ -1727,6 +1710,34 @@ body {
   flex-direction: column;
   gap: 1.15rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-pot-full::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--pot-accent, transparent);
+  z-index: 1;
+}
+
+.card-pot-full::after {
+  content: "";
+  position: absolute;
+  top: -48px;
+  right: -48px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--pot-accent, transparent);
+  opacity: 0.07;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-pot-full > * {
+  position: relative;
+  z-index: 2;
 }
 
 .card-pot-full:hover {
@@ -1739,7 +1750,9 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.85rem;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+  min-height: 3.75rem;
 }
 
 .pot-header-main {
@@ -1747,6 +1760,7 @@ body {
   align-items: center;
   gap: 0.85rem;
   min-width: 0;
+  flex: 1;
 }
 
 .card-pot-icon {
@@ -1758,6 +1772,13 @@ body {
   justify-content: center;
   flex-shrink: 0;
   border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 14px -10px currentColor;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-pot-full:hover .card-pot-icon {
+  transform: scale(1.05);
+  box-shadow: 0 8px 18px -10px currentColor;
 }
 
 .card-pot-icon.recurrente { color: #d97706; background: #fffbeb; }
@@ -1768,18 +1789,21 @@ body {
 .pot-header-texts {
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
+  gap: 0.3rem;
   min-width: 0;
 }
 
 .pot-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--text-main);
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pot-meta-date {
@@ -1796,6 +1820,7 @@ body {
   align-items: center;
   gap: 0.45rem;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .pot-balance-section {
@@ -1803,6 +1828,18 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   margin: 0.25rem 0;
+}
+
+.pot-balance-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pot-balance-label svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.8;
 }
 
 .pot-balance-value {
@@ -2751,14 +2788,47 @@ body {
 }
 
 .badge-type {
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 0.15rem 0.55rem;
+  padding: 0.18rem 0.55rem;
   border-radius: var(--radius-pill);
   background: #f1f5f9;
   color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.badge-type svg {
+  width: 13px;
+  height: 13px;
+}
+
+.badge-type.ahorro {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.badge-type.proyecto {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.badge-type.ajeno {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.badge-type.recurrente {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fde68a;
 }
 
 /* ==========================================================================
@@ -3067,7 +3137,7 @@ input:focus, select:focus, textarea:focus {
    Tarjetas de Dinero que me deben (Deudas)
    ========================================================================== */
 .card-debt-full {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.4rem 1.45rem;
@@ -3078,6 +3148,34 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+.card-debt-full::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--debt-accent, #6366f1);
+  z-index: 1;
+}
+
+.card-debt-full::after {
+  content: "";
+  position: absolute;
+  top: -48px;
+  right: -48px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--debt-accent, #6366f1);
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-debt-full > * {
+  position: relative;
+  z-index: 2;
 }
 
 .card-debt-full:hover {
@@ -3102,6 +3200,13 @@ input:focus, select:focus, textarea:focus {
   justify-content: center;
   background: #fffbeb;
   color: #d97706;
+  box-shadow: 0 6px 14px -10px currentColor;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-debt-full:hover .card-debt-icon {
+  transform: scale(1.05);
+  box-shadow: 0 8px 18px -10px currentColor;
 }
 
 .card-debt-icon.saldado {
@@ -3118,6 +3223,17 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.debt-type-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--radius-pill);
 }
 
 .debt-person {
@@ -3147,6 +3263,10 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-pill);
 }
 
 .debt-meta .limit {
@@ -3176,7 +3296,23 @@ input:focus, select:focus, textarea:focus {
 .debt-balance-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+}
+
+.debt-balance-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.debt-balance-label svg {
+  width: 13px;
+  height: 13px;
 }
 
 .debt-balance-value.pendiente,
@@ -3672,6 +3808,16 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-md);
   padding: 0.85rem;
   margin-bottom: 1rem;
+}
+
+.card-investment-metrics.solo-capital {
+  grid-template-columns: 1fr;
+}
+
+.card-investment-metrics.solo-capital .metric-box.primary {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .metric-box {
@@ -5210,9 +5356,9 @@ input:focus, select:focus, textarea:focus {
    Flow Branding & Estilos de Copia de Seguridad
    ========================================================================= */
 .brand-logo.flow-logo {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, #06b6d4 0%, #6366f1 55%, #a855f7 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .btn-hero-action.backup {

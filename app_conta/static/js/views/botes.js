@@ -100,17 +100,23 @@ export const CATEGORIAS_BOTES = {
   },
 };
 
+const ETIQUETAS_TIPO_BOTE = {
+  recurrente: "Recurrente",
+  ahorro: "Ahorro",
+  proyecto: "Proyecto",
+  ajeno: "Ajeno",
+};
+
 function tarjetaBoteFull(b) {
   const obj = Number(b.objetivo);
   const sal = Number(b.saldo);
   const tieneObj = b.objetivo !== null && obj !== 0;
   const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
-  const conseguido = b.estado === "conseguido";
 
   const cat = CATEGORIAS_BOTES[b.categoria] || CATEGORIAS_BOTES.otros;
 
   return `
-    <article class="card-pot-full ${b.tipo}">
+    <article class="card-pot-full ${b.tipo}" style="--pot-accent: ${cat.color};">
       <div class="card-pot-header">
         <div class="pot-header-main">
           <div class="card-pot-icon" style="background: ${cat.colorBg}; color: ${cat.color}; border: 1px solid ${cat.color}35;">
@@ -118,20 +124,10 @@ function tarjetaBoteFull(b) {
           </div>
           <div class="pot-header-texts">
             <h3 class="pot-title">${esc(b.nombre)}</h3>
-            <span class="card-pot-category-badge" style="background: ${cat.colorBg}; color: ${cat.color}; border: 1px solid ${cat.color}30;">
-              ${cat.nombre}
-            </span>
           </div>
         </div>
         <div class="card-pot-actions">
-          <span class="badge-type">${esc(b.tipo)}</span>
-          ${
-            conseguido
-              ? `<span class="badge-tag ok">${icono("check")} Cumplido</span>`
-              : tieneObj
-              ? `<span class="badge-tag info">${pct.toFixed(0)}%</span>`
-              : ""
-          }
+          <span class="badge-type ${b.tipo}">${icono(b.tipo)} ${ETIQUETAS_TIPO_BOTE[b.tipo] || esc(b.tipo)}</span>
           <button class="btn-action-icon delete" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}" title="Eliminar este bote">
             ${icono("borrar")}
           </button>
@@ -139,7 +135,7 @@ function tarjetaBoteFull(b) {
       </div>
 
       <div class="pot-balance-section">
-        <span class="balance-sub">Fondos acumulados</span>
+        <span class="balance-sub pot-balance-label">${icono("ahorro")} Fondos acumulados</span>
         <div class="pot-balance-value ${sal < 0 ? "negativo" : ""}">${sal < 0 ? importe(b.saldo, "negativo") : importe(b.saldo)}</div>
       </div>
 

@@ -42,9 +42,6 @@ function iconoActivo(tipo) {
 }
 
 function tarjetaInversionItem(inv, cuentas) {
-  const roi = inv.rentabilidad_pct || 0;
-  const esPositivo = roi >= 0;
-  const signo = esPositivo ? "+" : "";
   const colorTipo = COLORES_TIPO[inv.tipo_activo] || "#6366f1";
   const nombreTipo = NOMBRES_TIPO[inv.tipo_activo] || inv.tipo_activo;
 
@@ -91,24 +88,10 @@ function tarjetaInversionItem(inv, cuentas) {
         ${inv.notas ? `<p class="investment-notes">${esc(inv.notas)}</p>` : ""}
       </div>
 
-      <div class="card-investment-metrics">
+      <div class="card-investment-metrics solo-capital">
         <div class="metric-box primary">
-          <span class="metric-label">Valor de mercado actual</span>
-          <div class="metric-value-huge">${importe(inv.valor_actual)}</div>
-        </div>
-        <div class="metric-box">
           <span class="metric-label">Capital invertido</span>
-          <div class="metric-value">${importe(inv.capital_aportado)}</div>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Ganancia / Plusvalía</span>
-          <div class="metric-value ${esPositivo ? "positivo" : "negativo"}">${importe(inv.plusvalia)}</div>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Rentabilidad</span>
-          <div class="metric-badge-roi ${esPositivo ? "positivo" : "negativo"}">
-            ${signo}${roi.toFixed(2)}%
-          </div>
+          <div class="metric-value-huge">${importe(inv.capital_aportado)}</div>
         </div>
       </div>
 
@@ -188,10 +171,6 @@ export default vista("inversiones", async () => {
       ? posiciones
       : posiciones.filter((p) => p.tipo_activo === filtroActivo);
 
-  const roiGlobal = data.rentabilidad_global_pct || 0;
-  const esRoiPositivo = roiGlobal >= 0;
-  const signoRoi = esRoiPositivo ? "+" : "";
-
   const distribucion = data.distribucion_tipo || [];
 
   return `
@@ -203,39 +182,8 @@ export default vista("inversiones", async () => {
         <p class="page-subtitle">Seguimiento de fondos indexados, acciones/ETFs, renta fija/letras, pensiones y criptoactivos</p>
       </div>
       <div class="header-total-card">
-        <span class="header-total-label">Patrimonio Invertido Total</span>
-        <span class="header-total-value">${importe(data.total_valor_actual)}</span>
-      </div>
-    </div>
-
-    <!-- Hero KPIs de Cartera -->
-    <div class="inv-hero-grid">
-      <div class="inv-kpi-card">
-        <span class="kpi-label">Valor de Mercado Total</span>
-        <span class="kpi-value-main">${importe(data.total_valor_actual)}</span>
-        <span class="kpi-sub">Valoración actual en tiempo real</span>
-      </div>
-
-      <div class="inv-kpi-card">
-        <span class="kpi-label">Capital Total Aportado</span>
-        <span class="kpi-value">${importe(data.total_capital_aportado)}</span>
-        <span class="kpi-sub">Coste base invertido de tu bolsillo</span>
-      </div>
-
-      <div class="inv-kpi-card">
-        <span class="kpi-label">Plusvalía Neta</span>
-        <span class="kpi-value ${data.total_plusvalia_centimos >= 0 ? "positivo" : "negativo"}">
-          ${importe(data.total_plusvalia)}
-        </span>
-        <span class="kpi-sub">${data.total_plusvalia_centimos >= 0 ? "Beneficio latente acumulado" : "Minusvalía latente"}</span>
-      </div>
-
-      <div class="inv-kpi-card">
-        <span class="kpi-label">Rentabilidad Ponderada (ROI)</span>
-        <div class="kpi-roi-pill ${esRoiPositivo ? "positivo" : "negativo"}">
-          ${signoRoi}${roiGlobal.toFixed(2)} %
-        </div>
-        <span class="kpi-sub">Rendimiento global de la cartera</span>
+        <span class="header-total-label">Capital Total Invertido</span>
+        <span class="header-total-value">${importe(data.total_capital_aportado)}</span>
       </div>
     </div>
 

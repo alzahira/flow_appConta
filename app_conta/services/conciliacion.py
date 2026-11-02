@@ -46,8 +46,14 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
 
     Incluye la conciliación contable técnica (por movimientos de cuentas)
     y la Fórmula Global del Hogar del usuario:
-      Dinero Teórico = Botes + Previsión - Me Deben - Préstamos
+      Dinero Teórico = Saldos iniciales + Botes + Sin asignar + Previsión
+                       - Me Deben - Préstamos
       Diferencia = Dinero Teórico - Dinero Real en Cuentas y Tarjetas
+
+    `sin_asignar` y los saldos iniciales son dinero real que aún no está
+    etiquetado en un bote: forman parte del dinero explicado y NO deben
+    contarse como descuadre (si no, meter una nómina con recibos pendientes
+    mostraría un falso desfase).
     """
     cuentas = list(db.scalars(select(Cuenta).where(Cuenta.archivada.is_(False))))
     botes = list(db.scalars(select(Bote).where(Bote.archivado.is_(False))))
@@ -115,9 +121,13 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     centimos_extras = bote_extras_pair[1] if bote_extras_pair else 0
     centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
 
-    # Total teórico antes de ajustes
+    # Total teórico antes de ajustes. Incluye saldos iniciales y dinero sin
+    # asignar porque la identidad contable es:
+    #   cuentas = saldos_iniciales + botes + sin_asignar (+ desfase real)
     teorico_base = (
-        tot_botes_formula
+        saldo_inicial_total
+        + tot_botes_formula
+        + sin_asignar
         + tot_prevision_formula
         - tot_me_deben_formula
         - tot_prestamos_formula

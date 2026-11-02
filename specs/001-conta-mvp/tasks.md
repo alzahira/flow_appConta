@@ -262,6 +262,46 @@ de nómina, separada de este requisito de acceso físico multi-dispositivo.
 
 ---
 
+## Phase 12: Correcciones de contabilidad del reparto de nóminas (2026-11-02)
+
+- [X] T072 Fórmula de conciliación: incluir **saldos iniciales + dinero sin
+  asignar** en el dinero teórico (`services/conciliacion.py`), para que meter
+  una nómina con recibos pendientes no muestre un falso descuadre. Tests
+  unitarios y de contrato.
+- [X] T073 Aviso de botes negativos: `ejecutar_reparto` devuelve `avisos` y el
+  modal de nómina pide confirmación antes de dejar un bote por debajo de 0.
+- [X] T074 Protección anti-duplicado: si ya hay un reparto con el mismo nombre
+  en el mismo mes, la API responde 409 y el modal permite repetirlo con
+  confirmación (`confirmar_repetido: true`).
+
+---
+
+## Phase 13: Limpieza visual de pantallas (2026-11-02)
+
+- [X] T075 Inicio: dejar solo el resumen superior (hero, acciones, spotlight y
+  píldoras), quitando las secciones de cuentas/tarjetas, tarjetas prepago,
+  botes y últimos movimientos (`views/inicio.js`).
+- [X] T076 Cuentas y Depósitos: quitar la barra de píldoras por entidad y la
+  fecha de apertura de cada fila (`views/cuentas.js`).
+- [X] T077 Inversiones: mostrar solo capital, quitando valor de mercado total,
+  plusvalía y rentabilidad (`views/inversiones.js` y `styles.css`).
+
+---
+
+## Phase 14: Ajustes visuales de Tarjetas y Botes (2026-11-02)
+
+- [X] T078 Tarjetas Bancarias: quitar la fila de enlaces duplicada, la fecha de
+  apertura de la tarjeta y plegar el formulario de alta (`views/tarjetas.js`).
+- [X] T079 Tarjetas Regalo: quitar «Carga inicial» y «Fecha» de las tarjetas,
+  corregir el subtotal y el título de la sección (`views/tarjetas-regalo.js`).
+- [X] T080 Gastos Tarjetas: plegar el formulario «Añadir Gasto»
+  (`views/gastos-tarjetas.js`).
+- [X] T081 Botes: quitar la píldora de categoría y el badge redundante de la
+  cabecera, permitir títulos de hasta 3 líneas y alinear las acciones
+  (`views/botes.js` y `styles.css`).
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

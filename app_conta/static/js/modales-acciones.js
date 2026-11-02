@@ -737,6 +737,9 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
     // Envío Ejecutar Nómina
     const formNomina = overlay.querySelector("#form-modal-nomina");
     if (formNomina) {
+      // Si el reparto ya se aplicó y fallaron los recibos, reintentar solo los recibos.
+      let repartoYaAplicado = false;
+
       formNomina.addEventListener("submit", async (e) => {
         e.preventDefault();
         const errBox = overlay.querySelector("#modal-nomina-err");
@@ -788,14 +791,93 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           });
         }
 
+        // Aviso previo: líneas negativas que dejarían un bote en negativo
+        const saldosBote = new Map(
+          botes.map((b) => [Number(b.id), Math.round(Number(b.saldo || 0) * 100)])
+        );
+        const variacionBote = new Map();
+        for (const l of lineasPayload) {
+          if (!l.bote_id) continue;
+          const centimos = Math.round(
+            parseFloat(String(l.importe).replace(",", ".")) * 100
+          );
+          variacionBote.set(
+            l.bote_id,
+            (variacionBote.get(l.bote_id) || 0) + centimos
+          );
+        }
+        const avisosPrevios = [];
+        for (const [boteId, variacion] of variacionBote.entries()) {
+          if (variacion >= 0) continue;
+          const actual = saldosBote.get(boteId) ?? 0;
+          const proyectado = actual + variacion;
+          if (proyectado < 0) {
+            const bote = botes.find((b) => Number(b.id) === boteId);
+            avisosPrevios.push(
+              `• ${bote?.nombre || `Bote #${boteId}`}: quedará en ` +
+                `${(proyectado / 100).toFixed(2)} € (ahora ${(actual / 100).toFixed(2)} €)`
+            );
+          }
+        }
+        if (avisosPrevios.length > 0) {
+          const seguir = confirm(
+            "⚠️ Aviso: este reparto dejará algún bote en negativo:\n\n" +
+              avisosPrevios.join("\n") +
+              "\n\n¿Quieres aplicarlo igualmente?"
+          );
+          if (!seguir) {
+            btnSubmit.disabled = false;
+            recalcularTotales();
+            return;
+          }
+        }
+
+        const cuerpoReparto = {
+          fecha: fecha,
+          cuenta_id: Number(cuentaId),
+          descripcion_general: plantillaObj?.nombre || "Nómina",
+          lineas: lineasPayload,
+        };
+
         try {
-          // 1. Ejecutar reparto de nómina
-          await API.post(`/plantillas-reparto/${plantillaId}/ejecutar`, {
-            fecha: fecha,
-            cuenta_id: Number(cuentaId),
-            descripcion_general: plantillaObj?.nombre || "Nómina",
-            lineas: lineasPayload,
-          });
+          // 1. Ejecutar reparto de nómina (con reintento si ya existe en el mes)
+          let resReparto = null;
+          if (!repartoYaAplicado) {
+            try {
+              resReparto = await API.post(
+                `/plantillas-reparto/${plantillaId}/ejecutar`,
+                cuerpoReparto
+              );
+            } catch (errReparto) {
+              if (errReparto.status !== 409) throw errReparto;
+              const repetir = confirm(
+                `${errReparto.message}\n\n¿Quieres ejecutar el reparto de nuevo?`
+              );
+              if (!repetir) {
+                btnSubmit.disabled = false;
+                recalcularTotales();
+                return;
+              }
+              resReparto = await API.post(
+                `/plantillas-reparto/${plantillaId}/ejecutar`,
+                { ...cuerpoReparto, confirmar_repetido: true }
+              );
+            }
+            repartoYaAplicado = true;
+          }
+
+          // Avisos que solo conoce el servidor (p. ej. bote borrado entre medias)
+          if (
+            resReparto &&
+            avisosPrevios.length === 0 &&
+            Array.isArray(resReparto.avisos) &&
+            resReparto.avisos.length > 0
+          ) {
+            alert(
+              "⚠️ Aviso del reparto:\n\n" +
+                resReparto.avisos.map((a) => `• ${a.mensaje}`).join("\n")
+            );
+          }
 
           // 2. Ejecutar recibos fijos si procede
           if (aplicarRecibos && pagosPayload.length > 0) {
@@ -1294,22 +1376,32 @@ export async function abrirModalDesgloseCuadre() {
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📦 <strong>2. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
+              <span>🏁 <strong>2. Saldos iniciales</strong> (Dinero de apertura de las cuentas)</span>
+              <span class="${Number(conc.saldo_inicial_total) >= 0 ? "positivo" : "negativo"}">${importe(conc.saldo_inicial_total, Number(conc.saldo_inicial_total) < 0 ? "negativo" : "")}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>💶 <strong>3. Dinero sin asignar</strong> (En cuentas, todavía sin bote)</span>
+              <span class="${Number(conc.sin_asignar) >= 0 ? "positivo" : "negativo"}">${importe(conc.sin_asignar, Number(conc.sin_asignar) < 0 ? "negativo" : "")}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span>📦 <strong>4. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
               <span class="positivo">${importe(conc.total_botes_formula)}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📅 <strong>3. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
+              <span>📅 <strong>5. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
               <span class="${Number(conc.total_prevision_formula) >= 0 ? "positivo" : "negativo"}">${importe(conc.total_prevision_formula, Number(conc.total_prevision_formula) < 0 ? "negativo" : "")}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🤝 <strong>4. Dinero que me deben</strong> (Pendiente de cobro)</span>
+              <span>🤝 <strong>6. Dinero que me deben</strong> (Pendiente de cobro)</span>
               <span class="negativo">${importe(conc.total_me_deben_formula, "negativo")}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🚗 <strong>5. Préstamos que debo</strong> (Deuda pendiente)</span>
+              <span>🚗 <strong>7. Préstamos que debo</strong> (Deuda pendiente)</span>
               <span class="negativo">${importe(conc.total_prestamos_formula, "negativo")}</span>
             </div>
           </div>
@@ -1319,7 +1411,7 @@ export async function abrirModalDesgloseCuadre() {
             ${
               Number(conc.total_cuentas_formula) === 0 && Number(conc.total_prevision_formula) < 0
                 ? "💡 <strong>¿Por qué sale esta cifra exacta?</strong> Actualmente tienes las cuentas bancarias vacías (0,00 €), pero en la pantalla de Previsión de Gastos constan facturas pagadas (−1.830,50 €) sin que haya meses de provisión guardada aportados. El sistema avisa de que hay 1.830 € de pagos registrados que no están respaldados por ningún saldo bancario."
-                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Botes + Previsión − Deudas − Préstamos. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
+                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Saldos iniciales + Botes + Sin asignar + Previsión − Deudas − Préstamos. El dinero sin asignar (por ejemplo, para recibos aún pendientes) NO es un descuadre. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
             }
           </div>
 

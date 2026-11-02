@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app_conta.db import get_db
 from app_conta.services.cuentas import obtener_hogar_unico
-from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.plantillas_reparto import (
     actualizar_plantilla,
     crear_plantilla,
@@ -58,6 +58,7 @@ class EjecutarRepartoInput(BaseModel):
     cuenta_id: int | None = None
     descripcion_general: str | None = None
     lineas: list[LineaRepartoInput] | None = None
+    confirmar_repetido: bool = False
 
 
 @router.get("", response_model=list[dict[str, Any]])
@@ -138,6 +139,7 @@ def post_ejecutar_reparto(
             cuenta_id=payload.cuenta_id,
             lineas=lineas_dump,
             descripcion_general=payload.descripcion_general,
+            confirmar_repetido=payload.confirmar_repetido,
         )
         return res
     except ErrorNoEncontrado as exc:
@@ -147,4 +149,8 @@ def post_ejecutar_reparto(
     except ErrorValidacion as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    except ErrorConflicto as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from exc
