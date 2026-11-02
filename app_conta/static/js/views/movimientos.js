@@ -1,4 +1,4 @@
-// Vista de movimientos: Gestión y auditoría del flujo de caja con interfaz Fintech ejecutiva
+// Vista de movimientos: Lista agrupada por día con cabeceras sutiles, buscador y filtros en chips
 import {
   vista,
   esc,
@@ -91,39 +91,29 @@ export function pintarFilaMovimiento(m) {
   const badgeCuenta = renderInsigniaCuenta(cuenta);
 
   return `
-  <article class="tx-card-item ${esGasto ? "gasto" : "ingreso"}"
+  <article class="transaction-row glass-card" style="padding: 0.85rem 1.15rem; margin-bottom: 0.45rem; border-radius: var(--radius-lg); gap: 0.95rem;"
            data-id="${m.id}"
            data-fecha="${m.fecha}"
            data-cuenta-id="${m.cuenta_id || ""}"
            data-bote-id="${m.bote_id || ""}"
            data-tipo="${esGasto ? "gasto" : "ingreso"}"
            data-search="${esc(`${m.descripcion} ${cuenta?.nombre || ""} ${bote?.nombre || ""} ${cat?.nombre || ""} ${m.importe}`).toLowerCase()}">
-    <div class="tx-card-left">
-      <div class="tx-avatar" style="background: ${visual.bg}; color: ${visual.color}; border: 1px solid ${visual.borderColor};" title="${esc(visual.label)}">
-        ${visual.icono}
-      </div>
-      <div class="tx-card-details">
-        <div class="tx-card-title-row">
-          <h4 class="tx-card-title">${esc(m.descripcion)}</h4>
-          <span class="tx-badge-date">${fechaCorta(m.fecha)}</span>
-        </div>
-        <div class="tx-card-pills-row">
-          ${badgeCuenta}
-          ${selectorBote(m)}
-          ${selectorCategoria(m)}
-        </div>
-      </div>
+    <div class="tx-icon-wrapper ${esGasto ? "out" : "in"}">
+      ${esGasto ? icono("flechaAbajo") : icono("flechaArriba")}
     </div>
 
-    <div class="tx-card-right">
-      <div class="tx-amount-wrap">
-        <span class="tx-amount-val ${esGasto ? "negativo" : "positivo"}">
-          <span class="tx-sign">${esGasto ? "−" : "+"}</span> ${absNum}&nbsp;<span class="tx-curr">€</span>
-        </span>
-        <span class="tx-amount-sub-badge ${esGasto ? "gasto" : "ingreso"}">${esGasto ? "Gasto" : "Ingreso"}</span>
+    <div class="tx-main-info">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+        <span class="tx-concept">${esc(m.descripcion || "Operación")}</span>
+        <div class="tx-amount-col">
+          <span class="${esGasto ? "gasto" : "positivo"}">${esGasto ? "−" : "+"}${absNum}&nbsp;€</span>
+        </div>
       </div>
-      <div class="tx-card-actions">
-        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" title="Eliminar este movimiento">
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
+        <span class="tx-meta">${badgeCuenta}</span>
+        ${selectorBote(m)}
+        ${selectorCategoria(m)}
+        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" title="Eliminar este movimiento" style="margin-left: auto;">
           ${icono("borrar")}
         </button>
       </div>
@@ -135,10 +125,10 @@ export function pintarFilaMovimiento(m) {
 function renderizarGruposMovimientos(items) {
   if (!items || items.length === 0) {
     return `
-      <div class="empty-state">
-        <span class="empty-icon">${icono("movimientos")}</span>
-        <p>No se encontraron movimientos con los filtros aplicados.</p>
-        <span class="empty-sub">Prueba a limpiar la búsqueda o cambia de filtro.</span>
+      <div class="glass-card tarjeta-vacia">
+        <div class="tarjeta-vacia-icon">${icono("movimientos")}</div>
+        <h4>No se encontraron movimientos</h4>
+        <p>Prueba a cambiar o limpiar los filtros de búsqueda.</p>
       </div>
     `;
   }
@@ -153,7 +143,6 @@ function renderizarGruposMovimientos(items) {
     grupos.get(f).push(m);
   }
 
-  // Ordenamos las fechas en orden descendente
   const fechasOrdenadas = Array.from(grupos.keys()).sort((a, b) => b.localeCompare(a));
 
   return fechasOrdenadas
@@ -171,28 +160,16 @@ function renderizarGruposMovimientos(items) {
       }
 
       const netoStr = (centimosDiaNeto / 100).toFixed(2);
-      const ingStr = (centimosDiaIngresos / 100).toFixed(2);
-      const gastStr = (centimosDiaGastos / 100).toFixed(2);
 
       return `
-      <div class="tx-date-group" data-fecha="${fecha}">
-        <div class="tx-date-header">
-          <div class="tx-date-header-left">
-            <span class="tx-date-dot"></span>
-            <span class="tx-date-title">${fechaTituloGrupo(fecha)}</span>
-            <span class="tx-date-count">${movsDelDia.length} ${movsDelDia.length === 1 ? "operación" : "operaciones"}</span>
-          </div>
-          <div class="tx-date-header-right">
-            <span class="tx-date-breakdown">
-              ${centimosDiaIngresos > 0 ? `<span class="breakdown-in">+${ingStr} €</span>` : ""}
-              ${centimosDiaGastos > 0 ? `<span class="breakdown-out">−${gastStr} €</span>` : ""}
-            </span>
-            <span class="tx-date-net ${centimosDiaNeto >= 0 ? "positivo" : "negativo"}">
-              Día: ${importe(netoStr)}
-            </span>
-          </div>
+      <div class="day-group-section" data-fecha="${fecha}" style="margin-bottom: 1.25rem;">
+        <div class="day-group-header">
+          <span>${fechaTituloGrupo(fecha)}</span>
+          <span class="day-group-total ${centimosDiaNeto >= 0 ? 'text-pos' : ''}">
+            Neto del día: ${importe(netoStr)}
+          </span>
         </div>
-        <div class="tx-date-items">
+        <div class="day-group-items">
           ${movsDelDia.map(pintarFilaMovimiento).join("\n")}
         </div>
       </div>
@@ -221,7 +198,7 @@ function actualizarTotalesKPI(itemsFiltrados) {
   if (kpiGast) kpiGast.textContent = `−${(centimosGastos / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €`;
   if (kpiNeto) {
     kpiNeto.textContent = `${centimosNeto >= 0 ? "+" : "−"}${(Math.abs(centimosNeto) / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €`;
-    kpiNeto.className = `tx-kpi-val ${centimosNeto >= 0 ? "positivo" : "negativo"}`;
+    kpiNeto.className = `chip-val ${centimosNeto >= 0 ? "positivo" : "negativo"}`;
   }
 }
 
@@ -232,21 +209,17 @@ function filtrarMovimientosDOM() {
   const boteFiltro = document.getElementById("filtro-mov-bote")?.value || "";
 
   const filtrados = movimientosCargados.filter((m) => {
-    // 1. Filtro Tipo
     const num = Number(m.importe || 0);
     if (tipoFiltro === "ingresos" && num <= 0) return false;
     if (tipoFiltro === "gastos" && num >= 0) return false;
 
-    // 2. Filtro Cuenta
     if (cuentaFiltro && String(m.cuenta_id) !== cuentaFiltro) return false;
 
-    // 3. Filtro Bote
     if (boteFiltro) {
       if (boteFiltro === "sin-bote" && m.bote_id) return false;
       if (boteFiltro !== "sin-bote" && String(m.bote_id) !== boteFiltro) return false;
     }
 
-    // 4. Búsqueda de texto
     if (query) {
       const cuenta = cuentasCache.find((c) => c.id === m.cuenta_id);
       const bote = botesCache.find((b) => b.id === m.bote_id);
@@ -295,7 +268,6 @@ export default vista("movimientos", async () => {
 
   const hayMas = data.offset + data.items.length < data.total;
 
-  // Calculamos KPIs iniciales
   let cIngresos = 0;
   let cGastos = 0;
   for (const m of movimientosCargados) {
@@ -306,7 +278,6 @@ export default vista("movimientos", async () => {
   const cNeto = cIngresos - cGastos;
 
   setTimeout(() => {
-    // Configurar listeners de la barra de filtros interactiva
     const inputBuscar = document.getElementById("filtro-mov-buscar");
     if (inputBuscar) {
       inputBuscar.addEventListener("input", filtrarMovimientosDOM);
@@ -329,94 +300,108 @@ export default vista("movimientos", async () => {
     if (selectBote) {
       selectBote.addEventListener("change", filtrarMovimientosDOM);
     }
-
-    // Toggle para mostrar/ocultar el panel de nuevo movimiento
-    const btnToggleForm = document.getElementById("btn-toggle-nuevo-mov");
-    const panelForm = document.getElementById("panel-nuevo-movimiento");
-    if (btnToggleForm && panelForm) {
-      btnToggleForm.addEventListener("click", () => {
-        const visible = panelForm.style.display !== "none";
-        panelForm.style.display = visible ? "none" : "block";
-        btnToggleForm.classList.toggle("activo", !visible);
-        btnToggleForm.innerHTML = !visible
-          ? `✕ Ocultar Formulario`
-          : `<span>${icono("plus")}</span> Nuevo Movimiento`;
-      });
-    }
   }, 50);
 
   return `
-  <!-- CABECERA DE MOVIMIENTOS FINTECH -->
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Movimientos y Auditoría</h2>
-      <p class="page-subtitle">Registro cronológico inteligente con clasificación semántica, desglose por cuentas y asignación a sobres</p>
-    </div>
-    <div class="header-actions-group">
-      <button type="button" id="btn-toggle-nuevo-mov" class="btn-primary-fintech">
-        <span>${icono("plus")}</span>
-        <span>Nuevo Movimiento</span>
-      </button>
-    </div>
+  <!-- 1. Cabecera y Resumen en Chips -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Flujo de Operaciones</span>
+    <div class="hero-total-amount ${cNeto >= 0 ? '' : 'text-neg'}">${cNeto >= 0 ? '+' : '−'}${importe((Math.abs(cNeto) / 100).toFixed(2))}</div>
+    <span class="hero-total-sub">${movimientosCargados.length} movimientos en este periodo</span>
   </div>
 
-  <!-- PANEL DESPLEGABLE / FORMULARIO RÁPIDO -->
-  <section id="panel-nuevo-movimiento" class="section-block" style="display: none;">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
-        ${icono("plus")} Añadir Operación al Libro Contable
+  <section class="glass-summary-chips-row" style="margin-bottom: 1.5rem;">
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-green"></span>
+      <span class="chip-title">Total Ingresos</span>
+      <strong class="chip-val" id="kpi-mov-ingresos" style="color: var(--pos);">+${(cIngresos / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €</strong>
+    </div>
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-violet"></span>
+      <span class="chip-title">Total Gastos</span>
+      <strong class="chip-val" id="kpi-mov-gastos">−${(cGastos / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €</strong>
+    </div>
+    <div class="glass-capsule-chip">
+      <span class="chip-glow-bullet dot-blue"></span>
+      <span class="chip-title">Operaciones</span>
+      <strong class="chip-val" id="kpi-mov-count">${movimientosCargados.length}</strong>
+    </div>
+  </section>
+
+  <!-- 2. Buscador y Filtros en Chips -->
+  <div class="mov-search-bar-wrap">
+    <span class="mov-search-icon">${icono("buscar")}</span>
+    <input type="text" id="filtro-mov-buscar" class="mov-search-input" placeholder="Buscar por concepto, comercio, importe o fecha..." aria-label="Buscar movimientos">
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+    <!-- Selector Tipo en Chips -->
+    <div class="segmented-control">
+      <button type="button" class="segmented-control-btn btn-filtro-tipo activo" data-filtro="todos">Todos</button>
+      <button type="button" class="segmented-control-btn btn-filtro-tipo" data-filtro="ingresos">🟢 Ingresos</button>
+      <button type="button" class="segmented-control-btn btn-filtro-tipo" data-filtro="gastos">Gastos</button>
+    </div>
+
+    <!-- Filtro de Cuenta -->
+    <select id="filtro-mov-cuenta" class="glass-filter-chip" style="outline: none; padding: 0.45rem 0.85rem;" aria-label="Filtrar por cuenta">
+      <option value="">🏛️ Todas las cuentas</option>
+      ${cuentasCache.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}
+    </select>
+
+    <!-- Filtro de Sobre -->
+    <select id="filtro-mov-bote" class="glass-filter-chip" style="outline: none; padding: 0.45rem 0.85rem;" aria-label="Filtrar por sobre">
+      <option value="">📦 Todos los sobres</option>
+      <option value="sin-bote">🏦 Libre en cuenta</option>
+      ${botesCache.map((b) => `<option value="${b.id}">📦 ${esc(b.nombre)}</option>`).join("")}
+    </select>
+  </div>
+
+  <!-- 3. Formulario desplegable para nuevo movimiento -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Registrar Nuevo Movimiento Contable
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Registra un ingreso o gasto y clasifícalo en su cuenta, sobre de ahorro o amortización de préstamo.</p>
-
+      <div class="accordion-body">
         <form data-accion="crear-movimiento" data-err="err-movimiento" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Tipo de Movimiento</label>
-              <div class="segmented-control modern">
-                <label class="segment-item">
-                  <input type="radio" name="signo" value="-" checked>
-                  <span class="segment-btn out">🔴 Gasto (− Salida de dinero)</span>
-                </label>
-                <label class="segment-item">
-                  <input type="radio" name="signo" value="+">
-                  <span class="segment-btn in">🟢 Ingreso (+ Entrada de dinero)</span>
-                </label>
-              </div>
-            </div>
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Anota una entrada o salida y asígnala opcionalmente a un sobre de ahorro o amortización de préstamo.
+          </p>
 
-            <div class="form-group form-span-2">
-              <label for="mov-importe" class="form-label">Importe (€)</label>
-              <div class="input-currency-wrapper">
-                <input id="mov-importe" name="importe" inputmode="decimal" placeholder="0.00" class="input-large" required autofocus>
-                <span class="currency-symbol">€</span>
-              </div>
+          <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+            <label class="glass-filter-chip" style="cursor: pointer;">
+              <input type="radio" name="signo" value="-" checked style="margin-right: 0.4rem;">
+              <span>− Gasto (Salida de dinero)</span>
+            </label>
+            <label class="glass-filter-chip" style="cursor: pointer;">
+              <input type="radio" name="signo" value="+" style="margin-right: 0.4rem;">
+              <span>+ Ingreso (Entrada de dinero)</span>
+            </label>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="mov-importe">Importe (€) *</label>
+              <input id="mov-importe" name="importe" inputmode="decimal" placeholder="0.00" required>
+            </div>
+            <div class="campo">
+              <label for="mov-desc">Concepto o Comercio *</label>
+              <input id="mov-desc" name="descripcion" placeholder="Ej. Compra Mercadona, Nómina, Recibo..." required>
             </div>
           </div>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="mov-desc" class="form-label">Concepto o Comercio</label>
-              <input id="mov-desc" name="descripcion" placeholder="Ej. Compra Mercadona, Nómina Javier, Recibo Vodafone..." required>
-            </div>
-            <div class="form-group form-span-2">
-              <label for="mov-cuenta" class="form-label">Cuenta Bancaria / Tarjeta de Origen</label>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="mov-cuenta">Cuenta / Tarjeta *</label>
               <select id="mov-cuenta" name="cuenta_id" required>
                 ${opcionesCuenta || '<option value="">Crea primero una cuenta</option>'}
               </select>
             </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label for="mov-fecha" class="form-label">Fecha</label>
-              <input id="mov-fecha" name="fecha" type="date" value="${hoy()}" required>
-            </div>
-            <div class="form-group">
-              <label for="mov-bote" class="form-label">Sobre / Bote o Préstamo (Opcional)</label>
+            <div class="campo">
+              <label for="mov-bote">Sobre o Préstamo</label>
               <select id="mov-bote" name="bote_id">
                 <optgroup label="Cuenta Corriente">
-                  <option value="">— Ninguno (Libre en cuenta) —</option>
+                  <option value="">— Sin sobre (Libre) —</option>
                 </optgroup>
                 <optgroup label="Sobres y Botes">
                   ${opcionesBote}
@@ -424,25 +409,22 @@ export default vista("movimientos", async () => {
                 ${
                   opcionesPrestamos
                     ? `
-                <optgroup label="Préstamos (Amortizar / Reducir deuda)">
+                <optgroup label="Amortización Préstamo">
                   ${opcionesPrestamos}
                 </optgroup>`
                     : ""
                 }
               </select>
             </div>
-            <div class="form-group form-span-2">
-              <label for="mov-cat" class="form-label">Categoría Analítica (Opcional)</label>
-              <select id="mov-cat" name="categoria_id">
-                <option value="">— Sin categoría —</option>
-                ${opcionesCategoria}
-              </select>
+            <div class="campo">
+              <label for="mov-fecha">Fecha</label>
+              <input id="mov-fecha" name="fecha" type="date" value="${hoy()}" required>
             </div>
           </div>
 
           <div id="err-movimiento"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
               ${icono("plus")} Guardar Movimiento
             </button>
@@ -452,66 +434,16 @@ export default vista("movimientos", async () => {
     </details>
   </section>
 
-  <!-- BARRA DE KPIS DEL LISTADO -->
-  <div class="tx-kpi-bar">
-    <div class="tx-kpi-item">
-      <span class="tx-kpi-label">Movimientos Cargados</span>
-      <span class="tx-kpi-val" id="kpi-mov-count">${movimientosCargados.length}</span>
-    </div>
-    <div class="tx-kpi-item in">
-      <span class="tx-kpi-label">Total Ingresos (+)</span>
-      <span class="tx-kpi-val positivo" id="kpi-mov-ingresos">+${(cIngresos / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €</span>
-    </div>
-    <div class="tx-kpi-item out">
-      <span class="tx-kpi-label">Total Gastos (−)</span>
-      <span class="tx-kpi-val negativo" id="kpi-mov-gastos">−${(cGastos / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €</span>
-    </div>
-    <div class="tx-kpi-item net">
-      <span class="tx-kpi-label">Balance Neto</span>
-      <span class="tx-kpi-val ${cNeto >= 0 ? "positivo" : "negativo"}" id="kpi-mov-neto">${cNeto >= 0 ? "+" : "−"}${(Math.abs(cNeto) / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} €</span>
-    </div>
-  </div>
-
-  <!-- TOOLBAR DE BÚSQUEDA Y FILTRADO INTELIGENTE -->
-  <div class="tx-toolbar-container">
-    <div class="tx-search-box">
-      <span class="search-icon">${icono("buscar")}</span>
-      <input type="text" id="filtro-mov-buscar" placeholder="Buscar por comercio, concepto, importe, fecha..." aria-label="Buscar movimientos">
-    </div>
-
-    <div class="tx-filter-controls">
-      <!-- Filtro Tipo de Operación -->
-      <div class="segmented-pills">
-        <button type="button" class="btn-filtro-tipo activo" data-filtro="todos">Todos</button>
-        <button type="button" class="btn-filtro-tipo" data-filtro="ingresos">🟢 Ingresos</button>
-        <button type="button" class="btn-filtro-tipo" data-filtro="gastos">🔴 Gastos</button>
-      </div>
-
-      <!-- Filtro Cuentas -->
-      <select id="filtro-mov-cuenta" class="tx-filter-select" aria-label="Filtrar por cuenta">
-        <option value="">🏛️ Todas las cuentas</option>
-        ${cuentasCache.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}
-      </select>
-
-      <!-- Filtro Botes -->
-      <select id="filtro-mov-bote" class="tx-filter-select" aria-label="Filtrar por sobre">
-        <option value="">📦 Todos los sobres</option>
-        <option value="sin-bote">🏦 Solo en cuenta libre</option>
-        ${botesCache.map((b) => `<option value="${b.id}">📦 ${esc(b.nombre)}</option>`).join("")}
-      </select>
-    </div>
-  </div>
-
-  <!-- FEED DE MOVIMIENTOS AGRUPADOS POR DÍA -->
+  <!-- 4. Lista Agrupada por Día -->
   <section class="section-block">
-    <div id="lista-movimientos" class="tx-feed-container">
+    <div id="lista-movimientos">
       ${renderizarGruposMovimientos(movimientosCargados)}
     </div>
 
     ${
       hayMas
         ? `
-      <div class="load-more-row" style="margin-top: 1.5rem;">
+      <div style="text-align: center; margin-top: 1.5rem;">
         <button class="btn-secondary" data-accion="mas-movimientos"
           data-limit="50" data-offset="${data.offset + data.items.length}">
           Cargar más movimientos (${data.total - (data.offset + data.items.length)} restantes)

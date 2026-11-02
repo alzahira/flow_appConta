@@ -1,4 +1,4 @@
-// Vista de botes: Sobres de ahorro, gastos recurrentes y proyectos con extracto y detalle individual
+// Vista de Botes y Sobres de Ahorro: Cuadrícula de tarjetas compactas con anillo circular de progreso y filtros en chips
 import { esc, importe, vista, icono, hoy, fechaCorta, subnavAhorro } from "../vistas.js";
 import { pintarFilaMovimiento, setGlobalCaches } from "./movimientos.js";
 
@@ -14,152 +14,88 @@ export function establecerCategoriaBote(cat) {
 }
 
 export const CATEGORIAS_BOTES = {
-  viajes: {
-    id: "viajes",
-    nombre: "Viajes",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>`,
-    color: "#0284c7",
-    colorBg: "#e0f2fe",
-  },
-  mantenimiento: {
-    id: "mantenimiento",
-    nombre: "Mantenimiento casa",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-    color: "#d97706",
-    colorBg: "#fef3c7",
-  },
-  ropa: {
-    id: "ropa",
-    nombre: "Ropa",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>`,
-    color: "#db2777",
-    colorBg: "#fce7f3",
-  },
-  dentista: {
-    id: "dentista",
-    nombre: "Dentista",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v3a5 5 0 0 0 1 3l1 7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2l1-7a5 5 0 0 0 1-3V7a5 5 0 0 0-5-5z"/><path d="M9 10h6"/></svg>`,
-    color: "#0891b2",
-    colorBg: "#cffafe",
-  },
-  fianzas: {
-    id: "fianzas",
-    nombre: "Fianzas",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-    color: "#4f46e5",
-    colorBg: "#e0e7ff",
-  },
-  inversion: {
-    id: "inversion",
-    nombre: "Inversión",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
-    color: "#0d9488",
-    colorBg: "#ccfbf1",
-  },
-  gasolina: {
-    id: "gasolina",
-    nombre: "Gasolina",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"/><path d="M15 10h2.5a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 0 1.5 1.5h0a1.5 1.5 0 0 0 1.5-1.5V9l-3-3"/><path d="M7 10h4"/><path d="M3 22h12"/></svg>`,
-    color: "#ea580c",
-    colorBg: "#ffedd5",
-  },
-  ocio: {
-    id: "ocio",
-    nombre: "Ocio",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 3-7 8-7-8h14Z"/><path d="M12 11v10"/><path d="M8 21h8"/></svg>`,
-    color: "#7c3aed",
-    colorBg: "#ede9fe",
-  },
-  reserva: {
-    id: "reserva",
-    nombre: "Reserva y Paro",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-    color: "#334155",
-    colorBg: "#f1f5f9",
-  },
-  personal: {
-    id: "personal",
-    nombre: "Personal / Familia",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    color: "#0284c7",
-    colorBg: "#e0f2fe",
-  },
-  gastos: {
-    id: "gastos",
-    nombre: "Gastos y Pagos",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
-    color: "#64748b",
-    colorBg: "#f1f5f9",
-  },
-  otros: {
-    id: "otros",
-    nombre: "Otros Botes",
-    icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-    color: "#64748b",
-    colorBg: "#f1f5f9",
-  },
+  viajes: { id: "viajes", nombre: "Viajes", icono: "✈️", color: "#38BDF8" },
+  mantenimiento: { id: "mantenimiento", nombre: "Mantenimiento casa", icono: "🏠", color: "#F59E0B" },
+  ropa: { id: "ropa", nombre: "Ropa", icono: "👕", color: "#F472B6" },
+  dentista: { id: "dentista", nombre: "Dentista y Salud", icono: "🦷", color: "#2DD4BF" },
+  fianzas: { id: "fianzas", nombre: "Fianzas", icono: "🔐", color: "#818CF8" },
+  inversion: { id: "inversion", nombre: "Inversión", icono: "📈", color: "#34D399" },
+  gasolina: { id: "gasolina", nombre: "Gasolina", icono: "⛽", color: "#FB923C" },
+  ocio: { id: "ocio", nombre: "Ocio", icono: "🍹", color: "#A78BFA" },
+  reserva: { id: "reserva", nombre: "Reserva y Paro", icono: "🛡️", color: "#94A3B8" },
+  personal: { id: "personal", nombre: "Personal", icono: "👤", color: "#60A5FA" },
+  gastos: { id: "gastos", nombre: "Gastos y Pagos", icono: "🔁", color: "#A1A1AA" },
+  otros: { id: "otros", nombre: "Otros", icono: "📦", color: "#CBD5E1" },
 };
 
-const ETIQUETAS_TIPO_BOTE = {
-  recurrente: "Recurrente",
-  ahorro: "Ahorro",
-  proyecto: "Proyecto",
-  ajeno: "Ajeno",
-};
+function renderMiniAnilloBote(pct, colorPastel, esNegativo, iconoEmoji) {
+  const r = 21;
+  const circ = 2 * Math.PI * r; // ~131.95
+  const clampedPct = Math.max(0, Math.min(100, pct));
+  const offset = circ - (circ * clampedPct) / 100;
+  const strokeColor = esNegativo ? "var(--neg)" : colorPastel;
 
-function tarjetaBoteFull(b) {
+  return `
+    <div class="pot-ring-wrap" aria-hidden="true">
+      <svg class="pot-ring-svg" viewBox="0 0 52 52">
+        <circle class="pot-ring-track" cx="26" cy="26" r="${r}"/>
+        <circle class="pot-ring-bar" cx="26" cy="26" r="${r}"
+                stroke="${strokeColor}"
+                stroke-dasharray="${circ.toFixed(2)}"
+                stroke-dashoffset="${offset.toFixed(2)}"/>
+      </svg>
+      <span class="pot-ring-center-icon">${iconoEmoji}</span>
+    </div>
+  `;
+}
+
+function tarjetaBoteCompacta(b) {
   const obj = Number(b.objetivo);
   const sal = Number(b.saldo);
+  const esNegativo = sal < 0;
   const tieneObj = b.objetivo !== null && obj !== 0;
   const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
 
   const cat = CATEGORIAS_BOTES[b.categoria] || CATEGORIAS_BOTES.otros;
+  const colorPastel = cat.color;
 
   return `
-    <article class="card-pot-full ${b.tipo}" style="--pot-accent: ${cat.color};">
-      <div class="card-pot-header">
-        <div class="pot-header-main">
-          <div class="card-pot-icon" style="background: ${cat.colorBg}; color: ${cat.color}; border: 1px solid ${cat.color}35;">
-            ${cat.icono}
-          </div>
-          <div class="pot-header-texts">
-            <h3 class="pot-title">${esc(b.nombre)}</h3>
-          </div>
+    <article class="glass-pot-card" data-accion="ver-detalle-bote" data-id="${b.id}" tabindex="0" role="button" aria-label="Bote ${esc(b.nombre)}">
+      <div class="pot-card-header">
+        <div class="pot-header-title-wrap">
+          <span class="pot-color-dot" style="background: ${colorPastel}; box-shadow: 0 0 8px ${colorPastel}99;"></span>
+          <h4 class="pot-compact-name" title="${esc(b.nombre)}">${esc(b.nombre)}</h4>
         </div>
-        <div class="card-pot-actions">
-          <span class="badge-type ${b.tipo}">${icono(b.tipo)} ${ETIQUETAS_TIPO_BOTE[b.tipo] || esc(b.tipo)}</span>
-          <button class="btn-action-icon delete" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}" title="Eliminar este bote">
-            ${icono("borrar")}
+
+        <div class="card-more-menu-wrapper" onclick="event.stopPropagation();">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(b.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
           </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}">
+              ${icono("borrar")} Eliminar sobre
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="pot-balance-section">
-        <span class="balance-sub pot-balance-label">${icono("ahorro")} Fondos acumulados</span>
-        <div class="pot-balance-value ${sal < 0 ? "negativo" : ""}">${sal < 0 ? importe(b.saldo, "negativo") : importe(b.saldo)}</div>
-      </div>
+      <div class="pot-card-body">
+        ${renderMiniAnilloBote(tieneObj ? pct : (sal > 0 ? 100 : 0), colorPastel, esNegativo, cat.icono)}
 
-      ${
-        tieneObj
-          ? `
-        <div class="pot-progress-section">
-          <div class="progress-bar-large ${pct > 100 ? "over" : ""}">
-            <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
-          </div>
-          <div class="progress-info-row">
-            <span class="progress-pct">${pct.toFixed(0)}% del objetivo</span>
-            <span class="progress-goal">Límite: ${b.objetivo} €</span>
-          </div>
+        <div class="pot-data-col">
+          <div class="pot-compact-amount ${esNegativo ? 'is-negativo' : ''}">${importe(b.saldo)}</div>
+          ${
+            esNegativo
+              ? `<span class="pot-badge-neg">${icono("alerta")} En descubierto</span>`
+              : tieneObj
+              ? `<span class="pot-compact-meta">${pct.toFixed(0)}% de ${b.objetivo} €</span>`
+              : `<span class="pot-compact-meta">${esc(cat.nombre)}</span>`
+          }
         </div>
-      `
-          : ""
-      }
-
-      <div class="pot-card-footer">
-        <button type="button" class="btn-pot-detail" data-accion="ver-detalle-bote" data-id="${b.id}">
-          <span>${icono("ojo")} Ver movimientos y extracto</span>
-          <span class="btn-arrow">&rarr;</span>
-        </button>
       </div>
     </article>
   `;
@@ -174,8 +110,10 @@ async function renderDetalleBote(boteId, cuentas) {
   const movs = movsData.items || [];
   const obj = Number(bote.objetivo);
   const sal = Number(bote.saldo);
+  const esNegativo = sal < 0;
   const tieneObj = bote.objetivo !== null && obj !== 0;
   const pct = tieneObj ? Math.max(0, Math.min(200, (sal / obj) * 100)) : 0;
+  const cat = CATEGORIAS_BOTES[bote.categoria] || CATEGORIAS_BOTES.otros;
 
   const totalAportaciones = movs
     .filter((m) => Number(m.importe) > 0)
@@ -191,111 +129,91 @@ async function renderDetalleBote(boteId, cuentas) {
   return `
     ${subnavAhorro("botes")}
 
-    <div class="detail-back-wrap">
-      <button type="button" class="btn-subtle" data-accion="cerrar-detalle-bote">
-        ${icono("volver")} &larr; Volver al listado de botes
+    <div style="margin-bottom: 1.25rem;">
+      <button type="button" class="btn-subtle" data-accion="cerrar-detalle-bote" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--fg-2); background: transparent; border: none; cursor: pointer; padding: 0.4rem 0;">
+        ${icono("volver")} &larr; Volver a todos los botes
       </button>
     </div>
 
-    <div class="page-header-row">
-      <div class="detail-header-flex">
-        <span class="bank-group-icon ${bote.tipo}">${icono(bote.tipo)}</span>
-        <div>
-          <h2 class="page-title">${esc(bote.nombre)}</h2>
-          <p class="page-subtitle">Extracto y movimientos separados del sobre (${esc(bote.tipo)})</p>
-        </div>
+    <!-- Hero detalle del sobre -->
+    <div class="accounts-hero-total">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span class="pot-color-dot" style="background: ${cat.color};"></span>
+        <span class="hero-total-label">${esc(bote.nombre)}</span>
       </div>
-      <div class="header-total-card">
-        <span class="header-total-label">Saldo Acumulado en el Bote</span>
-        <span class="header-total-value">${importe(bote.saldo)}</span>
-        ${
-          tieneObj
-            ? `<span class="header-total-sub">${pct.toFixed(0)}% de la meta (${bote.objetivo} €)</span>`
-            : ""
-        }
-      </div>
+      <div class="hero-total-amount ${esNegativo ? 'text-neg' : ''}">${importe(bote.saldo)}</div>
+      ${
+        tieneObj
+          ? `<span class="hero-total-sub">${pct.toFixed(0)}% del objetivo (${bote.objetivo} €)</span>`
+          : `<span class="hero-total-sub">Sobre sin límite prefijado</span>`
+      }
     </div>
 
-    <div class="hero-pills-row">
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Saldo Disponible en este Sobre</span>
-        <span class="pill-stat-value">${importe(bote.saldo)}</span>
+    <!-- Chips resumen aportaciones y gastos -->
+    <section class="glass-summary-chips-row" style="margin-bottom: 1.5rem;">
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-green"></span>
+        <span class="chip-title">Aportaciones (+)</span>
+        <strong class="chip-val" style="color: var(--pos);">${importe(totalAportaciones.toFixed(2))}</strong>
       </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Total Aportaciones (+)</span>
-        <span class="pill-stat-value ok">${importe(totalAportaciones.toFixed(2))}</span>
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-violet"></span>
+        <span class="chip-title">Gastos del sobre (−)</span>
+        <strong class="chip-val">${importe(Math.abs(totalGastos).toFixed(2))}</strong>
       </div>
-      <div class="hero-pill-stat">
-        <span class="pill-stat-label">Total Gastos Imputados (−)</span>
-        <span class="pill-stat-value alert">${importe(totalGastos.toFixed(2))}</span>
+      <div class="glass-capsule-chip">
+        <span class="chip-glow-bullet dot-blue"></span>
+        <span class="chip-title">Movimientos</span>
+        <strong class="chip-val">${movs.length}</strong>
       </div>
-    </div>
+    </section>
 
-    ${
-      tieneObj
-        ? `
-      <div class="card-pot-full" style="margin-bottom: 1.5rem">
-        <div class="progress-wrap-large">
-          <div class="progress-bar-large ${pct >= 100 ? "ok" : ""}">
-            <div class="progress-fill" style="width: ${Math.min(pct, 100)}%"></div>
-          </div>
-          <div class="progress-info-row">
-            <span class="progress-pct">${pct.toFixed(0)}% completado</span>
-            <span class="progress-goal">Meta: ${bote.objetivo} € ${bote.objetivo_fecha ? `(Fecha límite: ${bote.objetivo_fecha})` : ""}</span>
-          </div>
-        </div>
-      </div>`
-        : ""
-    }
-
-    <!-- Formulario para meter o sacar dinero directamente de este bote -->
-    <section class="section-block">
-      <details class="form-inversion-details">
-        <summary class="btn-nuevo-inversion-trigger">
-          ${icono("plus")} Añadir Dinero o Gasto a este Bote
+    <!-- Formulario para meter o sacar dinero de este sobre -->
+    <section class="section-block" style="margin-bottom: 1.5rem;">
+      <details class="glass-accordion">
+        <summary>
+          ${icono("plus")} Meter o Sacar Dinero de este Bote
         </summary>
-        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-          <p class="form-desc">Registra una aportación o descuenta un gasto asignado directamente a este sobre</p>
-
+        <div class="accordion-body">
           <form data-accion="crear-movimiento-bote" data-bote-id="${bote.id}" class="fintech-form">
-            <div class="sign-selector-row">
-              <label class="sign-option in">
-                <input type="radio" name="signo" value="+" checked>
-                <span class="sign-btn">🟢 Meter dinero (+ Aportación)</span>
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+              <label class="glass-filter-chip" style="cursor: pointer;">
+                <input type="radio" name="signo" value="+" checked style="margin-right: 0.4rem;">
+                <span>+ Meter dinero (Aportación)</span>
               </label>
-              <label class="sign-option out">
-                <input type="radio" name="signo" value="-">
-                <span class="sign-btn">🔴 Sacar dinero (− Gasto del sobre)</span>
+              <label class="glass-filter-chip" style="cursor: pointer;">
+                <input type="radio" name="signo" value="-" style="margin-right: 0.4rem;">
+                <span>− Sacar dinero (Gasto del bote)</span>
               </label>
             </div>
 
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Importe (€)</label>
+            <div class="form-grid-2">
+              <div class="campo">
+                <label>Importe (€) *</label>
                 <input name="importe" inputmode="decimal" placeholder="0.00" required>
               </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Cuenta Bancaria o Efectivo de Origen / Destino</label>
+              <div class="campo">
+                <label>Cuenta de Origen / Destino *</label>
                 <select name="cuenta_id" required>
                   ${opcionesCuentas}
                 </select>
               </div>
             </div>
 
-            <div class="form-row-grid">
-              <div class="form-group form-span-2">
-                <label class="form-label">Concepto / Motivo</label>
-                <input name="descripcion" placeholder="Ej. Aportación de ahorro, Factura de seguro..." required>
+            <div class="form-grid-2">
+              <div class="campo">
+                <label>Concepto / Motivo *</label>
+                <input name="descripcion" placeholder="Ej. Ahorro quincenal, Factura..." required>
               </div>
-              <div class="form-group form-span-2">
-                <label class="form-label">Fecha</label>
+              <div class="campo">
+                <label>Fecha</label>
                 <input name="fecha" type="date" value="${hoy()}" required>
               </div>
             </div>
 
-            <div class="form-actions-right">
+            <div class="form-actions" style="margin-top: 1.25rem;">
               <button type="submit" class="btn-primary">
-                ${icono("plus")} Guardar Movimiento en este Bote
+                ${icono("plus")} Guardar Movimiento
               </button>
             </div>
           </form>
@@ -303,30 +221,23 @@ async function renderDetalleBote(boteId, cuentas) {
       </details>
     </section>
 
-    <!-- Listado separado de movimientos de este bote -->
-    <section class="section-block">
-      <div class="section-header">
-        <div>
-          <h3 class="section-title">Movimientos Separados de este Bote (${movs.length})</h3>
-          <p class="section-desc">Historial exclusivo de entradas y salidas registradas en este sobre</p>
-        </div>
+    <!-- Extracto de movimientos de este sobre -->
+    <section class="glass-card latest-transactions-card">
+      <div class="transactions-header">
+        <h3 class="transactions-title">Movimientos de este Bote (${movs.length})</h3>
       </div>
-
-      ${
-        movs.length === 0
-          ? `
-        <div class="empty-state">
-          <span class="empty-icon">${icono("movimientos")}</span>
-          <p>Este bote no tiene movimientos asignados todavía.</p>
-          <span class="empty-sub">Usa el formulario superior para añadir la primera aportación de fondos.</span>
-        </div>
-      `
-          : `
-        <div class="tx-date-items" style="display: flex; flex-direction: column; gap: 0.5rem;">
-          ${movs.map(pintarFilaMovimiento).join("\n")}
-        </div>
-      `
-      }
+      <div class="transactions-stream">
+        ${
+          movs.length === 0
+            ? `
+          <div class="empty-state-stream">
+            <span class="empty-stream-icon">${icono("movimientos")}</span>
+            <p>Este bote no tiene movimientos registrados aún</p>
+          </div>
+          `
+            : movs.map(pintarFilaMovimiento).join("\n")
+        }
+      </div>
     </section>
   `;
 }
@@ -338,61 +249,60 @@ export default vista("botes", async () => {
   ]);
 
   setGlobalCaches({ cuentas: cuentasData.items, botes: botesData.items });
-
   const cuentas = cuentasData.items || [];
 
-  // Si hay un bote seleccionado para ver su extracto detallado
   if (boteSeleccionadoId && botesData.items.some((b) => b.id === boteSeleccionadoId)) {
     return await renderDetalleBote(boteSeleccionadoId, cuentas);
   }
-
-  // Si el bote seleccionado ya no existe, reseteamos a vista general
   boteSeleccionadoId = null;
 
-  // En Sobres y Botes dejamos todo excepto Amortización Hipoteca (que queda en Fondo de Ahorro)
   const sobresBotes = botesData.items.filter(
     (b) => !b.nombre.toLowerCase().includes("hipoteca")
   );
   const totalBotes = sobresBotes.reduce((acc, b) => acc + Number(b.saldo), 0);
 
-  // Conteo de botes por categoría
   const conteos = { todas: sobresBotes.length };
   for (const b of sobresBotes) {
     const c = b.categoria || "otros";
     conteos[c] = (conteos[c] || 0) + 1;
   }
 
-  // Filtrado de botes según categoría activa
-  const botesFiltrados = categoriaSeleccionada === "todas"
-    ? sobresBotes
-    : sobresBotes.filter((b) => (b.categoria || "otros") === categoriaSeleccionada);
+  const botesFiltrados =
+    categoriaSeleccionada === "todas"
+      ? sobresBotes
+      : sobresBotes.filter((b) => (b.categoria || "otros") === categoriaSeleccionada);
 
   const listaCategoriasPills = [
-    { id: "todas", nombre: "Todos", icono: icono("botes") },
-    { id: "viajes", nombre: "Viajes", icono: CATEGORIAS_BOTES.viajes.icono },
-    { id: "mantenimiento", nombre: "Mantenimiento casa", icono: CATEGORIAS_BOTES.mantenimiento.icono },
-    { id: "ropa", nombre: "Ropa", icono: CATEGORIAS_BOTES.ropa.icono },
-    { id: "dentista", nombre: "Dentista", icono: CATEGORIAS_BOTES.dentista.icono },
-    { id: "fianzas", nombre: "Fianzas", icono: CATEGORIAS_BOTES.fianzas.icono },
-    { id: "inversion", nombre: "Inversión", icono: CATEGORIAS_BOTES.inversion.icono },
-    { id: "gasolina", nombre: "Gasolina", icono: CATEGORIAS_BOTES.gasolina.icono },
-    { id: "ocio", nombre: "Ocio", icono: CATEGORIAS_BOTES.ocio.icono },
-    { id: "reserva", nombre: "Reserva y Paro", icono: CATEGORIAS_BOTES.reserva.icono },
-    { id: "personal", nombre: "Personal y Familia", icono: CATEGORIAS_BOTES.personal.icono },
-    { id: "gastos", nombre: "Gastos y Pagos", icono: CATEGORIAS_BOTES.gastos.icono },
-    { id: "otros", nombre: "Otros", icono: CATEGORIAS_BOTES.otros.icono },
+    { id: "todas", nombre: "Todos", icono: "✨" },
+    { id: "viajes", nombre: "Viajes", icono: "✈️" },
+    { id: "mantenimiento", nombre: "Mantenimiento casa", icono: "🏠" },
+    { id: "ropa", nombre: "Ropa", icono: "👕" },
+    { id: "dentista", nombre: "Dentista", icono: "🦷" },
+    { id: "fianzas", nombre: "Fianzas", icono: "🔐" },
+    { id: "inversion", nombre: "Inversión", icono: "📈" },
+    { id: "gasolina", nombre: "Gasolina", icono: "⛽" },
+    { id: "ocio", nombre: "Ocio", icono: "🍹" },
+    { id: "reserva", nombre: "Reserva y Paro", icono: "🛡️" },
+    { id: "personal", nombre: "Personal", icono: "👤" },
+    { id: "gastos", nombre: "Gastos", icono: "🔁" },
+    { id: "otros", nombre: "Otros", icono: "📦" },
   ];
 
   const pillsCategoriasHtml = listaCategoriasPills
-    .filter((c) => c.id === "todas" || (conteos[c.id] && conteos[c.id] > 0) || ["viajes", "mantenimiento", "ropa", "dentista", "fianzas", "inversion", "gasolina"].includes(c.id))
+    .filter(
+      (c) =>
+        c.id === "todas" ||
+        (conteos[c.id] && conteos[c.id] > 0) ||
+        ["viajes", "mantenimiento", "ropa", "dentista", "fianzas", "inversion", "gasolina"].includes(c.id)
+    )
     .map((c) => {
       const activo = categoriaSeleccionada === c.id;
       const count = conteos[c.id] || 0;
       return `
-        <button type="button" class="btn-cat-filter ${activo ? "activo" : ""}" data-accion="filtrar-categoria-bote" data-categoria="${c.id}">
+        <button type="button" class="glass-filter-chip ${activo ? "activo" : ""}" data-accion="filtrar-categoria-bote" data-categoria="${c.id}">
           <span>${c.icono}</span>
           <span>${esc(c.nombre)}</span>
-          <span class="cat-pill-count">${count}</span>
+          <span class="filter-chip-count">${count}</span>
         </button>
       `;
     })
@@ -401,54 +311,56 @@ export default vista("botes", async () => {
   return `
   ${subnavAhorro("botes")}
 
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Botes y Sobres de Ahorro</h2>
-      <p class="page-subtitle">Sistema de sobres virtuales categorizados por objetivo con iconos dedicados. Pulsa en un sobre para ver sus movimientos.</p>
-    </div>
-    <div class="header-total-card">
-      <span class="header-total-label">Total en Sobres y Botes</span>
-      <span class="header-total-value">${importe(totalBotes.toFixed(2))}</span>
-    </div>
+  <!-- 1. Total en Sobres Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Total en Botes y Sobres</span>
+    <div class="hero-total-amount">${importe(totalBotes.toFixed(2))}</div>
+    <span class="hero-total-sub">${sobresBotes.length} sobres y botes activos</span>
   </div>
 
-  <!-- Selector / Filtro de Categorías con Iconos -->
-  <div class="botes-cat-filter-bar">
+  <!-- 2. Filtros por Categoría como Chips Horizontales con Scroll -->
+  <div class="botes-filter-scroll" role="region" aria-label="Filtro de categorías">
     ${pillsCategoriasHtml}
   </div>
 
-  <section class="section-block">
-    <div class="grid-pots-large">
+  <!-- 3. Cuadrícula de Tarjetas Pequeñas con Anillo de Progreso -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="pots-grid-compact">
       ${
         botesFiltrados.length > 0
-          ? botesFiltrados.map(tarjetaBoteFull).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("botes")}</span>
-              <p>No tienes ningún sobre en la categoría seleccionada.</p>
-              <span class="empty-sub">Crea un bote o pulsa en "Todos" para ver el resto de tus sobres.</span>
-            </div>`
+          ? botesFiltrados.map(tarjetaBoteCompacta).join("\n")
+          : `
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("botes")}</div>
+            <h4>No hay sobres en esta categoría</h4>
+            <p>Selecciona otra categoría o crea un nuevo sobre para esta sección.</p>
+          </div>
+          `
       }
     </div>
   </section>
 
+  <!-- 4. Formulario desplegable para dar de alta nuevo sobre -->
   <section class="section-block">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
-        ${icono("plus")} Crear Nuevo Bote
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Crear Nuevo Sobre o Bote de Ahorro
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Define el objetivo, categoría y tipo de sobre para distribuir tu disponible</p>
-
+      <div class="accordion-body">
         <form data-accion="crear-bote" data-err="err-bote" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="bo-nombre" class="form-label">Nombre del Bote</label>
-              <input id="bo-nombre" name="nombre" placeholder="Ej. Viajes, Ropa, Dentista, Mantenimiento casa..." required>
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Define la meta, categoría y tipo de sobre para distribuir tu disponible mensual.
+          </p>
+
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="bo-nombre">Nombre del Bote *</label>
+              <input id="bo-nombre" name="nombre" placeholder="Ej. Viajes, Ropa, Dentista..." required>
             </div>
-            <div class="form-group">
-              <label for="bo-categoria" class="form-label">Categoría e Icono</label>
+            <div class="campo">
+              <label for="bo-categoria">Categoría</label>
               <select id="bo-categoria" name="categoria">
-                <option value="">— Detección automática según nombre —</option>
+                <option value="">— Selección —</option>
                 <option value="viajes">✈️ Viajes</option>
                 <option value="mantenimiento">🏠 Mantenimiento casa</option>
                 <option value="ropa">👕 Ropa</option>
@@ -463,33 +375,33 @@ export default vista("botes", async () => {
                 <option value="otros">📦 Otros</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="bo-tipo" class="form-label">Tipo de Sobre</label>
+            <div class="campo">
+              <label for="bo-tipo">Tipo de Sobre</label>
               <select id="bo-tipo" name="tipo" required>
                 <option value="ahorro" selected>🐷 Fondo de Ahorro</option>
-                <option value="proyecto">🎯 Proyecto / Compra Concreta</option>
+                <option value="proyecto">🎯 Proyecto Concreto</option>
                 <option value="recurrente">🔁 Gasto Recurrente Anual</option>
-                <option value="ajeno">👥 Dinero Ajeno (Fianzas / Terceros)</option>
+                <option value="ajeno">👥 Dinero Ajeno</option>
               </select>
             </div>
           </div>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="bo-objetivo" class="form-label">Meta / Objetivo (€) (Opcional)</label>
-              <input id="bo-objetivo" name="objetivo" inputmode="decimal" placeholder="Ej. 1200.00 (positivo) o -500.00 (presupuesto)">
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="bo-objetivo">Meta / Objetivo (€) (Opcional)</label>
+              <input id="bo-objetivo" name="objetivo" inputmode="decimal" placeholder="Ej. 1200.00">
             </div>
-            <div class="form-group form-span-2">
-              <label for="bo-fecha" class="form-label">Fecha Límite (Opcional)</label>
+            <div class="campo">
+              <label for="bo-fecha">Fecha Límite (Opcional)</label>
               <input id="bo-fecha" name="objetivo_fecha" type="date">
             </div>
           </div>
 
           <div id="err-bote"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
-              ${icono("plus")} Crear Bote
+              ${icono("plus")} Crear Bote de Ahorro
             </button>
           </div>
         </form>

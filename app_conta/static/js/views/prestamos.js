@@ -1,4 +1,4 @@
-// Vista de Préstamos y Deudas a Devolver (Vehículos, Personales, Hipotecas, Financiaciones)
+// Vista de Préstamos: Tarjetas minimalistas con barra de progreso fina de 4px, importe pendiente grande y % en gris
 import { vista, esc, importe, hoy, fechaCorta, icono } from "../vistas.js";
 
 const ICONOS_TIPO = {
@@ -10,30 +10,16 @@ const ICONOS_TIPO = {
 };
 
 const NOMBRES_TIPO = {
-  coche: "Vehículo / Coche",
-  personal: "Préstamo Personal",
+  coche: "Vehículo",
+  personal: "Personal",
   hipoteca: "Hipoteca",
-  consumo: "Consumo / Compra Financiada",
-  otro: "Otros Pasivos",
+  consumo: "Consumo",
+  otro: "Otros",
 };
 
-const COLORES_TIPO = {
-  coche: "#0284c7",
-  personal: "#d97706",
-  hipoteca: "#0f766e",
-  consumo: "#7c3aed",
-  otro: "#64748b",
-};
-
-function iconoTipo(tipo) {
-  return ICONOS_TIPO[tipo] || ICONOS_TIPO.otro;
-}
-
-function tarjetaPrestamo(p, cuentas) {
-  const colorTipo = COLORES_TIPO[p.tipo] || "#0284c7";
-  const nombreTipo = NOMBRES_TIPO[p.tipo] || p.tipo;
-  const pagadoCompletamente = p.importe_pendiente_centimos === 0;
-  const cuentaVinculada = cuentas.find((c) => c.id === p.cuenta_id);
+function tarjetaPrestamoMinimal(p, cuentas) {
+  const pagado = p.importe_pendiente_centimos === 0;
+  const pct = Math.min(100, Math.max(0, p.progreso_amortizado_pct || 0));
 
   const opcionesCuentas = cuentas
     .map(
@@ -43,125 +29,86 @@ function tarjetaPrestamo(p, cuentas) {
     .join("");
 
   return `
-    <article class="card-loan-full" style="--accent-color: ${colorTipo}">
-      <div class="card-loan-top">
-        <div class="loan-icon-wrap" style="background: ${colorTipo}18; color: ${colorTipo};">
-          ${iconoTipo(p.tipo)}
+    <article class="glass-loan-card">
+      <div class="loan-card-top">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="acc-card-icon-wrap" style="color: var(--accent); width: 38px; height: 38px;">
+            ${ICONOS_TIPO[p.tipo] || ICONOS_TIPO.otro}
+          </div>
+          <div class="loan-card-title-group">
+            <h3 class="loan-card-title">${esc(p.nombre)}</h3>
+            <span class="loan-card-entity">${esc(p.entidad)} · ${NOMBRES_TIPO[p.tipo] || p.tipo}</span>
+          </div>
         </div>
-        <div class="loan-tags-wrap">
-          <span class="badge-tag" style="background: ${colorTipo}18; color: ${colorTipo}; border-color: ${colorTipo}35;">
-            ${esc(nombreTipo)}
-          </span>
-          <span class="badge-subtle">${esc(p.entidad)}</span>
-          ${
-            pagadoCompletamente
-              ? `<span class="badge-tag ok">${icono("check")} Amortizado 100%</span>`
-              : `<span class="badge-tag neutral">${p.progreso_amortizado_pct}% amortizado</span>`
-          }
-          <div class="loan-card-actions">
-            <button class="btn-action-icon" data-accion="editar-prestamo" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-pendiente="${p.importe_pendiente}" data-cuota="${p.cuota_mensual || ""}" title="Editar capital pendiente o cuota">
-              ${icono("editar")}
+
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(p.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
+          </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" style="color: var(--fg);" data-accion="editar-prestamo" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-pendiente="${p.importe_pendiente}" data-cuota="${p.cuota_mensual || ""}">
+              ${icono("editar")} Ajustar capital / cuota
             </button>
-            <button class="btn-action-icon delete" data-accion="borrar-prestamo" data-id="${p.id}" data-nombre="${esc(p.nombre)}" title="Eliminar préstamo">
-              ${icono("borrar")}
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-prestamo" data-id="${p.id}" data-nombre="${esc(p.nombre)}">
+              ${icono("borrar")} Eliminar préstamo
             </button>
           </div>
         </div>
       </div>
 
-      <div class="card-loan-body">
-        <h3 class="loan-title">${esc(p.nombre)}</h3>
-        <div class="loan-meta">
-          <span class="meta-item">${icono("calendario")} Inicio: ${fechaCorta(p.fecha_inicio)}</span>
-          ${
-            p.fecha_fin
-              ? `<span class="meta-item">${icono("calendario")} Vencimiento: ${fechaCorta(p.fecha_fin)}</span>`
-              : ""
-          }
-          ${
-            cuentaVinculada
-              ? `<span class="meta-item">${icono("banco")} Cargo habitual: ${esc(cuentaVinculada.nombre)}</span>`
-              : ""
-          }
-        </div>
-        ${p.notas ? `<p class="loan-notes">${esc(p.notas)}</p>` : ""}
+      <div class="loan-pending-block">
+        <span class="loan-pending-label">Capital pendiente</span>
+        <div class="loan-pending-val">${pagado ? "0,00 €" : importe(p.importe_pendiente)}</div>
       </div>
 
-      <!-- Métricas Clave del Préstamo -->
-      <div class="card-loan-metrics">
-        <div class="metric-box primary">
-          <span class="metric-label">Capital Pendiente de Devolver</span>
-          <div class="metric-value-huge ${pagadoCompletamente ? "ok" : "negativo"}">
-            ${pagadoCompletamente ? "0,00 €" : importe(p.importe_pendiente, "negativo")}
-          </div>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Financiado Inicial</span>
-          <div class="metric-value">${importe(p.importe_inicial)}</div>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Amortizado Acumulado</span>
-          <div class="metric-value positivo">${importe(p.amortizado)}</div>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Cuota Mensual</span>
-          <div class="metric-value">
-            ${p.cuota_mensual ? `${importe(p.cuota_mensual)} <span class="cuota-sub">/ mes</span>` : "—"}
-          </div>
-        </div>
+      <!-- Barra de progreso fina (4px) -->
+      <div class="loan-progress-track">
+        <div class="loan-progress-fill" style="width: ${pct}%;"></div>
       </div>
 
-      <!-- Barra de Progreso de Amortización -->
-      <div class="loan-progress-wrap">
-        <div class="progress-bar ${pagadoCompletamente ? "over" : ""}">
-          <div class="progress-fill" style="width: ${Math.min(100, p.progreso_amortizado_pct)}%; background: ${pagadoCompletamente ? "var(--accent-positive)" : colorTipo};"></div>
-        </div>
-        <div class="progress-labels">
-          <span class="progreso-txt">${p.progreso_amortizado_pct}% pagado (${p.amortizado} € de ${p.importe_inicial} €)</span>
-          <span class="pendiente-txt ${pagadoCompletamente ? "ok" : "negativo"}">${pagadoCompletamente ? "Deuda saldada" : `Resta: ${importe(p.importe_pendiente, "negativo")}`}</span>
-        </div>
+      <!-- Metadatos en gris (cuota mensual y % amortizado) -->
+      <div class="loan-card-bottom-meta">
+        <span class="loan-monthly-fee">${p.cuota_mensual ? `${importe(p.cuota_mensual)} / mes` : "Sin cuota fija"}</span>
+        <span class="loan-pct-amortized">${pct}% amortizado (${importe(p.amortizado)})</span>
       </div>
 
-      <!-- Acciones de Pago / Amortización -->
+      <!-- Desplegable sutil para amortizar cuota -->
       ${
-        !pagadoCompletamente
+        !pagado
           ? `
-      <div class="card-loan-footer">
-        <details class="loan-operar-details">
-          <summary class="btn-operar-trigger">
-            ${icono("plus")} Amortizar o Registrar Pago de Cuota
-          </summary>
-          <div class="loan-form-container">
-            <form data-accion="pagar-prestamo" data-id="${p.id}" class="loan-mini-form">
-              <h5 class="mini-form-title">Registrar pago parcial o cuota mensual</h5>
-              <div class="loan-form-row">
-                <div class="loan-field">
-                  <label>Importe a descontar de la deuda (€)</label>
-                  <input name="importe" inputmode="decimal" value="${p.cuota_mensual || ""}" placeholder="250.00" required>
+        <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--divider);">
+          <details class="loan-pay-details">
+            <summary style="font-size: 0.78rem; color: var(--accent-text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500;">
+              ${icono("plus")} Amortizar cuota
+            </summary>
+            <form data-accion="pagar-prestamo" data-id="${p.id}" class="fintech-form" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <div class="form-grid-2">
+                <div class="campo">
+                  <label style="font-size: 0.74rem;">Importe (€)</label>
+                  <input name="importe" inputmode="decimal" value="${p.cuota_mensual || ""}" placeholder="250.00" required style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
                 </div>
-                <div class="loan-field">
-                  <label>Descontar de cuenta bancaria</label>
-                  <select name="cuenta_id">
-                    <option value="">— No crear apunte contable en banco —</option>
+                <div class="campo">
+                  <label style="font-size: 0.74rem;">Descontar de</label>
+                  <select name="cuenta_id" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                    <option value="">— Sin apunte en cuenta —</option>
                     ${opcionesCuentas}
                   </select>
                 </div>
               </div>
-              <div class="loan-form-row">
-                <div class="loan-field">
-                  <label>Concepto en el movimiento</label>
-                  <input name="concepto" value="Cuota mensual ${esc(p.nombre)}" placeholder="Ej: Cuota coche">
-                </div>
-                <div class="loan-field">
-                  <label>Fecha de pago</label>
-                  <input type="date" name="fecha" value="${hoy()}">
-                </div>
+              <div class="campo">
+                <label style="font-size: 0.74rem;">Concepto</label>
+                <input name="concepto" value="Cuota mensual ${esc(p.nombre)}" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
               </div>
-              <button type="submit" class="btn-primary mini">Confirmar pago y amortizar</button>
+              <button type="submit" class="btn-primary" style="align-self: flex-end; font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+                Confirmar amortización
+              </button>
             </form>
-          </div>
-        </details>
-      </div>
+          </details>
+        </div>
       `
           : ""
       }
@@ -175,162 +122,110 @@ export default vista("prestamos", async () => {
     API.get("/cuentas"),
   ]);
 
-  const cuentas = (cuentasData.items || []).filter(
-    (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
-  );
-
-  const opcionesCuentas = cuentas
-    .map((c) => `<option value="${c.id}">${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
-    .join("");
-
   const items = data.items || [];
+  const cuentas = cuentasData.items || [];
 
   return `
-    <div class="page-header-row">
-      <div>
-        <h2 class="page-title">Préstamos y Financiaciones</h2>
-        <p class="page-subtitle">Control de vehículos, deudas personales, hipotecas y compras financiadas</p>
-      </div>
-      <div class="header-total-card">
-        <span class="header-total-label">Deuda Pendiente Total</span>
-        <span class="header-total-value negativo">${importe(data.total_deuda_pendiente, "negativo")}</span>
-      </div>
-    </div>
+  <!-- 1. Total Pendiente Arriba -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">Deuda Total Pendiente en Préstamos</span>
+    <div class="hero-total-amount text-neg">${importe(data.total_pendiente)}</div>
+    <span class="hero-total-sub">${items.length} préstamos activos · Cuota mensual consolidada: ${importe(data.total_cuotas_mensuales)}</span>
+  </div>
 
-    <!-- Hero KPIs de Pasivos -->
-    <div class="loan-hero-grid">
-      <div class="loan-kpi-card">
-        <span class="kpi-label">Deuda Total Pendiente</span>
-        <span class="kpi-value-main negativo">${importe(data.total_deuda_pendiente, "negativo")}</span>
-        <span class="kpi-sub">Total pendiente de devolver hoy</span>
-      </div>
-
-      <div class="loan-kpi-card">
-        <span class="kpi-label">Capital Financiado Inicial</span>
-        <span class="kpi-value">${importe(data.total_financiado)}</span>
-        <span class="kpi-sub">Préstamos originales acumulados</span>
-      </div>
-
-      <div class="loan-kpi-card">
-        <span class="kpi-label">Amortizado Acumulado</span>
-        <span class="kpi-value positivo">${importe(data.total_amortizado)}</span>
-        <span class="kpi-sub">Capital ya devuelto con éxito</span>
-      </div>
-
-      <div class="loan-kpi-card">
-        <span class="kpi-label">Progreso de Amortización</span>
-        <div class="kpi-roi-pill positivo">
-          ${data.progreso_global_pct}% devuelto
-        </div>
-        <span class="kpi-sub">Cuota total: ${importe(data.cuota_mensual_total)} / mes</span>
-      </div>
-    </div>
-
-    <!-- Listado de Préstamos -->
-    <section class="section-block">
-      <div class="section-title-row">
-        <h3 class="section-title">Préstamos y Deudas Activas</h3>
-        <span class="section-meta">${items.length} ${items.length === 1 ? "préstamo registrado" : "préstamos registrados"}</span>
-      </div>
-
+  <!-- 2. Cuadrícula de Tarjetas Minimalistas -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="loans-grid">
       ${
         items.length > 0
-          ? `<div class="loans-grid">${items.map((p) => tarjetaPrestamo(p, cuentas)).join("")}</div>`
+          ? items.map((p) => tarjetaPrestamoMinimal(p, cuentas)).join("\n")
           : `
-          <div class="empty-state">
-            <span class="empty-icon">${icono("coche")}</span>
+          <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
+            <div class="tarjeta-vacia-icon">${icono("prestamo")}</div>
             <h4>No tienes préstamos registrados</h4>
-            <p>Registra deudas a devolver (por ejemplo, lo que debes del coche, préstamos personales o hipotecas) para ver el progreso de amortización y las cuotas mensuales.</p>
+            <p>No hay deudas ni pasivos pendientes. Añade un préstamo si financias un vehículo, hipoteca o compra a plazos.</p>
           </div>
           `
       }
-    </section>
+    </div>
+  </section>
 
-    <!-- Acordeón para Alta de Nuevo Préstamo -->
-    <section class="section-block">
-      <details class="accordion-panel" id="panel-nuevo-prestamo">
-        <summary class="accordion-summary">
-          <span class="accordion-title">${icono("plus")} Dar de alta un nuevo préstamo o financiación</span>
-          <span class="accordion-hint">Coche, préstamo personal, hipoteca o consumo</span>
-        </summary>
-        <div class="accordion-body">
-          <form data-accion="crear-prestamo" class="form-fintech">
-            <div class="form-grid-3">
-              <div class="form-field">
-                <label>Concepto o Nombre *</label>
-                <input name="nombre" placeholder="Ej: Coche Peugeot, Moto, Reforma" required>
-              </div>
+  <!-- 3. Formulario desplegable para nuevo préstamo -->
+  <section class="section-block">
+    <details class="glass-accordion">
+      <summary>
+        ${icono("plus")} Dar de Alta Nuevo Préstamo o Financiación
+      </summary>
+      <div class="accordion-body">
+        <form data-accion="crear-prestamo" data-err="err-prestamo" class="fintech-form">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Registra una deuda bancaria, financiación de vehículo, hipoteca o compra financiada.
+          </p>
 
-              <div class="form-field">
-                <label>Entidad Prestamista / Financiera *</label>
-                <input name="entidad" placeholder="Ej: Stellantis, Santander, BBVA" required>
-              </div>
-
-              <div class="form-field">
-                <label>Tipo de Préstamo *</label>
-                <select name="tipo" required>
-                  <option value="coche" selected>🚗 Vehículo / Coche</option>
-                  <option value="personal">👤 Préstamo Personal</option>
-                  <option value="hipoteca">🏠 Hipoteca Inmobiliaria</option>
-                  <option value="consumo">💳 Consumo / Tarjeta Financiada</option>
-                  <option value="otro">📦 Otro</option>
-                </select>
-              </div>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="pr-nombre">Nombre del Préstamo *</label>
+              <input id="pr-nombre" name="nombre" placeholder="Ej. Financiación Coche, Préstamo Reforma..." required>
             </div>
-
-            <div class="form-grid-3">
-              <div class="form-field">
-                <label>Capital Financiado Inicial (€) *</label>
-                <input name="importe_inicial" inputmode="decimal" placeholder="18500.00" required>
-              </div>
-
-              <div class="form-field">
-                <label>Capital Pendiente Actual (€)</label>
-                <input name="importe_pendiente" inputmode="decimal" placeholder="Si es nuevo, dejar vacío">
-                <span class="field-hint">Si ya llevas un tiempo pagándolo, indica la deuda restante hoy.</span>
-              </div>
-
-              <div class="form-field">
-                <label>Cuota Mensual (€)</label>
-                <input name="cuota_mensual" inputmode="decimal" placeholder="245.50">
-                <span class="field-hint">Opcional. Para prever el compromiso mensual.</span>
-              </div>
+            <div class="campo">
+              <label for="pr-entidad">Entidad Financiera *</label>
+              <input id="pr-entidad" name="entidad" placeholder="Ej. Santander Consumer, CaixaBank..." required>
             </div>
-
-            <div class="form-grid-3">
-              <div class="form-field">
-                <label>Cuenta Bancaria Habitual de Cargo</label>
-                <select name="cuenta_id">
-                  <option value="">— Ninguna o sin asociar —</option>
-                  ${opcionesCuentas}
-                </select>
-              </div>
-
-              <div class="form-field">
-                <label>Fecha de Inicio *</label>
-                <input type="date" name="fecha_inicio" value="${hoy()}" required>
-              </div>
-
-              <div class="form-field">
-                <label>Fecha Estimada de Fin / Vencimiento</label>
-                <input type="date" name="fecha_fin">
-              </div>
+            <div class="campo">
+              <label for="pr-tipo">Tipo de Préstamo</label>
+              <select id="pr-tipo" name="tipo" required>
+                <option value="coche" selected>🚗 Vehículo / Coche</option>
+                <option value="personal">👤 Personal</option>
+                <option value="hipoteca">🏠 Hipoteca</option>
+                <option value="consumo">🛍️ Compra Financiada</option>
+                <option value="otro">📦 Otro</option>
+              </select>
             </div>
+          </div>
 
-            <div class="form-grid-1">
-              <div class="form-field">
-                <label>Notas u Observaciones</label>
-                <textarea name="notas" rows="2" placeholder="Detalles de la financiación, TIN, número de contrato, etc."></textarea>
-              </div>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="pr-inicial">Importe Financiado Inicial (€) *</label>
+              <input id="pr-inicial" name="importe_inicial" inputmode="decimal" placeholder="15000.00" required>
             </div>
+            <div class="campo">
+              <label for="pr-pendiente">Capital Pendiente Actual (€)</label>
+              <input id="pr-pendiente" name="importe_pendiente" inputmode="decimal" placeholder="Dejar vacío si es igual al inicial">
+            </div>
+            <div class="campo">
+              <label for="pr-cuota">Cuota Mensual (€)</label>
+              <input id="pr-cuota" name="cuota_mensual" inputmode="decimal" placeholder="250.00">
+            </div>
+          </div>
 
-            <div class="form-actions-row">
-              <button type="submit" class="btn-primary">Registrar Préstamo</button>
+          <div class="form-grid-3">
+            <div class="campo">
+              <label for="pr-cuenta">Cuenta habitual de cargo</label>
+              <select id="pr-cuenta" name="cuenta_id">
+                <option value="">— Ninguna vinculada —</option>
+                ${cuentas.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}
+              </select>
             </div>
-          </form>
-        </div>
-      </details>
-    </section>
+            <div class="campo">
+              <label for="pr-inicio">Fecha de Inicio</label>
+              <input id="pr-inicio" name="fecha_inicio" type="date" value="${hoy()}">
+            </div>
+            <div class="campo">
+              <label for="pr-fin">Fecha de Vencimiento (Opcional)</label>
+              <input id="pr-fin" name="fecha_fin" type="date">
+            </div>
+          </div>
+
+          <div id="err-prestamo"></div>
+
+          <div class="form-actions" style="margin-top: 1.25rem;">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Crear Préstamo
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
+  </section>
   `;
 });
-
