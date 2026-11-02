@@ -803,6 +803,17 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - **165 tests en verde (`uv run pytest`)**, 0 fallos, 88% de cobertura global.
   - Ruff linter 100% limpio en todo el proyecto.
 
+### 22. Descuento Directo de Deuda DAZN en Reparto Mensual (2026-11-02)
+
+- **Corrección de Lógica de Negocio en DAZN**:
+  - El usuario aclaró que la cuota mensual de DAZN (10,00 €) no es una acumulación en un sobre propio, sino la amortización / cobro mensual de la deuda que DAZN tiene pendiente en «Dinero que me deben» (`deudas.id = 6`, saldo inicial 60,00 €).
+- **Backend & Base de Datos**:
+  - **Migración de datos**: El movimiento #36 (10,00 €) quedó desvinculado de bote (`bote_id = None`), se amortizó la deuda de DAZN (#6) sumando 10,00 € a `importe_cobrado_centimos` (dejando pendiente 50,00 €), y se eliminó el bote ficticio #24 (`Bote DAZN`).
+  - **Plantillas**: La línea #8 del Reparto Mensual Hogar se actualizó a `Cuota DAZN (Descontar de lo que debe DAZN)` con `bote_id = None`.
+  - **Ejecución de reparto** (`plantillas_reparto.py`): Al ejecutar el reparto mensual, la cuota de DAZN busca automáticamente la deuda de DAZN activa y suma los 10,00 € a `importe_cobrado_centimos`, saldándola si llega al total.
+  - **Conciliación** (`conciliacion.py`): La línea de DAZN se filtra de `sin_asignar_formula` para evitar doble cómputo con la reducción de `tot_me_deben_formula`, garantizando un cuadre absoluto a 0,00 € de descuadre.
+- **Tests**: Nueva prueba unitaria y de API `test_reparto_hogar_descuenta_deuda_dazn`. **166 tests en verde**, 0 fallos, ruff 100% limpio.
+
 
 
 

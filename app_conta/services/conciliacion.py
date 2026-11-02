@@ -131,19 +131,20 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     )
     centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
 
-    # Movimientos sin asignar: filtramos líneas de nómina que amortizan préstamos
-    # o aportan a previsión para evitar doble cómputo con tot_prevision_formula
-    # y tot_prestamos_formula
+    # Movimientos sin asignar: filtramos líneas de nómina que amortizan préstamos,
+    # cobran deudas (DAZN) o aportan a previsión para evitar doble cómputo con
+    # tot_prevision_formula, tot_prestamos_formula y tot_me_deben_formula
     movs_sin_bote = [m for m in movimientos if m.bote_id is None]
 
-    def _es_prev_o_prestamo(m: Movimiento) -> bool:
+    def _es_prev_prestamo_o_deuda(m: Movimiento) -> bool:
         desc = (m.descripcion or "").lower()
         es_prev = "previsi" in desc or "seguros e ibi" in desc or "gastos anuales" in desc
         es_prestamo = "coche" in desc or "prstamo" in desc or "prestamo" in desc
-        return es_prev or es_prestamo
+        es_dazn = "dazn" in desc
+        return es_prev or es_prestamo or es_dazn
 
     sin_asignar_formula = sum(
-        m.importe_centimos for m in movs_sin_bote if not _es_prev_o_prestamo(m)
+        m.importe_centimos for m in movs_sin_bote if not _es_prev_prestamo_o_deuda(m)
     )
 
     # Total teórico antes de ajustes. Incluye dinero sin asignar

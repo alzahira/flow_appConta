@@ -351,3 +351,65 @@ def test_reparto_avisa_bote_negativo_y_protege_duplicado(client):
     assert r3.json()["movimientos_count"] == 1
 
 
+def test_reparto_hogar_descuenta_deuda_dazn(client):
+    """Verifica que la línea de DAZN en el reparto descuenta de la deuda pendiente de DAZN."""
+    # 1. Crear deuda DAZN de 60.00 €
+    r_deuda = client.post(
+        "/api/v1/deudas",
+        json={
+            "deudor": "Dazn Suscripción",
+            "concepto": "A descontar cada mes 10€",
+            "importe": "60.00",
+            "fecha": "2026-10-01",
+        },
+    )
+    assert r_deuda.status_code == 201
+    deuda_id = r_deuda.json()["id"]
+
+    # 2. Crear cuenta DB
+    r_cta = client.post(
+        "/api/v1/cuentas",
+        json={
+            "nombre": "Deutsche Bank Test",
+            "tipo": "banco",
+            "saldo_inicial": "100.00",
+            "fecha_apertura": "2026-01-01",
+        },
+    )
+    assert r_cta.status_code == 201
+    cuenta_id = r_cta.json()["id"]
+
+    # 3. Crear plantilla con línea DAZN
+    r_p = client.post(
+        "/api/v1/plantillas-reparto",
+        json={
+            "nombre": "Reparto DAZN Test",
+            "cuenta_id": cuenta_id,
+            "importe_estimado": "10.00",
+            "lineas": [
+                {
+                    "bote_id": None,
+                    "concepto": "Cuota DAZN (Descontar de lo que debe DAZN)",
+                    "importe": "10.00",
+                },
+            ],
+        },
+    )
+    assert r_p.status_code == 201
+    p_id = r_p.json()["id"]
+
+    # 4. Ejecutar el reparto
+    r_ej = client.post(
+        f"/api/v1/plantillas-reparto/{p_id}/ejecutar",
+        json={"fecha": "2026-11-01", "descripcion_general": "Reparto DAZN Test"},
+    )
+    assert r_ej.status_code == 200
+
+    # 5. Comprobar que la deuda de DAZN se ha descontado en 10.00 € (pendiente: 50.00 €)
+    d_despues = client.get(f"/api/v1/deudas/{deuda_id}").json()
+    assert d_despues["importe_cobrado"] == "10.00"
+    assert d_despues["importe_pendiente"] == "50.00"
+    assert d_despues["estado"] == "pendiente"
+
+
+

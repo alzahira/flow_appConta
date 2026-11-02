@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app_conta.models.bote import Bote
 from app_conta.models.cuenta import Cuenta
+from app_conta.models.deuda import Deuda
 from app_conta.models.gasto_recurrente import PrevisionGastosConfig
 from app_conta.models.movimiento import Movimiento
 from app_conta.models.plantilla_reparto import PlantillaReparto, PlantillaRepartoLinea
@@ -110,7 +111,6 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
         return nuevo
 
     bote_hipoteca = obtener_o_crear_bote("Amortización Hipoteca", "ahorro")
-    bote_dazn = obtener_o_crear_bote("Bote DAZN", "recurrente", "suscripciones")
     bote_emergencias = obtener_o_crear_bote("Bote emergencias", "ahorro", "ahorro")
     bote_arreglos = obtener_o_crear_bote("Bote Arreglos Pisos", "proyecto")
     bote_ocio = obtener_o_crear_bote("Bote ocio", "ahorro")
@@ -163,9 +163,9 @@ def sembrar_plantillas_defecto(db: Session, hogar_id: int) -> list[PlantillaRepa
             "importe": "100.00",
         },
         {
-            "bote_id": bote_dazn.id,
+            "bote_id": None,
             "cuenta_id": cta_db.id,
-            "concepto": "Cuota DAZN",
+            "concepto": "Cuota DAZN (Descontar de lo que debe DAZN)",
             "importe": "10.00",
         },
         {
@@ -642,6 +642,24 @@ def ejecutar_reparto(
                 )
                 if prestamo_coche.importe_pendiente_centimos == 0:
                     prestamo_coche.activo = False
+
+        # 3. Si la línea es de DAZN: descontar directamente de la deuda de DAZN
+        if "dazn" in concepto_low:
+            deuda_dazn = db.scalar(
+                select(Deuda).where(
+                    Deuda.hogar_id == cuenta.hogar_id,
+                    Deuda.archivada.is_(False),
+                    Deuda.estado != "saldado",
+                    (Deuda.deudor.ilike("%dazn%") | Deuda.concepto.ilike("%dazn%")),
+                )
+            )
+            if deuda_dazn:
+                deuda_dazn.importe_cobrado_centimos = min(
+                    deuda_dazn.importe_inicial_centimos,
+                    deuda_dazn.importe_cobrado_centimos + item["centimos"],
+                )
+                if deuda_dazn.importe_cobrado_centimos >= deuda_dazn.importe_inicial_centimos:
+                    deuda_dazn.estado = "saldado"
 
     db.commit()
 
