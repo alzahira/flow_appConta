@@ -1423,6 +1423,189 @@ export async function abrirModalDesgloseCuadre() {
 }
 
 // --------------------------------------------------------------------------
+// 5. MODAL LIQUIDAR RECIBO DE TARJETA EN BANCO
+// --------------------------------------------------------------------------
+export async function abrirModalLiquidarTarjeta(tarjetaIdPorDefecto = null) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando cuentas para liquidación...</div>
+    </div>
+  `;
+
+  try {
+    const dataCuentas = await API.get("/cuentas");
+    const items = dataCuentas.items || [];
+
+    // Tarjetas bancarias (excluyendo regalo)
+    const tarjetas = items.filter(
+      (c) =>
+        (c.tipo === "tarjeta" || (c.nombre || "").toUpperCase().startsWith("TARJETA")) &&
+        !c.entidad?.toLowerCase().includes("regalo") &&
+        !c.nombre?.toLowerCase().includes("regalo")
+    );
+
+    // Cuentas de cargo (bancos o efectivo)
+    const cuentasBanco = items.filter(
+      (c) => c.tipo === "banco" || c.tipo === "efectivo"
+    );
+
+    if (tarjetas.length === 0) {
+      overlay.innerHTML = `
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Liquidar Recibo de Tarjeta</h3>
+            <button type="button" class="modal-btn-close" id="btn-cerrar-liq">&times;</button>
+          </div>
+          <p style="padding: 1.5rem; color: var(--text-secondary);">No tienes tarjetas bancarias registradas.</p>
+        </div>
+      `;
+      overlay.querySelector("#btn-cerrar-liq")?.addEventListener("click", cerrarModalActivo);
+      return;
+    }
+
+    let tarjetaSel = tarjetas.find((t) => t.id === Number(tarjetaIdPorDefecto)) || tarjetas[0];
+
+    function generarHtmlForm(tarjetaActual) {
+      const saldoAbs = Math.abs(Number(tarjetaActual.saldo || 0)).toFixed(2);
+      const opcionesTarjetas = tarjetas
+        .map(
+          (t) =>
+            `<option value="${t.id}" ${t.id === tarjetaActual.id ? "selected" : ""}>${esc(t.nombre)} (Gastado: ${importe(t.saldo)})</option>`
+        )
+        .join("");
+
+      const opcionesBancos = cuentasBanco
+        .map(
+          (b) =>
+            `<option value="${b.id}">${esc(b.nombre)} (${esc(b.entidad || "Banco")}) — Saldo: ${importe(b.saldo)}</option>`
+        )
+        .join("");
+
+      return `
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-title-wrap">
+              <span class="modal-badge ok">💳 LIQUIDACIÓN BANCARIA</span>
+              <h3 class="modal-title">Liquidar Recibo de ${esc(tarjetaActual.nombre)}</h3>
+              <p class="modal-subtitle">
+                Abona la deuda acumulada de la tarjeta descontando el cargo de tu cuenta bancaria.
+              </p>
+            </div>
+            <button type="button" class="modal-btn-close" id="btn-cerrar-liq">&times;</button>
+          </div>
+
+          <form id="form-liquidar-tarjeta" class="fintech-form" style="padding: 1.25rem 1.75rem;">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label" for="liq-tarjeta-id">Tarjeta a liquidar</label>
+              <select id="liq-tarjeta-id" name="tarjeta_id" required>
+                ${opcionesTarjetas}
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label" for="liq-cuenta-origen">Cuenta bancaria de cobro (de donde sale el dinero)</label>
+              <select id="liq-cuenta-origen" name="cuenta_origen_id" required>
+                ${opcionesBancos}
+              </select>
+            </div>
+
+            <div class="form-row-grid" style="margin-bottom: 1rem;">
+              <div class="form-group form-span-2">
+                <label class="form-label" for="liq-importe">Importe exacto a liquidar (€)</label>
+                <input id="liq-importe" name="importe" type="text" inputmode="decimal" value="${saldoAbs}" required>
+                <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.25rem; display: block;">
+                  💡 Modifica este importe si tu banco te cobra una cantidad distinta (compras después de corte que quedan para el mes que viene).
+                </small>
+              </div>
+
+              <div class="form-group form-span-2">
+                <label class="form-label" for="liq-fecha">Fecha del cargo bancario</label>
+                <input id="liq-fecha" name="fecha" type="date" value="${hoy()}" required>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label" for="liq-concepto">Concepto en extracto bancario</label>
+              <input id="liq-concepto" name="concepto" type="text" value="Liquidación recibo ${esc(tarjetaActual.nombre)}">
+            </div>
+
+            <div style="background: rgba(99, 102, 241, 0.08); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.84rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1.25rem;">
+              💡 <strong>Sin doble gasto:</strong> Los gastos individuales ya se descontaron de sus sobres al hacer las compras diarias. Esta liquidación solo traslada los fondos del banco a la tarjeta para saldar la deuda.
+            </div>
+
+            <div id="liq-err" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+
+            <div class="modal-footer" style="padding: 0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+              <button type="button" class="btn-secondary" id="btn-cancelar-liq">Cancelar</button>
+              <button type="submit" class="btn-primary" id="btn-submit-liq">
+                💳 Confirmar Pago del Recibo
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    function renderizarForm() {
+      overlay.innerHTML = generarHtmlForm(tarjetaSel);
+
+      overlay.querySelector("#btn-cerrar-liq")?.addEventListener("click", cerrarModalActivo);
+      overlay.querySelector("#btn-cancelar-liq")?.addEventListener("click", cerrarModalActivo);
+
+      const selTarjeta = overlay.querySelector("#liq-tarjeta-id");
+      selTarjeta?.addEventListener("change", (e) => {
+        const id = Number(e.target.value);
+        tarjetaSel = tarjetas.find((t) => t.id === id) || tarjetaSel;
+        renderizarForm();
+      });
+
+      const form = overlay.querySelector("#form-liquidar-tarjeta");
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errBox = overlay.querySelector("#liq-err");
+        const btnSub = overlay.querySelector("#btn-submit-liq");
+        errBox.style.display = "none";
+        btnSub.disabled = true;
+        btnSub.textContent = "Procesando liquidación...";
+
+        const formData = new FormData(form);
+        const tarjetaId = Number(formData.get("tarjeta_id"));
+        const payload = {
+          cuenta_origen_id: Number(formData.get("cuenta_origen_id")),
+          importe: formData.get("importe"),
+          fecha: formData.get("fecha"),
+          concepto: formData.get("concepto"),
+        };
+
+        try {
+          await API.post(`/cuentas/${tarjetaId}/liquidar`, payload);
+          cerrarModalActivo();
+          window.dispatchEvent(new CustomEvent("hashchange"));
+        } catch (err) {
+          btnSub.disabled = false;
+          btnSub.textContent = "💳 Confirmar Pago del Recibo";
+          errBox.textContent = err.message || "Error al procesar la liquidación.";
+          errBox.style.display = "block";
+        }
+      });
+    }
+
+    renderizarForm();
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Error</h3>
+          <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
+        </div>
+        <p style="color: #ef4444; padding: 1rem;">No se pudieron cargar las tarjetas: ${err.message}</p>
+      </div>
+    `;
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {
@@ -1444,6 +1627,9 @@ export function iniciarModalesAcciones() {
       abrirModalPlantillasNomina();
     } else if (accion === "ver-cuadre") {
       abrirModalDesgloseCuadre();
+    } else if (accion === "liquidar-tarjeta") {
+      const tarjetaId = btnAccion.dataset.tarjetaId ? Number(btnAccion.dataset.tarjetaId) : null;
+      abrirModalLiquidarTarjeta(tarjetaId);
     }
   });
 }

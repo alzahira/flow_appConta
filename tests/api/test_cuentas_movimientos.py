@@ -20,8 +20,10 @@ _CUENTA_BASE = {
 }
 
 
-def _crear_cuenta(client, nombre: str, saldo_inicial: str = "1000.00") -> dict:
-    payload = {**_CUENTA_BASE, "nombre": nombre, "saldo_inicial": saldo_inicial}
+def _crear_cuenta(
+    client, nombre: str, saldo_inicial: str = "1000.00", tipo: str = "banco"
+) -> dict:
+    payload = {**_CUENTA_BASE, "nombre": nombre, "saldo_inicial": saldo_inicial, "tipo": tipo}
     resp = client.post("/api/v1/cuentas", json=payload)
     assert resp.status_code == 201, resp.text
     return resp.json()
@@ -261,3 +263,55 @@ class TestMovimientosContract:
 
         lista = client.get("/api/v1/movimientos", params={"cuenta": cuenta["id"]})
         assert len(lista.json()["items"]) == 0  # borrado lógico: fuera del listado
+
+    def test_liquidar_tarjeta_parcial_y_total(self, client):
+        # 1. Banco con 1000 € y Tarjeta con 0 €
+        banco = _crear_cuenta(
+            client, "Banco Caixa Liquidar", saldo_inicial="1000.00", tipo="banco"
+        )
+        tarjeta = _crear_cuenta(
+            client, "Tarjeta Pass Liquidar", saldo_inicial="0.00", tipo="tarjeta"
+        )
+
+        # 2. Gastos en tarjeta: 145 € (saldo -145.00 €)
+        _crear_movimiento(client, tarjeta["id"], "-145.00", "Compra Carrefour")
+        resp_t = client.get(f"/api/v1/cuentas/{tarjeta['id']}")
+        assert resp_t.json()["saldo"] == "-145.00"
+
+        # 3. Liquidación parcial: usuario indica que le cobran 115 € (quedan 30 € pendientes)
+        resp_liq = client.post(
+            f"/api/v1/cuentas/{tarjeta['id']}/liquidar",
+            json={
+                "cuenta_origen_id": banco["id"],
+                "importe": "115.00",
+                "concepto": "Recibo mensual Carrefour",
+                "fecha": "2026-11-02",
+            },
+        )
+        assert resp_liq.status_code == 201, resp_liq.text
+        data = resp_liq.json()
+        assert data["saldo_tarjeta"] == "-30.00"
+        assert data["saldo_banco"] == "885.00"
+
+        # 4. Liquidar los 30 € restantes
+        resp_liq2 = client.post(
+            f"/api/v1/cuentas/{tarjeta['id']}/liquidar",
+            json={
+                "cuenta_origen_id": banco["id"],
+                "importe": "30.00",
+            },
+        )
+        assert resp_liq2.status_code == 201
+        assert resp_liq2.json()["saldo_tarjeta"] == "0.00"
+        assert resp_liq2.json()["saldo_banco"] == "855.00"
+
+        # 5. Validación: importe inválido o <= 0 devuelve 400
+        resp_bad = client.post(
+            f"/api/v1/cuentas/{tarjeta['id']}/liquidar",
+            json={
+                "cuenta_origen_id": banco["id"],
+                "importe": "0.00",
+            },
+        )
+        assert resp_bad.status_code == 400
+

@@ -9,12 +9,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app_conta.db import get_db
 from app_conta.models.cuenta import Cuenta
+from app_conta.models.movimiento import Movimiento
 from app_conta.services.cuentas import (
     crear_cuenta,
     editar_cuenta,
@@ -24,7 +25,7 @@ from app_conta.services.cuentas import (
     obtener_cuenta,
     obtener_hogar_unico,
 )
-from app_conta.services.dinero import euros_str
+from app_conta.services.dinero import euros_a_centimos, euros_str
 from app_conta.services.movimientos import saldo_cuenta
 
 router = APIRouter(prefix="/cuentas", tags=["cuentas"])
@@ -132,3 +133,66 @@ def delete_cuenta(
 ):
     eliminar_cuenta(db, cuenta_id, confirmar_destino)
     db.commit()
+
+
+class LiquidarTarjetaRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    cuenta_origen_id: int
+    importe: str | int | float
+    fecha: str | None = None
+    concepto: str | None = None
+
+
+@router.post("/{cuenta_id}/liquidar", status_code=201)
+def post_liquidar_tarjeta(
+    cuenta_id: int, payload: LiquidarTarjetaRequest, db: Session = Depends(get_db)
+) -> dict:
+    """Liquida total o parcialmente el recibo de una tarjeta cargándolo en el banco."""
+    tarjeta = obtener_cuenta(db, cuenta_id)
+    banco = obtener_cuenta(db, payload.cuenta_origen_id)
+
+    try:
+        importe_cent = euros_a_centimos(str(payload.importe))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Importe de liquidación no válido.") from exc
+
+    if importe_cent <= 0:
+        raise HTTPException(
+            status_code=400, detail="El importe a liquidar debe ser estrictamente mayor que 0."
+        )
+
+    fecha_cobro = date.fromisoformat(payload.fecha) if payload.fecha else date.today()
+    concepto_banco = payload.concepto or f"Liquidación recibo {tarjeta.nombre}"
+    concepto_tarjeta = f"Abono liquidación recibo desde {banco.nombre}"
+
+    # 1. Movimiento en la cuenta bancaria de origen (gasto real que sale del banco)
+    mov_banco = Movimiento(
+        hogar_id=banco.hogar_id,
+        cuenta_id=banco.id,
+        fecha=fecha_cobro,
+        descripcion=concepto_banco,
+        importe_centimos=-importe_cent,
+    )
+    # 2. Movimiento en la tarjeta (ingreso que reduce la deuda acumulada de la tarjeta)
+    mov_tarjeta = Movimiento(
+        hogar_id=tarjeta.hogar_id,
+        cuenta_id=tarjeta.id,
+        fecha=fecha_cobro,
+        descripcion=concepto_tarjeta,
+        importe_centimos=importe_cent,
+    )
+
+    db.add(mov_banco)
+    db.add(mov_tarjeta)
+    db.commit()
+
+    return {
+        "mensaje": (
+            f"Se ha liquidado {euros_str(importe_cent)} € en {tarjeta.nombre} desde {banco.nombre}"
+        ),
+        "importe": euros_str(importe_cent),
+        "saldo_tarjeta": euros_str(saldo_cuenta(db, tarjeta)),
+        "saldo_banco": euros_str(saldo_cuenta(db, banco)),
+    }
+

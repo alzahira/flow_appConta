@@ -37,6 +37,12 @@ function tarjetaCreditoItem(c) {
           <span>Inicial: ${c.saldo_inicial} €</span>
         </div>
       </div>
+
+      <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-primary mini" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${c.id}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); font-size: 0.75rem; padding: 0.35rem 0.65rem; color: #fff;">
+          💳 Liquidar Recibo en Banco
+        </button>
+      </div>
     </article>
   `;
 }

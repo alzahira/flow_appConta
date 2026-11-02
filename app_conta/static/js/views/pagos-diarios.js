@@ -326,11 +326,14 @@ export default vista("pagos-diarios", async () => {
 
   <!-- LISTADO DE MOVIMIENTOS EN LA TARJETA SELECCIONADA -->
   <section class="section-block">
-    <div class="section-header">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
       <div>
         <h3 class="section-title">Movimientos en ${esc(tarjetaActual.nombre)}</h3>
         <p class="section-desc">${movsData.total} compras registradas &bull; Total acumulado en esta tarjeta: ${importe(totalGastosTarjeta.toFixed(2))}</p>
       </div>
+      <button type="button" class="btn-primary mini" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${tarjetaActual.id}">
+        💳 Liquidar Recibo en Banco
+      </button>
     </div>
 
     ${
