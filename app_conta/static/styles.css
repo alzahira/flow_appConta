@@ -7,33 +7,59 @@
    1. VARIABLES DE DISEÑO Y DESIGN TOKENS
    -------------------------------------------------------------------------- */
 :root {
-  /* Modo Oscuro por Defecto (Ultra Premium Fintech) */
-  --bg-app: #0B0D12;
-  --bg-fallback: rgba(20, 22, 30, 0.95);
+  /* ==========================================================================
+     PALETA PRINCIPAL (Modo Claro por Defecto)
+     ========================================================================== */
+  --bg: #EEF0FB;                         /* Fondo base lavanda muy claro */
+  --blob-1: #C4B5FD;                     /* Mancha lavanda, arriba izquierda */
+  --blob-2: #FDBA9B;                     /* Mancha melocotón, derecha-centro */
+  --blob-3: #A5D8FF;                     /* Mancha azul cielo, abajo izquierda */
+  --blob-opacity: 0.75;
+  --blob-blur: 95px;
 
-  /* Superficies de Cristal */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-bg-hover: rgba(255, 255, 255, 0.09);
-  --glass-bg-active: rgba(255, 255, 255, 0.12);
+  --glass: rgba(255, 255, 255, 0.62);        /* Tarjetas, chips, botones redondos */
+  --glass-strong: rgba(255, 255, 255, 0.74); /* Barra de navegación inferior */
+  --line: rgba(255, 255, 255, 0.90);        /* Borde de 1px del cristal */
+  --shadow: 0 8px 28px rgba(80, 70, 140, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  --fg: #12141A;                         /* Texto principal */
+  --fg-2: rgba(18, 20, 26, 0.66);        /* Texto secundario y etiquetas */
+
+  --accent: #6A4DF0;                     /* Violeta: anillos, avatar, elementos activos */
+  --accent-2: #0891B2;                   /* Turquesa: segundo anillo/serie */
+  --accent-text: #4B34C9;                /* Violeta oscuro para texto y enlaces */
+  --accent-soft: rgba(106, 77, 240, 0.12); /* Fondo del elemento activo de la barra */
+
+  --pos: #0A7A4C;                        /* Ingresos y positivos */
+  --neg: #C2364A;                        /* Deudas y negativos */
+  --pos-soft: rgba(10, 122, 76, 0.12);   /* Fondo del icono de ingreso */
+  --neutral-soft: rgba(18, 20, 26, 0.06); /* Fondo del icono de gasto */
+  --track: rgba(18, 20, 26, 0.08);       /* Pistas de anillos y barras de progreso */
+  --divider: rgba(18, 20, 26, 0.08);     /* Líneas entre filas de una lista */
+
+  /* Aliases para compatibilidad interna */
+  --bg-app: var(--bg);
+  --bg-fallback: rgba(240, 242, 252, 0.95);
+  --glass-bg: var(--glass);
+  --glass-bg-hover: rgba(255, 255, 255, 0.82);
+  --glass-bg-active: rgba(255, 255, 255, 0.95);
+  --glass-border: 1px solid var(--line);
+  --glass-border-hover: 1px solid rgba(106, 77, 240, 0.35);
+  --glass-shadow: var(--shadow);
+  --glass-shadow-hover: 0 12px 34px rgba(80, 70, 140, 0.18), inset 0 1px 0 rgba(255, 255, 255, 1);
   --glass-blur: blur(24px) saturate(140%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.10);
-  --glass-border-hover: 1px solid rgba(255, 255, 255, 0.22);
   --glass-radius: 24px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
-  /* Tipografía & Textos */
-  --text-primary: #F5F7FA;
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary: rgba(255, 255, 255, 0.35);
+  --text-primary: var(--fg);
+  --text-secondary: var(--fg-2);
+  --text-tertiary: rgba(18, 20, 26, 0.42);
 
-  /* Acentos Semánticos Sutiles */
-  --accent-positive: #4ADE9A;     /* Menta / Verde sutil */
-  --accent-negative: #FF6B7A;     /* Coral elegante */
-  --accent-brand: #7C5CFF;        /* Violeta Linear */
-  --accent-blue: #3B82F6;         /* Azul eléctrico */
-  --accent-cyan: #22D3EE;         /* Turquesa fintech */
-  --accent-amber: #FBBF24;        /* Ámbar pastel */
+  --accent-brand: var(--accent);
+  --accent-positive: var(--pos);
+  --accent-negative: var(--neg);
+  --accent-blue: #3B82F6;
+  --accent-cyan: var(--accent-2);
+  --accent-amber: #F59E0B;
 
   /* Curvaturas Unificadas */
   --radius-xs: 8px;
@@ -43,37 +69,57 @@
   --radius-xl: 24px;
   --radius-pill: 9999px;
 
-  /* Tipografías */
   --font-sans: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  
-  /* Transición fluida */
   --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Modo Claro Alternativo (Lavanda – Melocotón & Cristal Blanco) */
-[data-theme="light"] {
-  --bg-app: #F8F7FA;
-  --bg-fallback: rgba(255, 255, 255, 0.95);
+/* ==========================================================================
+   MODO OSCURO OPCIONAL ([data-theme="dark"] o prefers-color-scheme)
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg: #0B0D12;
+  --bg-app: #0B0D12;
+  --bg-fallback: rgba(20, 22, 30, 0.95);
+  --blob-1: #7C5CFF;
+  --blob-2: #3B82F6;
+  --blob-3: #22D3EE;
+  --blob-opacity: 0.45;
+  --blob-blur: 110px;
 
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-bg-hover: rgba(255, 255, 255, 0.85);
-  --glass-bg-active: rgba(255, 255, 255, 0.95);
-  --glass-blur: blur(24px) saturate(160%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.50);
-  --glass-border-hover: 1px solid rgba(124, 92, 255, 0.35);
-  --glass-shadow: 0 8px 32px rgba(120, 100, 160, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --glass-shadow-hover: 0 12px 36px rgba(120, 100, 160, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-bg: var(--glass);
+  --glass-bg-hover: rgba(255, 255, 255, 0.11);
+  --glass-bg-active: rgba(255, 255, 255, 0.15);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --line: rgba(255, 255, 255, 0.12);
+  --glass-border: 1px solid var(--line);
+  --glass-border-hover: 1px solid rgba(255, 255, 255, 0.25);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --glass-shadow: var(--shadow);
+  --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
-  --text-primary: #12141A;
-  --text-secondary: rgba(18, 20, 26, 0.62);
-  --text-tertiary: rgba(18, 20, 26, 0.40);
+  --fg: #F5F7FA;
+  --fg-2: rgba(255, 255, 255, 0.62);
+  --text-primary: var(--fg);
+  --text-secondary: var(--fg-2);
+  --text-tertiary: rgba(255, 255, 255, 0.38);
 
-  --accent-positive: #16A34A;
-  --accent-negative: #E11D48;
-  --accent-brand: #6D28D9;
-  --accent-blue: #2563EB;
-  --accent-cyan: #0891B2;
+  --accent: #7C5CFF;
+  --accent-2: #22D3EE;
+  --accent-brand: var(--accent);
+  --accent-text: #B3A6FF;
+  --accent-soft: rgba(124, 92, 255, 0.18);
+
+  --pos: #4ADE9A;
+  --neg: #FF7B88;
+  --pos-soft: rgba(74, 222, 154, 0.15);
+  --neutral-soft: rgba(255, 255, 255, 0.08);
+  --accent-positive: var(--pos);
+  --accent-negative: var(--neg);
+
+  --track: rgba(255, 255, 255, 0.09);
+  --divider: rgba(255, 255, 255, 0.08);
 }
 
 /* --------------------------------------------------------------------------
@@ -115,7 +161,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   3. MANCHAS DE DEGRADADO (MESH GLOW DIFUMINADO ~120PX)
+   3. MANCHAS DE DEGRADADO (3 CÍRCULOS ~300PX, FIJOS, BLUR 90-100PX)
    -------------------------------------------------------------------------- */
 .mesh-glow-bg {
   position: fixed;
@@ -123,56 +169,38 @@ body {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  opacity: 0.75;
-}
-
-[data-theme="light"] .mesh-glow-bg {
-  opacity: 0.55;
+  opacity: var(--blob-opacity, 0.75);
 }
 
 .glow-spot {
   position: absolute;
+  width: 320px;
+  height: 320px;
   border-radius: 50%;
-  filter: blur(120px);
-  -webkit-filter: blur(120px);
+  filter: blur(var(--blob-blur, 95px));
+  -webkit-filter: blur(var(--blob-blur, 95px));
   will-change: transform;
 }
 
-/* Mancha Violeta */
-.spot-violet {
-  width: 500px;
-  height: 500px;
-  top: -120px;
-  left: -80px;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.28) 0%, rgba(124, 92, 255, 0) 70%);
+/* Mancha 1: Lavanda, arriba izquierda */
+.spot-lavender, .spot-violet {
+  top: -40px;
+  left: -40px;
+  background: var(--blob-1);
 }
 
-/* Mancha Azul */
-.spot-blue {
-  width: 550px;
-  height: 550px;
-  top: 15%;
-  right: -150px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0) 70%);
+/* Mancha 2: Melocotón, derecha-centro */
+.spot-peach, .spot-blue {
+  top: 35%;
+  right: -50px;
+  background: var(--blob-2);
 }
 
-/* Mancha Turquesa */
-.spot-turquoise {
-  width: 450px;
-  height: 450px;
-  bottom: 8%;
-  left: 20%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, rgba(34, 211, 238, 0) 70%);
-}
-
-[data-theme="light"] .spot-violet {
-  background: radial-gradient(circle, rgba(220, 210, 255, 0.6) 0%, rgba(220, 210, 255, 0) 70%);
-}
-[data-theme="light"] .spot-blue {
-  background: radial-gradient(circle, rgba(255, 220, 210, 0.5) 0%, rgba(255, 220, 210, 0) 70%);
-}
-[data-theme="light"] .spot-turquoise {
-  background: radial-gradient(circle, rgba(200, 235, 255, 0.55) 0%, rgba(200, 235, 255, 0) 70%);
+/* Mancha 3: Azul cielo, abajo izquierda */
+.spot-sky, .spot-turquoise {
+  bottom: -40px;
+  left: 8%;
+  background: var(--blob-3);
 }
 
 /* --------------------------------------------------------------------------
@@ -183,15 +211,12 @@ body {
   top: 0;
   z-index: 900;
   width: 100%;
-  background: rgba(11, 13, 18, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 16px rgba(80, 70, 140, 0.05);
 }
-
-[data-theme="light"] .app-header.glass-header {
-  background: rgba(248, 247, 250, 0.75);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .header-inner {
@@ -756,15 +781,15 @@ body {
 }
 
 .tx-icon-wrapper.in {
-  color: var(--accent-positive);
-  background: rgba(74, 222, 154, 0.1);
-  border-color: rgba(74, 222, 154, 0.2);
+  color: var(--pos);
+  background: var(--pos-soft);
+  border-color: rgba(10, 122, 76, 0.2);
 }
 
 .tx-icon-wrapper.out {
-  color: var(--accent-negative);
-  background: rgba(255, 107, 122, 0.1);
-  border-color: rgba(255, 107, 122, 0.2);
+  color: var(--fg);
+  background: var(--neutral-soft);
+  border-color: var(--divider);
 }
 
 .tx-main-info {
@@ -797,11 +822,15 @@ body {
 }
 
 .tx-amount-col .positivo {
-  color: var(--accent-positive);
+  color: var(--pos);
+}
+
+.tx-amount-col .gasto {
+  color: var(--fg); /* Gastos en --fg (sin rojo) */
 }
 
 .tx-amount-col .negativo {
-  color: var(--accent-negative);
+  color: var(--neg); /* Reservado para deudas y saldos en descubierto */
 }
 
 .tx-amount-col .centimos {
@@ -833,24 +862,18 @@ body {
   width: calc(100% - 2.5rem);
   max-width: 480px;
   height: 64px;
-  background: rgba(15, 18, 26, 0.78);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   justify-content: space-around;
   padding: 0 0.5rem;
   z-index: 1000;
   transition: all var(--transition-normal);
-}
-
-[data-theme="light"] .floating-glass-nav {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 12px 40px rgba(120, 100, 160, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-nav-container {
@@ -881,12 +904,12 @@ body {
 
 .glass-nav-item:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(106, 77, 240, 0.06);
 }
 
 .glass-nav-item.activa {
-  color: var(--accent-brand);
-  background: rgba(124, 92, 255, 0.12);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .glass-nav-icon {
@@ -1306,6 +1329,503 @@ input:focus, select:focus, textarea:focus {
   background: #8b6dff;
   transform: translateY(-1px);
   box-shadow: 0 6px 24px rgba(124, 92, 255, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   10.5 COMPONENTES: SEGMENTED CONTROL & CARROUSEL DE CUENTAS (PANTALLA 2)
+   -------------------------------------------------------------------------- */
+.segmented-control-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1.5rem 0;
+  width: 100%;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: rgba(18, 20, 26, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+[data-theme="dark"] .segmented-control {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.segmented-control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--fg-2);
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.segmented-control-btn:hover {
+  color: var(--fg);
+}
+
+.segmented-control-btn.activo,
+.segmented-control-btn[aria-current="page"] {
+  background: var(--glass);
+  color: var(--accent-text);
+  box-shadow: 0 2px 8px rgba(80, 70, 140, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .segmented-control-btn.activo,
+[data-theme="dark"] .segmented-control-btn[aria-current="page"] {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.segmented-icon {
+  display: flex;
+  align-items: center;
+}
+
+.segmented-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Hero Total Cuentas */
+.accounts-hero-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.75rem;
+  padding: 0.5rem 0;
+}
+
+.hero-total-label {
+  font-size: 0.82rem;
+  color: var(--fg-2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.hero-total-amount {
+  font-size: clamp(2.5rem, 6vw, 3.8rem);
+  font-weight: 300;
+  color: var(--fg);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.hero-total-amount .centimos {
+  font-size: 0.55em;
+  color: var(--fg-2);
+  font-weight: 400;
+}
+
+.hero-total-sub {
+  font-size: 0.8rem;
+  color: var(--fg-2);
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+
+/* Carrusel Horizontal con Scroll-Snap */
+.carousel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.carousel-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+.carousel-counter {
+  font-size: 0.78rem;
+  color: var(--fg-2);
+}
+
+.accounts-carousel {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+  margin: 0 -0.5rem;
+}
+
+.accounts-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.accounts-carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accounts-carousel::-webkit-scrollbar-thumb {
+  background: var(--track);
+  border-radius: var(--radius-pill);
+}
+
+/* Tarjeta de Cristal del Carrusel */
+.glass-account-card {
+  flex: 0 0 300px;
+  scroll-snap-align: center;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--shadow);
+  padding: 1.4rem 1.4rem 0.9rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.glass-account-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* Header de la Tarjeta */
+.acc-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 2;
+}
+
+.acc-card-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.acc-card-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(106, 77, 240, 0.08);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.acc-card-icon-wrap.caixa {
+  color: #0072CE;
+  background: rgba(0, 114, 206, 0.08);
+}
+.acc-card-icon-wrap.deutsche {
+  color: #0018A8;
+  background: rgba(0, 24, 168, 0.08);
+}
+.acc-card-icon-wrap.bbva {
+  color: #004481;
+  background: rgba(0, 68, 129, 0.08);
+}
+.acc-card-icon-wrap.revolut {
+  color: #12141A;
+  background: rgba(18, 20, 26, 0.08);
+}
+[data-theme="dark"] .acc-card-icon-wrap.revolut {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.acc-card-name-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.acc-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.acc-card-badge {
+  font-size: 0.72rem;
+  color: var(--fg-2);
+  margin-top: 1px;
+}
+
+/* Menú Contextual ··· */
+.card-more-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.btn-card-more {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--fg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-card-more:hover {
+  color: var(--fg);
+  background: rgba(18, 20, 26, 0.06);
+}
+
+[data-theme="dark"] .btn-card-more:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.card-more-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: var(--glass);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  z-index: 50;
+  min-width: 150px;
+  display: none;
+  flex-direction: column;
+}
+
+.card-more-dropdown.is-open {
+  display: flex;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown-item-danger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--neg);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.dropdown-item-danger:hover {
+  background: rgba(194, 54, 74, 0.1);
+}
+
+/* Saldo de la Tarjeta */
+.acc-card-balance-block {
+  margin-top: 1.25rem;
+  position: relative;
+  z-index: 2;
+}
+
+.acc-card-balance-label {
+  font-size: 0.72rem;
+  color: var(--fg-2);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.acc-card-balance-val {
+  font-size: 1.65rem;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.acc-card-balance-val .centimos {
+  font-size: 0.65em;
+  color: var(--fg-2);
+  font-weight: 400;
+}
+
+/* Mini Gráfica Sparkline SVG */
+.acc-card-sparkline-wrap {
+  width: 100%;
+  height: 48px;
+  margin-top: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.acc-card-sparkline-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Sección de Desglose de Cuentas (Lista limpia) */
+.accounts-breakdown-card {
+  margin-top: 1rem;
+  padding: 1.4rem 1.6rem;
+}
+
+.acc-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.acc-breakdown-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.acc-breakdown-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.acc-breakdown-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-breakdown-name {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.acc-breakdown-meta {
+  font-size: 0.76rem;
+  color: var(--fg-2);
+}
+
+.acc-breakdown-amount {
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.acc-breakdown-amount .centimos {
+  font-size: 0.7em;
+  color: var(--fg-2);
+}
+
+/* Acordeón de Cristal para Dar de Alta Cuenta */
+.glass-accordion {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-top: 1.5rem;
+  transition: all var(--transition-normal);
+}
+
+.glass-accordion summary {
+  padding: 1.15rem 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--fg);
+  list-style: none;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.glass-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.glass-accordion summary:hover {
+  color: var(--accent-text);
+}
+
+.glass-accordion[open] summary {
+  border-bottom: 1px solid var(--divider);
+}
+
+.accordion-body {
+  padding: 1.5rem;
+}
+
+/* Tarjeta vacía */
+.tarjeta-vacia {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--fg-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.tarjeta-vacia-icon {
+  font-size: 2rem;
+  opacity: 0.4;
+  margin-bottom: 0.25rem;
+}
+
+.tarjeta-vacia h4 {
+  font-size: 1.05rem;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.tarjeta-vacia p {
+  font-size: 0.85rem;
+  max-width: 400px;
+  line-height: 1.5;
 }
 
 /* --------------------------------------------------------------------------

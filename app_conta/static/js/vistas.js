@@ -140,39 +140,56 @@ export function mostrarError(idwrap, e) {
   }
 }
 
-/** Barra de subnavegación tipo píldora para el grupo Cuentas y Tarjetas */
+/** Selector tipo "segmented control" de cristal compacto para Cuentas */
 export function subnavCuentas(activa) {
   const tabs = [
-    { id: "cuentas", href: "/cuentas", label: "Cuentas y Depósitos", iconoKey: "cuentas" },
+    { id: "cuentas", href: "/cuentas", label: "Cuentas", iconoKey: "cuentas" },
     { id: "inversiones", href: "/inversiones", label: "Inversiones", iconoKey: "inversion" },
-    { id: "tarjetas", href: "/tarjetas", label: "Tarjetas Bancarias", iconoKey: "tarjetas" },
-    { id: "tarjetas-regalo", href: "/tarjetas-regalo", label: "Tarjetas Regalo", iconoKey: "regalo" },
-    { id: "pagos-diarios", href: "/pagos-diarios", label: "Pagos Diarios", iconoKey: "carrito" },
-    { id: "pagos-recurrentes", href: "/pagos-recurrentes", label: "Recibos Fijos", iconoKey: "prevision" },
+    { id: "tarjetas", href: "/tarjetas", label: "Tarjetas", iconoKey: "tarjetas" },
+    { id: "tarjetas-regalo", href: "/tarjetas-regalo", label: "Regalo", iconoKey: "regalo" },
   ];
 
   return `
-    <nav class="subnav-pills-bar" aria-label="Subnavegación de Cuentas y Tarjetas">
-      ${tabs
-        .map(
-          (t) => `
-        <a href="${t.href}" class="subnav-pill ${activa === t.id ? "activa" : ""}">
-          <span class="subnav-pill-icon">${icono(t.iconoKey)}</span>
-          <span>${t.label}</span>
-        </a>`
-        )
-        .join("")}
-    </nav>
+    <div class="segmented-control-wrapper">
+      <nav class="segmented-control" aria-label="Subnavegación de Cuentas">
+        ${tabs
+          .map(
+            (t) => `
+          <a href="${t.href}" class="segmented-control-btn ${activa === t.id ? "activo" : ""}" ${activa === t.id ? 'aria-current="page"' : ''}>
+            <span class="segmented-icon">${icono(t.iconoKey)}</span>
+            <span>${esc(t.label)}</span>
+          </a>`
+          )
+          .join("")}
+      </nav>
+    </div>
   `;
 }
 
-
-/** Barra de subnavegación tipo píldora para el grupo Ahorro y Botes */
+/** Selector tipo "segmented control" de cristal compacto para Ahorro y Botes */
 export function subnavAhorro(activa) {
   const tabs = [
     { id: "botes", href: "/botes", label: "Sobres y Botes", iconoKey: "botes" },
-    { id: "deben", href: "/deben", label: "Dinero que me deben", iconoKey: "prestamo" },
-    { id: "ahorro", href: "/ahorro", label: "Fondo Ahorro Hipoteca", iconoKey: "ahorro" },
+    { id: "deben", href: "/deben", label: "Me deben", iconoKey: "prestamo" },
+    { id: "ahorro", href: "/ahorro", label: "Fondo Hipoteca", iconoKey: "ahorro" },
+  ];
+
+  return `
+    <div class="segmented-control-wrapper">
+      <nav class="segmented-control" aria-label="Subnavegación de Botes">
+        ${tabs
+          .map(
+            (t) => `
+          <a href="${t.href}" class="segmented-control-btn ${activa === t.id ? "activo" : ""}" ${activa === t.id ? 'aria-current="page"' : ''}>
+            <span class="segmented-icon">${icono(t.iconoKey)}</span>
+            <span>${esc(t.label)}</span>
+          </a>`
+          )
+          .join("")}
+      </nav>
+    </div>
+  `;
+}
   ];
 
   return `

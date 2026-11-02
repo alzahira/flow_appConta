@@ -172,12 +172,12 @@ export default vista("inicio", async () => {
           <svg class="ring-svg" viewBox="0 0 180 180">
             <defs>
               <linearGradient id="ringMonthGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#7C5CFF"/>
-                <stop offset="100%" stop-color="#22D3EE"/>
+                <stop offset="0%" stop-color="#6A4DF0"/>
+                <stop offset="100%" stop-color="#0891B2"/>
               </linearGradient>
               <linearGradient id="ringOcioGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#FF6B7A"/>
-                <stop offset="100%" stop-color="#FFA07A"/>
+                <stop offset="0%" stop-color="#0891B2"/>
+                <stop offset="100%" stop-color="#A5D8FF"/>
               </linearGradient>
             </defs>
             <!-- Anillo Exterior: Mes -->
@@ -283,7 +283,7 @@ export default vista("inicio", async () => {
                 <span class="tx-meta">${fechaCorta(m.fecha)} · ${esc(m.cuenta_nombre || "Cuenta")}</span>
               </div>
               <div class="tx-amount-col">
-                ${importe(m.importe, esPositivo ? "positivo" : "negativo", true)}
+                ${importe(m.importe, esPositivo ? "positivo" : "gasto", true)}
               </div>
             </div>
           `;

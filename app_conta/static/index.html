@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0B0D12" />
+  <meta name="theme-color" content="#EEF0FB" />
   <title>Flow — Finanzas & Botes</title>
   
   <!-- Tipografía Inter & Plus Jakarta Sans con números tabulares -->
@@ -12,28 +12,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=55" />
+  <link rel="stylesheet" href="/static/styles.css?v=56" />
   
-  <!-- Inicialización inmediata de tema para evitar parpadeos -->
+  <!-- Inicialización inmediata de tema (Modo Claro como principal) -->
   <script>
     (function() {
       try {
         const saved = localStorage.getItem('flow-theme');
-        if (saved === 'light') {
-          document.documentElement.setAttribute('data-theme', 'light');
-        } else {
+        if (saved === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
         }
       } catch (_e) {}
     })();
   </script>
 </head>
 <body>
-  <!-- Fondo con manchas orgánicas de degradado difuminadas (Mesh Glow) -->
+  <!-- Fondo con 3 manchas de degradado fijos de ~300px con blur(90-100px) y opacity .75 -->
   <div class="mesh-glow-bg" aria-hidden="true">
-    <div class="glow-spot spot-violet"></div>
-    <div class="glow-spot spot-blue"></div>
-    <div class="glow-spot spot-turquoise"></div>
+    <div class="glow-spot spot-lavender"></div>
+    <div class="glow-spot spot-peach"></div>
+    <div class="glow-spot spot-sky"></div>
   </div>
 
   <!-- Header Superior Minimalista de Cristal -->

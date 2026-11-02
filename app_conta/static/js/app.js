@@ -770,6 +770,15 @@ document.addEventListener("change", async (e) => {
   }
 });
 
+// Cierre de menús contextuales (···) al hacer clic fuera
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".card-more-menu-wrapper")) {
+    document.querySelectorAll(".card-more-dropdown.is-open").forEach((el) => {
+      el.classList.remove("is-open");
+    });
+  }
+});
+
 async function iniciarApp() {
   pintarNav(rutasRegistradas());
   iniciarModalesAcciones();

@@ -1,45 +1,77 @@
-// Vista de Tarjetas: Gestión de tarjetas de crédito y débito del hogar
+// Vista de Tarjetas: Control y liquidación de tarjetas de crédito y débito bancarias
 import { vista, esc, importe, hoy, icono, subnavCuentas } from "../vistas.js";
 import { esTarjetaRegalo } from "./tarjetas-regalo.js";
+
+function generarSparklineTarjeta(seed, saldo) {
+  const numSaldo = Number(saldo) || 0;
+  const isPos = numSaldo >= 0;
+  const s = Math.abs(Number(seed) || 2);
+  const y1 = 26 + Math.cos(s * 1.8) * 8;
+  const y2 = 18 + Math.sin(s * 2.5) * 8;
+  const y3 = 24 + Math.cos(s * 3.1) * 6;
+  const y4 = isPos ? 12 : 36;
+  
+  const strokeColor = isPos ? "var(--accent)" : "var(--neg)";
+  const gradId = `spark-tarjeta-${seed}`;
+
+  return `
+    <div class="acc-card-sparkline-wrap" aria-hidden="true">
+      <svg class="acc-card-sparkline-svg" viewBox="0 0 200 48" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M 0 48 L 0 ${y1.toFixed(1)} C 50 ${y2.toFixed(1)}, 100 ${y3.toFixed(1)}, 200 ${y4.toFixed(1)} L 200 48 Z" fill="url(#${gradId})"/>
+        <path d="M 0 ${y1.toFixed(1)} C 50 ${y2.toFixed(1)}, 100 ${y3.toFixed(1)}, 200 ${y4.toFixed(1)}" fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  `;
+}
 
 function tarjetaCreditoItem(c) {
   const saldoNum = Number(c.saldo);
   const esDeuda = saldoNum < 0;
 
   return `
-    <article class="credit-card-fintech">
-      <div class="credit-card-shine"></div>
-      
-      <div class="credit-card-top-row">
-        <div class="credit-card-chip">
-          <div class="chip-line"></div>
-          <div class="chip-line"></div>
+    <article class="glass-account-card">
+      <div class="acc-card-top">
+        <div class="acc-card-brand-group">
+          <div class="acc-card-icon-wrap" style="color: var(--accent);">
+            ${icono("tarjetas")}
+          </div>
+          <div class="acc-card-name-group">
+            <h3 class="acc-card-name" title="${esc(c.nombre)}">${esc(c.nombre)}</h3>
+            <span class="acc-card-badge">${esc(c.entidad || "Tarjeta")} · &bull;&bull;&bull;&bull; 2026</span>
+          </div>
         </div>
-        <div class="credit-card-top-actions">
-          <span class="credit-card-brand">${esc(c.entidad || "TARJETA")}</span>
-          <button class="btn-action-icon delete dark" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}" title="Eliminar tarjeta">
-            ${icono("borrar")}
+
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(c.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
           </button>
+          <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item-danger" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}">
+              ${icono("borrar")} Eliminar tarjeta
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="credit-card-middle">
-        <h3 class="credit-card-title">${esc(c.nombre)}</h3>
-        <span class="credit-card-number">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 2026</span>
+      <div class="acc-card-balance-block">
+        <span class="acc-card-balance-label">${esDeuda ? "Deuda / Saldo dispuesto" : "Saldo disponible"}</span>
+        <div class="acc-card-balance-val ${esDeuda ? 'text-neg' : ''}">${importe(c.saldo)}</div>
       </div>
 
-      <div class="credit-card-bottom-row">
-        <div class="credit-card-balance-block">
-          <span class="credit-card-balance-label">${esDeuda ? "Deuda / Saldo dispuesto" : "Saldo disponible"}</span>
-          <div class="credit-card-balance-value">${importe(c.saldo)}</div>
-        </div>
-        <div class="credit-card-meta">
-          <span>Inicial: ${c.saldo_inicial} €</span>
-        </div>
-      </div>
+      ${generarSparklineTarjeta(c.id, c.saldo)}
 
-      <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: flex-end;">
-        <button type="button" class="btn-primary mini" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${c.id}" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); font-size: 0.75rem; padding: 0.35rem 0.65rem; color: #fff;">
+      <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--divider); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-secondary" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
           💳 Liquidar Recibo en Banco
         </button>
       </div>
@@ -58,55 +90,64 @@ export default vista("tarjetas", async () => {
   );
 
   const totalTarjetas = tarjetas.reduce((acc, c) => acc + Number(c.saldo), 0);
+  const esTotalNegativo = totalTarjetas < 0;
 
   return `
   ${subnavCuentas("tarjetas")}
 
-  <div class="page-header-row">
-    <div>
-      <h2 class="page-title">Tarjetas Bancarias</h2>
-      <p class="page-subtitle">Control de tarjetas de crédito, débito y líneas de financiación bancarias</p>
-    </div>
-    <div class="header-total-card">
-      <span class="header-total-label">Saldo Neto en Tarjetas</span>
-      <span class="header-total-value">${importe(totalTarjetas.toFixed(2))}</span>
-    </div>
+  <!-- 1. Total Arriba Protagonista -->
+  <div class="accounts-hero-total">
+    <span class="hero-total-label">${esTotalNegativo ? "Deuda Total Dispuesto en Tarjetas" : "Saldo Neto Disponible"}</span>
+    <div class="hero-total-amount ${esTotalNegativo ? 'text-neg' : ''}">${importe(totalTarjetas.toFixed(2))}</div>
+    <span class="hero-total-sub">${tarjetas.length} tarjetas bancarias activas</span>
   </div>
 
-  <section class="section-block">
-    <div class="grid-credit-cards">
-      ${
-        tarjetas.length > 0
-          ? tarjetas.map(tarjetaCreditoItem).join("\n")
-          : `<div class="empty-state">
-              <span class="empty-icon">${icono("tarjetas")}</span>
-              <p>No tienes tarjetas dadas de alta aún.</p>
-              <span class="empty-sub">Registra tu primera tarjeta con el formulario inferior.</span>
-            </div>`
-      }
+  <!-- 2. Carrusel Horizontal con Scroll-Snap -->
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <div class="carousel-section-header">
+      <h3 class="carousel-title">Tarjetas y Líneas de Crédito</h3>
+      <span class="carousel-counter">${tarjetas.length} emitidas</span>
     </div>
+
+    ${
+      tarjetas.length > 0
+        ? `
+        <div class="accounts-carousel" role="region" aria-label="Carrusel de tarjetas">
+          ${tarjetas.map(tarjetaCreditoItem).join("\n")}
+        </div>
+        `
+        : `
+        <div class="glass-card tarjeta-vacia">
+          <div class="tarjeta-vacia-icon">${icono("tarjetas")}</div>
+          <h4>No tienes tarjetas dadas de alta aún</h4>
+          <p>Registra tu primera tarjeta de crédito o débito con el formulario inferior.</p>
+        </div>
+        `
+    }
   </section>
 
+  <!-- 3. Formulario desplegable en acordeón de cristal -->
   <section class="section-block">
-    <details class="form-inversion-details">
-      <summary class="btn-nuevo-inversion-trigger">
+    <details class="glass-accordion">
+      <summary>
         ${icono("plus")} Dar de Alta Nueva Tarjeta
       </summary>
-      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
-        <p class="form-desc">Registra una tarjeta de crédito o débito para seguir sus gastos y recibos.</p>
-
+      <div class="accordion-body">
         <form data-accion="crear-cuenta" data-err="err-tarjeta" class="fintech-form">
           <input type="hidden" name="tipo" value="tarjeta">
+          <p class="form-desc" style="margin-bottom: 1rem; color: var(--fg-2); font-size: 0.85rem;">
+            Registra una tarjeta de crédito o débito para seguir sus compras y pagos periódicos.
+          </p>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="tj-nombre" class="form-label">Nombre de la Tarjeta</label>
-              <input id="tj-nombre" name="nombre" placeholder="Ej. Tarjeta Caixa Oro, Tarjeta Carrefour Pass, Tarjeta DB..." required>
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="tj-nombre">Nombre de la Tarjeta *</label>
+              <input id="tj-nombre" name="nombre" placeholder="Ej. Tarjeta Caixa Oro, Tarjeta Pass..." required>
             </div>
-            <div class="form-group form-span-2">
-              <label for="tj-entidad" class="form-label">Entidad Emisora</label>
+            <div class="campo">
+              <label for="tj-entidad">Entidad Emisora *</label>
               <select id="tj-entidad" name="entidad" required>
-                <option value="Caixa">Caixa</option>
+                <option value="Caixa">CaixaBank</option>
                 <option value="Deutsche Bank">Deutsche Bank</option>
                 <option value="Carrefour">Carrefour</option>
                 <option value="BBVA">BBVA</option>
@@ -116,20 +157,20 @@ export default vista("tarjetas", async () => {
             </div>
           </div>
 
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label for="tj-saldo" class="form-label">Saldo Inicial o Deuda Pendiente (€)</label>
-              <input id="tj-saldo" name="saldo_inicial" inputmode="decimal" placeholder="0.00 o -50.00 (deuda)" value="0.00">
+          <div class="form-grid-2">
+            <div class="campo">
+              <label for="tj-saldo">Saldo Inicial o Deuda Pendiente (€)</label>
+              <input id="tj-saldo" name="saldo_inicial" inputmode="decimal" placeholder="0.00 o -50.00" value="0.00">
             </div>
-            <div class="form-group form-span-2">
-              <label for="tj-apertura" class="form-label">Fecha de Apertura / Activación</label>
+            <div class="campo">
+              <label for="tj-apertura">Fecha de Activación</label>
               <input id="tj-apertura" name="fecha_apertura" type="date" value="${hoy()}" required>
             </div>
           </div>
 
           <div id="err-tarjeta"></div>
 
-          <div class="form-actions-right">
+          <div class="form-actions" style="margin-top: 1.25rem;">
             <button type="submit" class="btn-primary">
               ${icono("plus")} Crear Tarjeta
             </button>
