@@ -120,9 +120,9 @@ export default vista("inicio", async () => {
     <header class="home-hero-balance-wrap">
       <div class="hero-status-pill-container" data-accion-fintech="ver-cuadre" style="cursor: pointer;" title="Ver diagnóstico de cuadre">
         ${badgeEstado(
-          esCuadrado ? "cuadrado" : "revisar",
-          esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia, "", false)}`
-        )}
+    esCuadrado ? "cuadrado" : "revisar",
+    esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia, "", false)}`
+  )}
       </div>
 
       <span class="hero-balance-caption">Patrimonio disponible</span>
@@ -272,8 +272,8 @@ export default vista("inicio", async () => {
             <p>No hay movimientos registrados este mes</p>
           </div>
         ` : itemsMovimientos.map((m) => {
-          const esPositivo = Number(m.importe) >= 0;
-          return `
+    const esPositivo = Number(m.importe) >= 0;
+    return `
             <div class="transaction-row">
               <div class="tx-icon-wrapper ${esPositivo ? "in" : "out"}">
                 ${esPositivo ? icono("flechaArriba") : icono("flechaAbajo")}
@@ -287,7 +287,7 @@ export default vista("inicio", async () => {
               </div>
             </div>
           `;
-        }).join("")}
+  }).join("")}
       </div>
     </section>
   </div>

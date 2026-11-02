@@ -190,22 +190,6 @@ export function subnavAhorro(activa) {
     </div>
   `;
 }
-  ];
-
-  return `
-    <nav class="subnav-pills-bar" aria-label="Subnavegación de Ahorro y Botes">
-      ${tabs
-        .map(
-          (t) => `
-        <a href="${t.href}" class="subnav-pill ${activa === t.id ? "activa" : ""}">
-          <span class="subnav-pill-icon">${icono(t.iconoKey)}</span>
-          <span>${t.label}</span>
-        </a>`
-        )
-        .join("")}
-    </nav>
-  `;
-}
 
 /** Configuración de estilos y categorización semántica para transacciones Fintech */
 export function clasificarMovimientoVisual(descripcion, categoriaNombre = "", boteNombre = "", esIngreso = false) {
