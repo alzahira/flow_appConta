@@ -814,6 +814,49 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - **Conciliación** (`conciliacion.py`): La línea de DAZN se filtra de `sin_asignar_formula` para evitar doble cómputo con la reducción de `tot_me_deben_formula`, garantizando un cuadre absoluto a 0,00 € de descuadre.
 - **Tests**: Nueva prueba unitaria y de API `test_reparto_hogar_descuenta_deuda_dazn`. **166 tests en verde**, 0 fallos, ruff 100% limpio.
 
+### 23. Reordenación de Ahorro y Botes, Formularios Plegables y Nueva Sección «Pagos Diarios» (2026-11-02)
+
+- **Reordenación de Subpestañas en Ahorro y Botes**:
+  - El orden prioritario pasa a ser:
+    1. **Sobres y Botes** (`#/botes`)
+    2. **Dinero que me deben** (`#/deben`)
+    3. **Fondo Ahorro Hipoteca** (`#/ahorro`)
+  - Se eliminó el cuadro redundante de "Total Ahorro Acumulado" en `ahorro.js` para mantener una interfaz limpia y sin duplicidades.
+- **Estandarización de Formularios Plegables (`<details>`)**:
+  - Todos los formularios de creación y aportación (`ahorro.js`, `botes.js`, `deben.js`, `tarjetas-regalo.js`, `categorias.js`, `prevision-gastos.js`) ahora aparecen plegados por defecto bajo el botón con icono de `+`.
+- **Nueva Vista de Pagos Diarios (`views/pagos-diarios.js`)**:
+  - Nueva ruta principal `#/pagos-diarios` accesible directamente desde la barra de navegación superior.
+  - Diseñada para compras recurrentes del día a día (pan, café, supermercado, gasolina, ocio) pagadas con **Tarjeta Caixa**, **Tarjeta Deutsche Bank** o **Tarjeta Pass Carrefour**.
+  - Atajos rápidos interactivos con un clic para rellenar concepto y asociar inmediatamente el bote correspondiente (*Dinero del Mes* o *Bote Ocio*).
+  - El saldo se acumula en la tarjeta bancaria y se descuenta inmediatamente del sobre correspondiente, manteniendo el saldo del banco intacto hasta su liquidación mensual.
+
+### 24. Amortización Directa de Préstamos desde Ingresos y Movimientos (2026-11-02)
+
+- **Ingresos destinados a Préstamos**:
+  - El modal rápido `[ + Ingreso ]` (pestaña de Ingreso Libre) y los formularios de movimientos ahora permiten seleccionar como destino préstamos activos (`prestamo:<id>`).
+  - Al registrar la entrada, el dinero se suma a la cuenta bancaria seleccionada y se amortiza en el acto el capital pendiente del préstamo (`prestamo.importe_pendiente_centimos -= importe`).
+  - Actualización reactiva instantánea de los KPIs y sin descuadre contable.
+
+### 25. Liquidación Bancaria de Tarjetas con Importe Editable a Fin de Mes (2026-11-02)
+
+- **Gestión de Tarjetas de Crédito**:
+  - Se implementó la solución contable para compras cotidianas con tarjetas de crédito diferidas (Carrefour Pass, etc.): las compras acumulan saldo dispuesto en la tarjeta sin tocar el banco; a fin de mes, el usuario liquida el recibo bancario.
+  - **Requisito clave del usuario**: El importe de liquidación debe ser **100% editable** por el usuario, ya que las compras realizadas después de la fecha de corte bancario no entran en el extracto mensual y deben quedar pendientes en la tarjeta para el mes siguiente.
+- **Nuevo Endpoint Backend**:
+  - `POST /api/v1/cuentas/{cuenta_id}/liquidar`:
+    - Valida importe estrictamente mayor a 0.
+    - Crea automáticamente un movimiento negativo en la cuenta bancaria de origen (`-Importe`) y un movimiento positivo en la tarjeta (`+Importe`).
+    - Ambos movimientos se crean con `bote_id = None` para evitar duplicar deducciones de sobres.
+    - Garantiza el balance exacto de la identidad contable del hogar.
+- **Frontend y Modales**:
+  - Nuevo modal `abrirModalLiquidarTarjeta` en `modales-acciones.js`.
+  - Botón `💳 Liquidar Recibo en Banco` disponible en la cabecera de extracto de `#/pagos-diarios` y en el pie de cada tarjeta en `#/tarjetas`.
+- **Tests y Calidad**:
+  - Añadido test exhaustivo `test_liquidar_tarjeta_parcial_y_total` en `tests/api/test_cuentas_movimientos.py`.
+  - **167 tests pasando en verde (100% éxito)** con 88% de cobertura global.
+  - Versión del Service Worker actualizada a `app-conta-shell-v45`.
+
+
 
 
 

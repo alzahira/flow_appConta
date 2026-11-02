@@ -1,81 +1,100 @@
-# App_Conta — Finanzas del Hogar y Sistema de Botes
+# App_Conta — Control Financiero del Hogar y Sistema de Botes
 
-Aplicación web local-first para la gestión contable doméstica basada en el sistema de sobres/botes virtuales, diseñada para sustituir y automatizar hojas de cálculo complejas garantizando la integridad contable céntimo a céntimo (Principio de saldo derivado, almacenamiento en céntimos y cero pérdida de precisión decimal).
-
----
-
-## Estructura de la Aplicación
-
-La navegación principal organiza el flujo financiero en **5 secciones maestras sin saturación ni barras de desplazamiento**, complementadas con botones de acción rápida `[ ➕ Ingreso ]` y `[ ➖ Gasto ]` en la cabecera:
-
-1. **📊 Resumen (`#/inicio`)**: Panel de control con el **Dinero disponible** (suma total de efectivo en caja + cuentas bancarias), desglose explícito de **Dinero en caja** (estrictamente dinero efectivo físico) y **Dinero en bancos** (cuentas corrientes y depósitos), indicador vivo de cuadre contable (🟢 Cuadrado / 🔴 Revisar), métricas globales de botes y tabla de conciliación analítica.
-2. **🏦 Cuentas y Tarjetas (`#/cuentas`)**: Hub financiero integral que agrupa todas tus cuentas y plásticos mediante una barra de píldoras secundaria:
-   - **Cuentas y Depósitos**: Visión agrupada por entidad (**Caixa**, **Deutsche Bank**, **BBVA**, **Revolut** y **Otros**).
-   - **Inversiones**: Patrimonio neto invertido (fondos indexados, acciones/ETFs, renta fija, pensiones, cripto) con plusvalías y ROI % ponderado.
-   - **Tarjetas Bancarias**: Tarjetas de crédito y débito bancarias con control de deuda o saldo disponible.
-   - **Tarjetas Regalo**: Dinero en tarjetas prepago y regalo (**Amazon**, **El Corte Inglés**, **Carrefour**, etc.).
-   - **Gastos Tarjetas**: Registro detallado de compras por tarjeta.
-3. **🎯 Ahorro y Botes (`#/ahorro`)**: Centro de planificación y previsión del hogar:
-   - **Fondos de Ahorro e Hipotecas**: Reserva para pagar hipotecas a futuro, amortizaciones de préstamo y colchón de seguridad, con extracto individual de movimientos.
-   - **Sobres y Botes**: Sobres virtuales con extracto detallado de aportaciones y gastos separados.
-   - **Previsión Gastos Anuales**: Planificación homogénea en cuotas fijas mensuales de tributos, seguros y recibos periódicos del hogar (IBIs, basuras, seguros de hogar y vehículos) con control de meses provistos y facturas reales cobradas.
-   - **Dinero que me deben**: Control de préstamos a terceros, dinero adelantado, estados de cobro y registro de devoluciones automáticas en cuenta.
-4. **📝 Movimientos (`#/movimientos`)**: Historial general cronológico de flujos de caja con chips de botes/categorías y opción de borrado.
-5. **⋯ Más**: Menú desplegable flotante con las herramientas avanzadas:
-   - **Pagos Recurrentes / Domiciliaciones**: Gestión de los 12 recibos domiciliados mensuales (hipotecas, comunidades, suministros) organizados por banco (Caixa: 526 € / Deutsche Bank: 548 €) con ejecución en un solo clic.
-   - **Reparto de Nómina**: Motor de plantillas multi-banco para automatizar la distribución de nóminas y alquileres hacia cuentas y sobres (incluyendo deducciones internas como aporte desde Paro a Hipotecas).
-   - **Categorías**: Clasificación analítica de gastos e ingresos con códigos de color e iconos.
-   - **Copia de Seguridad**: Exportación/importación completa en formato JSON y vaciado seguro de la base de datos.
-   - **Importar Excel**: Conciliación e importación de extractos bancarios.
+**App_Conta** es una aplicación web local-first para la gestión contable doméstica basada en el **sistema de sobres/botes virtuales**. Diseñada para sustituir y automatizar hojas de cálculo complejas, garantiza la integridad contable céntimo a céntimo (principio de saldo derivado, almacenamiento en números enteros de céntimos y cero desfase decimal).
 
 ---
 
-## Cómo Arrancar la Aplicación
+## 🌟 Filosofía y Características Principales
 
-### En Windows (Acceso Rápido)
-Haz doble clic sobre el script de inicio en la carpeta raíz:
+* **El Método de los Sobres Virtuales:** Tu dinero real en el banco o en efectivo se reparte en "huchas" o sobres virtuales (*Dinero del Mes*, *Ocio*, *Emergencias*, *Fondo Hipotecas*...). Así siempre sabes exactamente cuánto puedes gastar sin tocar los ahorros ni comprometer los recibos.
+* **Pagos Diarios con Tarjeta y Crédito Real:** Registra compras del día a día (pan, comida, gasolina, ocio) con tarjetas bancarias (**CaixaBank**, **Deutsche Bank**, **Carrefour Pass**). El gasto se descuenta inmediatamente del sobre correspondiente pero **no toca el dinero del banco hasta que liquidas el recibo a fin de mes**.
+* **Liquidación a Fin de Mes Controlada:** Permite especificar el importe exacto que liquida el banco en cada ciclo de facturación, arrastrando al mes siguiente aquellas compras que entraron después de la fecha de corte.
+* **Reparto de Nómina en 1 Clic:** Distribuye automáticamente las nóminas mensuales abonando gastos anuales (+1 mes de previsión de seguros e IBI), amortizando préstamos (cuota de coche) y cobrando deudas (DAZN) de forma transparente.
+* **Identidad Contable en Tiempo Real:** El panel de control comprueba continuamente que todo el dinero físico y bancario coincide con la suma de tus botes, previsiones y obligaciones: **🟢 Contabilidad al día**.
+* **Privacidad y Multi-dispositivo:** Todo se ejecuta en tu red local. Abre la aplicación desde el ordenador o desde cualquier móvil/tablet conectado a la misma WiFi.
+
+---
+
+## 🧭 Mapa de la Aplicación
+
+La navegación superior está diseñada con accesos directos limpios, homogéneos y sin barras de desplazamiento innecesarias:
+
+1. **📊 Inicio (`#/inicio`)**:
+   - Saldo consolidado total con desglose de Bancos, Efectivo físico y Tarjetas.
+   - Semáforo vivo de cuadre contable (**🟢 Contabilidad al día** / 🟡 Revisar).
+   - Acciones rápidas: `[ + Ingreso ]`, `[ − Gasto ]`, `[ Reparto Nómina ]` y `[ Copia & Vaciar ]`.
+   - Tarjetas destacadas: **Dinero del Mes** (compras cotidianas y alimentación) y **Dinero de Ocio** (cenas, salidas y disfrute).
+   - Píldoras de resumen: Sobres y Botes, Dinero sin asignar, Bote Gastos Anuales, Dinero que me deben, Préstamos que debo y Capital Invertido.
+2. **🛒 Pagos Diarios (`#/pagos-diarios`)**:
+   - Gestión ágil de compras con **Tarjeta Caixa**, **Tarjeta Deutsche Bank** y **Tarjeta Pass Carrefour**.
+   - Atajos rápidos con 1 clic: *Pan y desayuno*, *Supermercado*, *Gasolina*, *Bar / Ocio*, *Farmacia*.
+   - Botón directo **`💳 Liquidar Recibo en Banco`** para saldar el extracto bancario con importe 100% editable.
+3. **🎯 Ahorro y Botes (`#/botes`)**:
+   - **Sobres y Botes**: Huchas activas (*Bote emergencias*, *Dinero del mes*, *Ocio*, *Proyectos*...) con barras de progreso y extracto individual.
+   - **Dinero que me deben**: Control de personas que te deben dinero, cobros parciales y liquidación.
+   - **Fondo Ahorro Hipoteca**: Reserva específica para la cuota y amortizaciones hipotecarias.
+4. **📝 Movimientos (`#/movimientos`)**:
+   - Historial cronológico global de todas las transacciones, con filtros por cuenta, bote y fecha.
+   - Formulario plegado para registrar movimientos manuales y botón para amortizar préstamos directamente.
+5. **🏦 Cuentas y Tarjetas (`#/cuentas`)**:
+   - **Cuentas y Depósitos**: Saldos reales de CaixaBank, Deutsche Bank, BBVA, Revolut y efectivo físico.
+   - **Inversiones**: Registro de capital total aportado a carteras de inversión.
+   - **Tarjetas Bancarias**: Tarjetas de crédito y débito con botón de liquidación de recibo.
+   - **Tarjetas Regalo**: Control de saldo en tarjetas prepago (Amazon, Carrefour, ECI...).
+6. **⋯ Extras (`#/extras`)**:
+   - **Previsión Gastos Anuales (`#/prevision-gastos`)**: Planificador mensual de seguros, IBIs y tributos anuales.
+   - **Categorías (`#/categorias`)**: Etiquetas analíticas con iconos vectoriales.
+   - **Recibos Fijos / Domiciliaciones (`#/pagos-recurrentes`)**: Ejecución masiva mensual de recibos fijos del hogar.
+   - **Copia de Seguridad (`#/copia-seguridad`)**: Exportación e importación en JSON y vaciado seguro.
+   - **Importar Excel (`#/importar`)**: Carga de extractos y conciliación automática.
+
+---
+
+## 🚀 Cómo Poner en Marcha la Aplicación
+
+### En Windows (Acceso en 1 Clic)
+Haz doble clic sobre el archivo ejecutable en la raíz del proyecto:
 ```cmd
 levantar.bat
 ```
-El script levantará el servidor automáticamente en el puerto `8003` y mostrará:
-* **En el PC:** `http://127.0.0.1:8003`
-* **En móviles / tablets (misma WiFi):** `http://TU_IP_LOCAL:8003` (la IP local se imprime en la consola al arrancar).
+El script levantará el servidor local y abrirá la aplicación en el puerto `8003`:
+* **En el ordenador:** [http://127.0.0.1:8003](http://127.0.0.1:8003)
+* **En el móvil o tablet (misma WiFi):** `http://TU_IP_LOCAL:8003` (la IP exacta se imprime en pantalla al arrancar).
 
-### Desde la Terminal
-Requiere Python 3.11+ y [`uv`](https://docs.astral.sh/uv/):
+### Desde la Terminal (PowerShell / Bash)
+Requiere Python 3.11+ y el gestor de paquetes [`uv`](https://docs.astral.sh/uv/):
 ```bash
-# Sincronizar dependencias
+# 1. Sincronizar dependencias
 uv sync
 
-# Aplicar migraciones sobre la base de datos local
+# 2. Aplicar migraciones a la base de datos SQLite
 uv run alembic upgrade head
 
-# Arrancar el servidor
-uv run uvicorn app_conta.main:app --host 0.0.0.0 --port 8003
+# 3. Iniciar el servidor
+uv run python start_server.py
 ```
 
 ---
 
-## Tests y Calidad
+## 🧪 Calidad, Tests y Robustez
 
-El proyecto aplica TDD riguroso en todas las reglas financieras (Constitución, Principio III):
+El software sigue el principio estricto de **Test-Driven Development (TDD)** para garantizar que ningún movimiento altere un céntimo de la contabilidad:
+
 ```bash
-# Ejecutar toda la suite de tests (unitarios, contratos API e integración)
+# Ejecutar toda la batería de tests unitarios, contratos API e integración
 uv run pytest
 
-# Verificación de estilo y formateo con Ruff
+# Verificación de sintaxis y buenas prácticas con Ruff
 uv run ruff check .
 ```
 
-* Estado actual: **165 tests en verde** (0 fallos).
-* Cobertura de tests: **88% global** en todo el backend y lógica contable.
-
+* **167 tests en verde** (0 fallos).
+* **88% de cobertura de código global** en servicios, modelos y endpoints.
 
 ---
 
-## Documentación del Proyecto
+## 📚 Documentación Adicional
 
-* **[docs/bitacora.md](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/docs/bitacora.md)**: Diario cronológico de sesiones de trabajo, decisiones arquitectónicas y resolución de incidencias.
-* **[docs/diseno-inicial.md](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/docs/diseno-inicial.md)**: Análisis forense del Excel `OCTUBRE.xlsx`, mapa de las 14 hojas y reglas de negocio del hogar.
-* **[.specify/memory/constitution.md](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/.specify/memory/constitution.md)**: Principios no negociables del proyecto (precisión monetaria, integridad de botes, TDD, datos primero).
-* **[specs/001-conta-mvp/](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/specs/001-conta-mvp/)**: Especificación formal de historias de usuario, modelo de datos relacional, contratos REST y plan de tareas.
+* 📖 **[Guía de Uso para Nuevos Usuarios](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/docs/guia-de-uso.md)**: Manual amigable paso a paso para aprender a usar la app en 5 minutos.
+* 📝 **[Bitácora de Desarrollo](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/docs/bitacora.md)**: Historial cronológico de cambios, decisiones de arquitectura y resolución de incidencias.
+* 📊 **[Diseño Inicial y Modelo Contable](file:///c:/Users/JAVIER/Documents/Programacion/App_Conta/docs/diseno-inicial.md)**: Explicación forense de la hoja de cálculo original y su equivalencia en la app.
