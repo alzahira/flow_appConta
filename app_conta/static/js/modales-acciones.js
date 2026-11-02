@@ -1376,8 +1376,8 @@ export async function abrirModalDesgloseCuadre() {
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🏁 <strong>2. Saldos iniciales</strong> (Dinero de apertura de las cuentas)</span>
-              <span class="${Number(conc.saldo_inicial_total) >= 0 ? "positivo" : "negativo"}">${importe(conc.saldo_inicial_total, Number(conc.saldo_inicial_total) < 0 ? "negativo" : "")}</span>
+              <span>📦 <strong>2. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
+              <span class="positivo">${importe(conc.total_botes_formula)}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
@@ -1386,22 +1386,17 @@ export async function abrirModalDesgloseCuadre() {
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📦 <strong>4. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
-              <span class="positivo">${importe(conc.total_botes_formula)}</span>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📅 <strong>5. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
+              <span>📅 <strong>4. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
               <span class="${Number(conc.total_prevision_formula) >= 0 ? "positivo" : "negativo"}">${importe(conc.total_prevision_formula, Number(conc.total_prevision_formula) < 0 ? "negativo" : "")}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🤝 <strong>6. Dinero que me deben</strong> (Pendiente de cobro)</span>
+              <span>🤝 <strong>5. Dinero que me deben</strong> (Pendiente de cobro)</span>
               <span class="negativo">${importe(conc.total_me_deben_formula, "negativo")}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🚗 <strong>7. Préstamos que debo</strong> (Deuda pendiente)</span>
+              <span>🚗 <strong>6. Préstamos que debo</strong> (Deuda pendiente)</span>
               <span class="negativo">${importe(conc.total_prestamos_formula, "negativo")}</span>
             </div>
           </div>
@@ -1411,7 +1406,7 @@ export async function abrirModalDesgloseCuadre() {
             ${
               Number(conc.total_cuentas_formula) === 0 && Number(conc.total_prevision_formula) < 0
                 ? "💡 <strong>¿Por qué sale esta cifra exacta?</strong> Actualmente tienes las cuentas bancarias vacías (0,00 €), pero en la pantalla de Previsión de Gastos constan facturas pagadas (−1.830,50 €) sin que haya meses de provisión guardada aportados. El sistema avisa de que hay 1.830 € de pagos registrados que no están respaldados por ningún saldo bancario."
-                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Saldos iniciales + Botes + Sin asignar + Previsión − Deudas − Préstamos. El dinero sin asignar (por ejemplo, para recibos aún pendientes) NO es un descuadre. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
+                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Botes + Sin asignar + Previsión − Deudas − Préstamos. El dinero sin asignar (por ejemplo, para recibos aún pendientes) NO es un descuadre. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
             }
           </div>
 

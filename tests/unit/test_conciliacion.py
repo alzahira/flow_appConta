@@ -171,11 +171,13 @@ def test_formula_ingreso_sin_bote_no_es_descuadre(db):
     assert r["estado_formula"] == "cuadrado"
 
 
-def test_formula_incluye_saldo_inicial(db):
-    """El saldo inicial es dinero real explicado: no debe marcar descuadre."""
-    _cuenta(db, inicial_centimos=150_000)  # 1.500,00 € iniciales, sin movimientos
+def test_formula_cuenta_con_bote_cuadra(db):
+    """Cuenta con fondos asignados a un bote: la fórmula del hogar queda cuadrada."""
+    cuenta = _cuenta(db, inicial_centimos=0)
+    bote = _bote(db, nombre="Ahorro")
+    _movimiento(db, cuenta, 150_000, bote=bote)
     r = calcular_conciliacion(db)
-    assert r["saldo_inicial_total"] == 150_000
+    assert r["total_botes_formula"] == 150_000
     assert r["diferencia_formula"] == 0
     assert r["estado_formula"] == "cuadrado"
 
