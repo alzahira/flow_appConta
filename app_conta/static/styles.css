@@ -5,58 +5,62 @@
    ========================================================================== */
 
 :root {
-  /* Paleta Base — Estilo Cálido Cream & Ivory (Inspirado en Mockup) */
-  --bg-app: #f7f4ee;
-  --bg-gradient: linear-gradient(180deg, #fbf9f4 0%, #f7f4ee 200px);
-  --surface-card: #ffffff;
-  --surface-elevated: #faf8f3;
-  --surface-hover: #f1ece2;
-  --surface-glass: rgba(247, 244, 238, 0.94);
-  --surface-input: #ffffff;
+  /* ==========================================================================
+     SISTEMA MONOCROMÁTICO TONAL CÁLIDO (Sin blancos crudos, todo en gama arena/crema)
+     ========================================================================== */
+  --bg-app: #f4efe6;
+  --bg-gradient: linear-gradient(180deg, #f7f3eb 0%, #f4efe6 240px);
+  --surface-card: #faf6ee;           /* Marfil cálido suave para tarjetas y contenedores */
+  --surface-elevated: #fcf9f2;       /* Un tono apenas más claro para elementos destacados */
+  --surface-sunken: #ece5d8;         /* Fondo hundido para inputs, tracks y badges */
+  --surface-hover: #e5ded0;          /* Hover interactivo cálido */
+  --surface-glass: rgba(244, 239, 230, 0.94);
+  --surface-input: #faf6ee;
 
-  /* Bordes y Divisiones Suaves */
-  --border-subtle: #eae5dc;
-  --border-medium: #ded6c9;
-  --border-highlight: #b8ad9c;
-  --border-focus: #1e242b;
+  /* Bordes en la misma gama cálida */
+  --border-subtle: #e5ded0;
+  --border-medium: #d6ccba;
+  --border-highlight: #bfb29f;
+  --border-focus: #352c24;
 
-  /* Texto y Jerarquía Visual */
-  --text-main: #1e242b;       /* Grafito cálido profundo */
-  --text-muted: #5e6875;      /* Slate neutro */
-  --text-dim: #8c97a4;        /* Metadatos */
+  /* Tipografía cálida (Espresso profundo, nunca gris frío) */
+  --text-main: #2b241e;
+  --text-muted: #6b6053;
+  --text-dim: #998c7e;
 
-  /* Acentos Semánticos Financieros */
-  --accent-brand: #1e242b;
-  --accent-brand-hover: #2d3748;
-  --accent-brand-soft: #f0ece3;
-  --accent-brand-border: #ded6c9;
+  /* Botones primarios (Espresso tostado de la misma familia) */
+  --accent-brand: #332a23;
+  --accent-brand-hover: #473b32;
+  --accent-brand-soft: #ece5d8;
+  --accent-brand-border: #d6ccba;
 
-  --accent-positive: #16a34a;         /* Verde salvia / orgánico */
-  --accent-positive-hover: #15803d;
-  --accent-positive-soft: #eaf5ed;
-  --accent-positive-border: #bce3c8;
+  /* Acentos Semánticos Cálidos (Tonos tierra y vegetales, nada estridente) */
+  --accent-positive: #36603d;        /* Verde oliva / salvia profundo */
+  --accent-positive-hover: #294d30;
+  --accent-positive-soft: #e2ece3;
+  --accent-positive-border: #bad1bf;
 
-  --accent-negative: #dc2626;         /* Coral / Rosa suave */
-  --accent-negative-hover: #b91c1c;
-  --accent-negative-soft: #fef2f2;
-  --accent-negative-border: #fecaca;
+  --accent-negative: #8c3b35;        /* Terracota / arcilla */
+  --accent-negative-hover: #752f2a;
+  --accent-negative-soft: #f7ebe9;
+  --accent-negative-border: #e6c5c2;
 
-  --accent-warning: #d97706;  /* Ámbar */
-  --accent-warning-soft: #fffbeb;
-  --accent-warning-border: #fde68a;
+  --accent-warning: #85531d;         /* Ámbar caramelo */
+  --accent-warning-soft: #faf0df;
+  --accent-warning-border: #ead1ad;
 
-  --accent-info: #0284c7;     /* Azul hielo / cielo */
-  --accent-info-soft: #f0f7fe;
-  --accent-info-border: #cfe2f4;
+  --accent-info: #355875;            /* Azul pizarra suave */
+  --accent-info-soft: #e5edf4;
+  --accent-info-border: #bfd4e4;
 
-  /* Sombras Táctiles Neumórficas Suaves */
-  --shadow-sm: 0 2px 6px rgba(45, 35, 25, 0.04);
-  --shadow-card: 0 4px 14px rgba(45, 35, 25, 0.04), 0 1px 3px rgba(45, 35, 25, 0.02);
-  --shadow-hero: 0 6px 20px rgba(45, 35, 25, 0.05);
-  --shadow-hover: 0 10px 24px -2px rgba(45, 35, 25, 0.08), 0 0 0 1px var(--border-medium);
-  --shadow-pill: 0 4px 14px rgba(45, 35, 25, 0.05), 0 1px 3px rgba(45, 35, 25, 0.03);
+  /* Sombras Táctiles Cálidas */
+  --shadow-sm: 0 1px 3px rgba(55, 45, 30, 0.04);
+  --shadow-card: 0 3px 10px rgba(55, 45, 30, 0.04), 0 1px 2px rgba(55, 45, 30, 0.02);
+  --shadow-hero: 0 6px 18px rgba(55, 45, 30, 0.05);
+  --shadow-hover: 0 8px 20px rgba(55, 45, 30, 0.08);
+  --shadow-pill: 0 2px 8px rgba(55, 45, 30, 0.04);
 
-  /* Dimensiones y Curvaturas */
+  /* Curvaturas Unificadas */
   --radius-xs: 8px;
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -6534,25 +6538,29 @@ input:focus, select:focus, textarea:focus {
 
 
 
+
+
 /* ==========================================================================
-   ESTILO MOCKUP: Botones Píldora, Tarjetas Pastel Suaves y Barra Cápsula
+   ESTÉTICA UNIFICADA TONAL: Botones, Tarjetas y Superficies Armónicas
+   (Todo en la misma familia de color sin blancos discordantes)
    ========================================================================== */
 
-/* Botones de Acción Hero estilo Píldora Cápsula */
+/* Todos los botones de acción (.btn-hero-action) */
 .btn-hero-action {
   border-radius: var(--radius-pill) !important;
-  background: #ffffff !important;
-  border: 1px solid rgba(215, 208, 196, 0.75) !important;
-  box-shadow: 0 4px 14px rgba(45, 35, 25, 0.04), 0 1px 3px rgba(45, 35, 25, 0.02) !important;
-  padding: 0.85rem 1.45rem !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #ede6d9 !important;
+  border: 1px solid #dcd3c2 !important;
+  box-shadow: 0 2px 8px rgba(55, 45, 30, 0.04) !important;
   color: var(--text-main) !important;
+  padding: 0.85rem 1.45rem !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .btn-hero-action:hover {
+  background: #e4dcce !important;
+  border-color: #c9bfae !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 20px rgba(45, 35, 25, 0.08) !important;
-  border-color: rgba(180, 170, 155, 0.9) !important;
+  box-shadow: 0 6px 16px rgba(55, 45, 30, 0.07) !important;
 }
 
 .btn-hero-action:active {
@@ -6560,7 +6568,128 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-hero-action .action-btn-icon {
+  background: #f7f3eb !important;
+  border: 1px solid #ded6c6 !important;
   border-radius: 50% !important;
+}
+
+.btn-hero-action.ingreso .action-btn-icon {
+  background: var(--accent-positive-soft) !important;
+  color: var(--accent-positive) !important;
+  border-color: var(--accent-positive-border) !important;
+}
+
+.btn-hero-action.gasto .action-btn-icon {
+  background: var(--accent-negative-soft) !important;
+  color: var(--accent-negative) !important;
+  border-color: var(--accent-negative-border) !important;
+}
+
+.btn-hero-action.pago-diario .action-btn-icon {
+  background: var(--accent-info-soft) !important;
+  color: var(--accent-info) !important;
+  border-color: var(--accent-info-border) !important;
+}
+
+/* Botones genéricos de la app (.btn, .btn-primary, .btn-secondary, etc.) */
+.btn, .btn-secondary, .btn-outline, .btn-cancelar {
+  border-radius: var(--radius-pill) !important;
+  background: #ede6d9 !important;
+  border: 1px solid #dcd3c2 !important;
+  color: var(--text-main) !important;
+  font-family: var(--font-sans) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn:hover, .btn-secondary:hover, .btn-outline:hover, .btn-cancelar:hover {
+  background: #e4dcce !important;
+  border-color: #c9bfae !important;
+}
+
+.btn-primary, .btn-fintech-primary, .btn-guardar, button[type="submit"] {
+  border-radius: var(--radius-pill) !important;
+  background: var(--accent-brand) !important;
+  border: 1px solid var(--accent-brand) !important;
+  color: #f7f3eb !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: 0 2px 6px rgba(50, 40, 30, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-primary:hover, .btn-fintech-primary:hover, .btn-guardar:hover, button[type="submit"]:hover {
+  background: var(--accent-brand-hover) !important;
+  border-color: var(--accent-brand-hover) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botones de sugerencias rápidas (chips de pagos diarios) */
+.btn-suggestion {
+  border-radius: var(--radius-pill) !important;
+  background: #ede6d9 !important;
+  border: 1px solid #dcd3c2 !important;
+  color: var(--text-main) !important;
+}
+
+.btn-suggestion:hover {
+  background: #e4dcce !important;
+  border-color: #c9bfae !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botones de filtros (.btn-filtro-tipo, .btn-cat-filter) */
+.btn-filtro-tipo, .btn-cat-filter {
+  border-radius: var(--radius-pill) !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-filtro-tipo:hover, .btn-cat-filter:hover {
+  background: #e9e2d4 !important;
+  color: var(--text-main) !important;
+}
+
+.btn-filtro-tipo.activo, .btn-cat-filter.activo {
+  background: #ded5c4 !important;
+  border-color: #cfc4b1 !important;
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+}
+
+/* Tarjetas y Contenedores Generales: fuera blancos puros */
+.card, .dashboard-hero, .pot-card, .table-card, .modal-fintech-content, .fcr-card {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+/* Modales */
+.modal-fintech-content {
+  background: #faf6ee !important;
+  border: 1px solid #ded5c4 !important;
+  box-shadow: 0 20px 45px rgba(50, 40, 25, 0.14) !important;
+  border-radius: var(--radius-xl) !important;
+}
+
+.modal-fintech-header {
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+.modal-fintech-footer {
+  border-top: 1px solid var(--border-subtle) !important;
+}
+
+/* Inputs y Selects */
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  background: #fdfaf4 !important;
+  border: 1px solid #dcd3c2 !important;
+  color: var(--text-main) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  border-color: var(--accent-brand) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(50, 42, 35, 0.08) !important;
 }
 
 /* Tarjetas Spotlight (Dinero del Mes y Dinero de Ocio) */
@@ -6571,19 +6700,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 .spotlight-card.mes {
-  background: linear-gradient(180deg, #f2f7fd 0%, #e5f0fa 100%) !important;
-  border: 1px solid #cfe2f4 !important;
-  box-shadow: 0 12px 28px -4px rgba(180, 205, 230, 0.4) !important;
+  background: linear-gradient(180deg, #ecf2f7 0%, #dfeaf2 100%) !important;
+  border: 1px solid #c8dced !important;
+  box-shadow: 0 8px 24px -4px rgba(60, 95, 125, 0.12) !important;
 }
 
 .spotlight-card.ocio {
-  background: linear-gradient(180deg, #fdf8f1 0%, #faeee0 100%) !important;
-  border: 1px solid #f2ded0 !important;
-  box-shadow: 0 12px 28px -4px rgba(235, 195, 160, 0.4) !important;
+  background: linear-gradient(180deg, #f9f2e7 0%, #f3e6d4 100%) !important;
+  border: 1px solid #e8d7c2 !important;
+  box-shadow: 0 8px 24px -4px rgba(135, 85, 30, 0.12) !important;
 }
 
 .spotlight-card:hover {
-  transform: translateY(-3px) !important;
+  transform: translateY(-2px) !important;
 }
 
 .spotlight-icon-circle {
@@ -6597,21 +6726,21 @@ input:focus, select:focus, textarea:focus {
 }
 
 .spotlight-icon-circle.mes {
-  background: #dceaf8;
-  color: #4e82aa;
-  border: 1px solid #c8def2;
+  background: #d6e5f2;
+  color: #385b77;
+  border: 1px solid #bfd5e7;
 }
 
 .spotlight-icon-circle.ocio {
-  background: #faebd8;
-  color: #d98236;
-  border: 1px solid #f5dac1;
+  background: #faebd6;
+  color: #85531d;
+  border: 1px solid #ebd2b0;
 }
 
 .spotlight-label {
   font-size: 1.05rem !important;
   font-weight: 600 !important;
-  color: #222b35 !important;
+  color: var(--text-main) !important;
   text-transform: none !important;
   letter-spacing: 0 !important;
   margin-bottom: 0.35rem !important;
@@ -6620,17 +6749,16 @@ input:focus, select:focus, textarea:focus {
 .spotlight-value {
   font-size: 2.1rem !important;
   font-weight: 800 !important;
-  color: #0f172a !important;
+  color: var(--text-main) !important;
   letter-spacing: -0.02em !important;
   margin-bottom: 0.5rem !important;
 }
 
-/* Barra de progreso sutil en las tarjetas */
 .spotlight-progress-track {
   height: 6px;
   width: 100%;
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(50, 40, 30, 0.08);
   margin-top: 0.75rem;
   overflow: hidden;
 }
@@ -6638,13 +6766,13 @@ input:focus, select:focus, textarea:focus {
 .spotlight-progress-bar.mes {
   height: 100%;
   border-radius: 9999px;
-  background: #6b9ec4;
+  background: #507d9f;
 }
 
 .spotlight-progress-bar.ocio {
   height: 100%;
   border-radius: 9999px;
-  background: #d98236;
+  background: #a86c2e;
 }
 
 /* Status Pill ("Contabilidad al día.") */
@@ -6657,24 +6785,23 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
-  background: #eaf5ed !important;
-  border-color: #bce3c8 !important;
-  color: #226338 !important;
-  box-shadow: 0 2px 6px rgba(34, 99, 56, 0.08) !important;
+  background: var(--accent-positive-soft) !important;
+  border-color: var(--accent-positive-border) !important;
+  color: var(--accent-positive) !important;
 }
 
 .status-pill.alerta {
-  background: #fff8e6 !important;
-  border-color: #f7dfa5 !important;
-  color: #92540c !important;
+  background: var(--accent-warning-soft) !important;
+  border-color: var(--accent-warning-border) !important;
+  color: var(--accent-warning) !important;
 }
 
 .status-check-circle {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #34a853;
-  color: #ffffff;
+  background: var(--accent-positive);
+  color: #f7f3eb;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -6684,7 +6811,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .status-pill.alerta .status-check-circle {
-  background: #f59e0b;
+  background: var(--accent-warning);
 }
 
 /* Barra de Resumen Cápsula (Deudas e Inversiones) */
@@ -6695,9 +6822,9 @@ input:focus, select:focus, textarea:focus {
   gap: 1.5rem;
   padding: 0.75rem 1.75rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 14px rgba(45, 35, 25, 0.04);
+  background: #ede6d9;
+  border: 1px solid #dcd3c2;
+  box-shadow: 0 2px 8px rgba(55, 45, 30, 0.04);
   margin-top: 1.35rem;
   margin-bottom: 0.75rem;
   flex-wrap: wrap;
@@ -6728,15 +6855,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .capsule-chip-icon.debt {
-  background: #fde8e4;
-  color: #dc2626;
-  border: 1px solid #fad2cc;
+  background: var(--accent-negative-soft);
+  color: var(--accent-negative);
+  border: 1px solid var(--accent-negative-border);
 }
 
 .capsule-chip-icon.invest {
-  background: #e6f4ea;
-  color: #16a34a;
-  border: 1px solid #c9ebd3;
+  background: var(--accent-positive-soft);
+  color: var(--accent-positive);
+  border: 1px solid var(--accent-positive-border);
 }
 
 .capsule-chip-label {
@@ -6749,21 +6876,29 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-main);
 }
 
-/* Pestañas de navegación redondeadas */
+/* Pestañas de Navegación */
 .nav-tab {
   border-radius: var(--radius-pill) !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+}
+
+.nav-tab:hover {
+  background: #e9e2d4 !important;
+  color: var(--text-main) !important;
 }
 
 .nav-tab.activa {
-  background: #ffffff !important;
+  background: #ded5c4 !important;
+  border: 1px solid #cfc4b1 !important;
   color: var(--text-main) !important;
-  box-shadow: 0 2px 8px rgba(45, 35, 25, 0.06) !important;
   font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(55, 45, 30, 0.04) !important;
 }
 
-/* Header suave con desenfoque cálido */
+/* Header suave armónico */
 .app-header {
-  background: rgba(247, 244, 238, 0.88) !important;
+  background: rgba(244, 239, 230, 0.92) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid var(--border-subtle) !important;
