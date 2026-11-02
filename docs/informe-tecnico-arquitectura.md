@@ -303,3 +303,4 @@ Si en el futuro deseas añadir una nueva funcionalidad, este es el patrón de di
 5. **Añadir el Método de Cliente** en `app_conta/static/js/api.js`.
 6. **Crear la Pantalla** en `app_conta/static/js/views/nuevo-concepto.js` y registrar la ruta en `nav.js`.
 7. **Escribir los Tests** en `tests/api/test_nuevo_concepto.py` y ejecutar `uv run pytest`.
+

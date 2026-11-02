@@ -111,23 +111,13 @@ export default vista("inicio", async () => {
         </span>
       </button>
 
-      <button type="button" class="btn-hero-action nomina" data-accion-fintech="abrir-nomina">
+      <a href="/pagos-diarios" class="btn-hero-action pago-diario" style="text-decoration: none;">
         <span class="action-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         </span>
         <span class="action-btn-text">
-          <strong>Reparto Nómina</strong>
-          <small>Automático mes</small>
-        </span>
-      </button>
-
-      <a href="/copia-seguridad" class="btn-hero-action backup" style="text-decoration: none;">
-        <span class="action-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </span>
-        <span class="action-btn-text">
-          <strong>Copia & Vaciar</strong>
-          <small>Guardar / Restaurar</small>
+          <strong>Pago Diario</strong>
+          <small>Supermercado, Gasoil...</small>
         </span>
       </a>
     </div>

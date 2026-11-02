@@ -4797,11 +4797,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Barra de botones de acción en Inicio */
 .hero-actions-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.85rem;
   margin-top: 1.25rem;
   margin-bottom: 0.25rem;
-  flex-wrap: wrap;
 }
 
 .btn-hero-action {
@@ -4815,8 +4815,8 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid transparent;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
-  flex: 1;
-  min-width: 180px;
+  width: 100%;
+  box-sizing: border-box;
   text-align: left;
 }
 
@@ -4884,6 +4884,23 @@ input:focus, select:focus, textarea:focus {
   background: var(--accent-negative-soft);
   color: var(--accent-negative);
   border: 1px solid var(--accent-negative-border);
+}
+
+.btn-hero-action.pago-diario {
+  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+}
+
+.btn-hero-action.pago-diario:hover {
+  border-color: #0d9488;
+  background: var(--surface-hover);
+}
+
+.btn-hero-action.pago-diario .action-btn-icon {
+  background: #f0fdfa;
+  color: #0d9488;
+  border: 1px solid rgba(13, 148, 136, 0.25);
 }
 
 .btn-hero-action.nomina {
@@ -5487,7 +5504,7 @@ input:focus, select:focus, textarea:focus {
   line-height: 1;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .hero-actions-bar {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -5499,15 +5516,18 @@ input:focus, select:focus, textarea:focus {
     padding: 0.75rem 0.85rem !important;
     gap: 0.65rem !important;
   }
+  .btn-hero-action.pago-diario {
+    grid-column: 1 / -1 !important;
+  }
   .btn-hero-action .action-btn-icon {
     width: 32px !important;
     height: 32px !important;
   }
   .btn-hero-action .action-btn-text strong {
-    font-size: 0.84rem !important;
+    font-size: 0.88rem !important;
   }
   .btn-hero-action .action-btn-text small {
-    font-size: 0.7rem !important;
+    font-size: 0.72rem !important;
   }
   .modal-grid-fields {
     grid-template-columns: 1fr;
@@ -6503,12 +6523,6 @@ input:focus, select:focus, textarea:focus {
 
 .btn-suggestion:active {
   transform: translateY(0);
-}
-
-@media (max-width: 380px) {
-  .hero-actions-bar {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 
