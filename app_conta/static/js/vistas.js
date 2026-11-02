@@ -88,8 +88,8 @@ export function icono(nombre) {
   return ICONOS[nombre] || ICONOS.cuentas;
 }
 
-/** Importe en euros (string del contrato) → HTML coloreado con signo y formato tabular */
-export function importe(centimosStr, extraClase = "") {
+/** Importe en euros (string del contrato) → HTML coloreado con signo, céntimos secundarios y formato tabular */
+export function importe(centimosStr, extraClase = "", splitDecimals = true) {
   let n = Number(centimosStr || 0);
   const forzarNegativo = typeof extraClase === "string" && extraClase.includes("negativo");
   if (forzarNegativo && n > 0) {
@@ -102,8 +102,16 @@ export function importe(centimosStr, extraClase = "") {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  const colorAttr = esNeg ? 'style="color: var(--accent-negative) !important;"' : "";
-  return `<span class="importe ${clase} ${extraClase}" ${colorAttr}><span class="signo">${signo}</span>${absVal}&nbsp;<span class="moneda">€</span></span>`;
+
+  if (splitDecimals) {
+    const comaIdx = absVal.lastIndexOf(",");
+    if (comaIdx !== -1) {
+      const entero = absVal.slice(0, comaIdx);
+      const decimal = absVal.slice(comaIdx);
+      return `<span class="importe ${clase} ${extraClase}"><span class="signo">${signo}</span>${entero}<small class="centimos">${decimal}&nbsp;€</small></span>`;
+    }
+  }
+  return `<span class="importe ${clase} ${extraClase}"><span class="signo">${signo}</span>${absVal}&nbsp;<span class="moneda">€</span></span>`;
 }
 
 /** Fecha ISO "2026-10-28" → "28 oct 2026" (elegante para listados). */

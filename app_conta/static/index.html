@@ -1,50 +1,94 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#0B0D12" />
   <title>Flow — Finanzas & Botes</title>
+  
+  <!-- Tipografía Inter & Plus Jakarta Sans con números tabulares -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=54" />
+  <link rel="stylesheet" href="/static/styles.css?v=55" />
+  
+  <!-- Inicialización inmediata de tema para evitar parpadeos -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('flow-theme');
+        if (saved === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (_e) {}
+    })();
+  </script>
 </head>
 <body>
-  <header class="app-header">
+  <!-- Fondo con manchas orgánicas de degradado difuminadas (Mesh Glow) -->
+  <div class="mesh-glow-bg" aria-hidden="true">
+    <div class="glow-spot spot-violet"></div>
+    <div class="glow-spot spot-blue"></div>
+    <div class="glow-spot spot-turquoise"></div>
+  </div>
+
+  <!-- Header Superior Minimalista de Cristal -->
+  <header class="app-header glass-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="brand-logo flow-logo" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="brand-logo flow-logo-glass" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="flowTealGrad" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#38bdf8"/>
-                <stop offset="100%" stop-color="#0d9488"/>
+              <linearGradient id="flowVioletCyan" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7C5CFF"/>
+                <stop offset="100%" stop-color="#22D3EE"/>
               </linearGradient>
             </defs>
-            <path d="M6.5 19.5V7C6.5 5.343 7.843 4 9.5 4H18.5" stroke="url(#flowTealGrad)" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6.5 11.5H15.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M11 19.5C13 19.5 13.5 16.5 16 16.5H19" stroke="url(#flowTealGrad)" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-            <circle cx="19" cy="16.5" r="1.5" fill="#38bdf8"/>
+            <path d="M6 19V6.5C6 5.12 7.12 4 8.5 4H18" stroke="url(#flowVioletCyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11.5H15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+            <path d="M10 19C12 19 12.5 16 15 16H18.5" stroke="url(#flowVioletCyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18.5" cy="16" r="1.5" fill="#22D3EE"/>
           </svg>
         </div>
         <div class="brand-text">
           <span class="brand-name">Flow</span>
-          <span class="brand-sub">Finanzas & Botes</span>
+          <span class="brand-sub">Finanzas</span>
         </div>
       </div>
-      <nav id="nav" class="nav-bar"></nav>
+
+      <!-- Contenedor dinámico para estado o conmutador de tema -->
+      <div class="header-right-actions">
+        <button type="button" class="btn-theme-quick-toggle" id="btn-theme-quick-toggle" title="Cambiar tema (Oscuro / Claro)" aria-label="Cambiar tema">
+          <span class="theme-icon-dark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </span>
+          <span class="theme-icon-light">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="vista" class="app-content"></main>
+  <!-- Contenedor Principal de Vistas -->
+  <main id="vista" class="app-content-container"></main>
 
-  <script src="/static/js/api.js?v=54"></script>
-  <script type="module" src="/static/js/app.js?v=54"></script>
+  <!-- Barra de Navegación Inferior Flotante de Cristal -->
+  <nav id="nav" class="floating-glass-nav" aria-label="Navegación principal"></nav>
+
+  <!-- Modal y Drawer Backdrop Global -->
+  <div class="nav-dropdown-backdrop" id="nav-dropdown-backdrop"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js?v=55"></script>
+  <script type="module" src="/static/js/app.js?v=55"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=54").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=55").then((reg) => {
         reg.update();
       });
       let refreshing = false;

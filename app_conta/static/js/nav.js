@@ -1,20 +1,20 @@
-// Navegación superior consolidada y limpia (5 pestañas principales sin scrollbar)
+// Navegación Inferior Flotante de Cristal (Glass Floating Navigation Bar)
 import { icono } from "./vistas.js";
 
 const ITEMS_PRINCIPALES = [
-  { grupo: "inicio", href: "/inicio", label: "Resumen", iconoKey: "inicio" },
-  { grupo: "pagos-diarios", href: "/pagos-diarios", label: "Pagos Diarios", iconoKey: "carrito" },
-  { grupo: "cuentas-grupo", href: "/cuentas", label: "Cuentas y Tarjetas", iconoKey: "cuentas" },
-  { grupo: "ahorro-grupo", href: "/botes", label: "Ahorro y Botes", iconoKey: "ahorro" },
-  { grupo: "prestamos", href: "/prestamos", label: "Préstamos", iconoKey: "coche" },
-  { grupo: "movimientos", href: "/movimientos", label: "Movimientos", iconoKey: "movimientos" },
+  { id: "inicio", href: "/inicio", label: "Inicio", iconoKey: "inicio" },
+  { id: "cuentas", href: "/cuentas", label: "Cuentas", iconoKey: "cuentas" },
+  { id: "botes", href: "/botes", label: "Botes", iconoKey: "botes" },
+  { id: "movimientos", href: "/movimientos", label: "Movimientos", iconoKey: "movimientos" },
 ];
 
-const RUTAS_MAS = [
-  { nombre: "prevision-gastos", desc: "Planificación y provisión de gastos anuales (IBI, seguros...)", label: "Previsión Gastos Anuales", iconoKey: "prevision" },
-  { nombre: "pagos-recurrentes", desc: "Recibos y domiciliaciones fijas bancarias", label: "Recibos Fijos", iconoKey: "prevision" },
-  { nombre: "categorias", desc: "Clasificación analítica de gastos", label: "Categorías", iconoKey: "categorias" },
-  { nombre: "copia-seguridad", desc: "Exportar archivo, vaciar y restaurar", label: "Copia de Seguridad & Datos", iconoKey: "banco" },
+const ITEMS_MAS = [
+  { nombre: "pagos-diarios", desc: "Supermercado, gasoil y compras cotidianas", label: "Pagos Diarios", iconoKey: "carrito" },
+  { nombre: "prestamos", desc: "Amortizaciones, cuotas e hipotecas", label: "Préstamos & Deudas", iconoKey: "coche" },
+  { nombre: "prevision-gastos", desc: "Provisión mensual de gastos anuales (IBI, seguros...)", label: "Previsión Anual", iconoKey: "prevision" },
+  { nombre: "pagos-recurrentes", desc: "Recibos bancarios y domiciliaciones fijas", label: "Recibos Fijos", iconoKey: "prevision" },
+  { nombre: "categorias", desc: "Clasificación analítica y etiquetas de gasto", label: "Categorías", iconoKey: "categorias" },
+  { nombre: "copia-seguridad", desc: "Exportar snapshot, vaciar y restaurar", label: "Copia de Seguridad", iconoKey: "banco" },
 ];
 
 export function pintarNav(_rutas) {
@@ -22,82 +22,129 @@ export function pintarNav(_rutas) {
   if (!nav) return;
 
   nav.innerHTML = `
-    ${ITEMS_PRINCIPALES.map(
-      (item) => `
-      <a data-nav-group="${item.grupo}" href="${item.href}" class="nav-tab">
-        <span class="nav-icon">${icono(item.iconoKey)}</span>
-        <span class="nav-label">${item.label}</span>
-      </a>`
-    ).join("")}
+    <div class="glass-nav-container">
+      ${ITEMS_PRINCIPALES.map(
+        (item) => `
+        <a data-nav-group="${item.id}" href="${item.href}" class="glass-nav-item">
+          <span class="glass-nav-icon">${icono(item.iconoKey)}</span>
+          <span class="glass-nav-label">${item.label}</span>
+        </a>`
+      ).join("")}
 
-    <div class="nav-dropdown-backdrop" id="nav-dropdown-backdrop"></div>
-    <div class="nav-dropdown-wrap" id="nav-dropdown-wrap">
-      <button type="button" class="nav-tab nav-dropdown-btn" id="btn-nav-mas" aria-haspopup="true" aria-expanded="false" title="Extras y opciones">
-        <span class="nav-icon">${icono("mas")}</span>
-        <span class="nav-label">Extras</span>
-        <span class="nav-chevron">${icono("chevron")}</span>
+      <button type="button" class="glass-nav-item glass-nav-more-btn" id="btn-nav-mas" aria-haspopup="true" aria-expanded="false" aria-label="Más opciones">
+        <span class="glass-nav-icon">${icono("mas")}</span>
+        <span class="glass-nav-label">Más</span>
       </button>
-      <div class="nav-dropdown-menu" id="nav-dropdown-menu">
-        <div class="dropdown-sheet-header">
-          <div class="dropdown-sheet-handle"></div>
-          <div class="dropdown-sheet-title-row">
-            <span class="dropdown-sheet-title">Opciones y Configuración</span>
-            <button type="button" class="btn-sheet-close" id="btn-close-extras" aria-label="Cerrar">&times;</button>
-          </div>
+    </div>
+
+    <!-- Menú Bottom Sheet / Drawer de Cristal para "Más" -->
+    <div class="glass-sheet-menu" id="glass-sheet-menu">
+      <div class="glass-sheet-header">
+        <div class="glass-sheet-handle"></div>
+        <div class="glass-sheet-title-row">
+          <span class="glass-sheet-title">Opciones & Ajustes</span>
+          <button type="button" class="glass-sheet-close" id="btn-close-extras" aria-label="Cerrar">&times;</button>
         </div>
-        ${RUTAS_MAS.map(
+      </div>
+
+      <!-- Conmutador de Tema dentro de Más -->
+      <div class="theme-switcher-glass-card">
+        <div class="theme-switcher-info">
+          <span class="theme-switcher-title">Modo de Interfaz</span>
+          <span class="theme-switcher-desc">Cambia entre luz natural y noche fintech</span>
+        </div>
+        <div class="segmented-control theme-segmented">
+          <button type="button" class="seg-btn" id="btn-theme-dark">Oscuro</button>
+          <button type="button" class="seg-btn" id="btn-theme-light">Claro</button>
+        </div>
+      </div>
+
+      <div class="glass-sheet-links-list">
+        ${ITEMS_MAS.map(
           (item) => `
-          <a data-vista="${item.nombre}" href="/${item.nombre}" class="dropdown-item">
-            <span class="dropdown-icon">${icono(item.iconoKey)}</span>
-            <div class="dropdown-item-info">
-              <span class="dropdown-item-title">${item.label}</span>
-              <span class="dropdown-item-desc">${item.desc}</span>
+          <a data-vista="${item.nombre}" href="/${item.nombre}" class="glass-sheet-item">
+            <span class="glass-sheet-item-icon">${icono(item.iconoKey)}</span>
+            <div class="glass-sheet-item-info">
+              <span class="glass-sheet-item-title">${item.label}</span>
+              <span class="glass-sheet-item-desc">${item.desc}</span>
             </div>
-          </a>
-        `
+            <span class="glass-sheet-arrow">&rarr;</span>
+          </a>`
         ).join("")}
-        <div style="border-top: 1px solid var(--border-subtle); margin: 0.35rem 0;"></div>
-        <a href="/static/manual_arquitectura_app_conta.pdf" target="_blank" download="Manual_Arquitectura_App_Conta.pdf" class="dropdown-item">
-          <span class="dropdown-icon">${icono("importar")}</span>
-          <div class="dropdown-item-info">
-            <span class="dropdown-item-title">📄 Manual Técnico (PDF)</span>
-            <span class="dropdown-item-desc">Descargar guía completa de arquitectura</span>
-          </div>
+      </div>
+
+      <div class="glass-sheet-footer">
+        <a href="/static/manual_arquitectura_app_conta.pdf" target="_blank" download="Manual_Arquitectura_App_Conta.pdf" class="glass-sheet-pdf-btn">
+          <span class="pdf-icon">${icono("importar")}</span>
+          <span>Manual Técnico de Arquitectura (PDF)</span>
         </a>
       </div>
     </div>
   `;
 
-  // Control interactivo del desplegable / bottom-sheet "Más"
-  const wrap = document.getElementById("nav-dropdown-wrap");
-  const btn = document.getElementById("btn-nav-mas");
+  // Control interactivo del Bottom Sheet
+  const sheet = document.getElementById("glass-sheet-menu");
+  const btnMas = document.getElementById("btn-nav-mas");
   const backdrop = document.getElementById("nav-dropdown-backdrop");
   const btnClose = document.getElementById("btn-close-extras");
 
-  const cerrarMenu = () => {
-    wrap?.classList.remove("abierto");
-    btn?.setAttribute("aria-expanded", "false");
+  const abrirMenu = () => {
+    sheet?.classList.add("visible");
+    backdrop?.classList.add("visible");
+    btnMas?.setAttribute("aria-expanded", "true");
   };
 
-  if (btn && wrap) {
-    btn.addEventListener("click", (e) => {
+  const cerrarMenu = () => {
+    sheet?.classList.remove("visible");
+    backdrop?.classList.remove("visible");
+    btnMas?.setAttribute("aria-expanded", "false");
+  };
+
+  if (btnMas) {
+    btnMas.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      const abierto = wrap.classList.toggle("abierto");
-      btn.setAttribute("aria-expanded", String(abierto));
+      if (sheet?.classList.contains("visible")) {
+        cerrarMenu();
+      } else {
+        abrirMenu();
+      }
     });
-
-    wrap.querySelectorAll(".dropdown-item").forEach((a) => {
-      a.addEventListener("click", cerrarMenu);
-    });
-
-    backdrop?.addEventListener("click", cerrarMenu);
-    btnClose?.addEventListener("click", cerrarMenu);
   }
 
-  // Cerrar al pulsar fuera del menú
-  document.addEventListener("click", (e) => {
-    if (wrap && !wrap.contains(e.target) && e.target !== backdrop) {
-      cerrarMenu();
-    }
+  sheet?.querySelectorAll(".glass-sheet-item, .glass-sheet-pdf-btn").forEach((a) => {
+    a.addEventListener("click", cerrarMenu);
   });
+
+  backdrop?.addEventListener("click", cerrarMenu);
+  btnClose?.addEventListener("click", cerrarMenu);
+
+  // Selector de Tema (Oscuro / Claro)
+  const btnDark = document.getElementById("btn-theme-dark");
+  const btnLight = document.getElementById("btn-theme-light");
+  const quickToggle = document.getElementById("btn-theme-quick-toggle");
+
+  const actualizarBotonesTema = (tema) => {
+    btnDark?.classList.toggle("activo", tema === "dark");
+    btnLight?.classList.toggle("activo", tema === "light");
+  };
+
+  const setTema = (tema) => {
+    document.documentElement.setAttribute("data-theme", tema);
+    localStorage.setItem("flow-theme", tema);
+    actualizarBotonesTema(tema);
+  };
+
+  const temaActual = document.documentElement.getAttribute("data-theme") || "dark";
+  actualizarBotonesTema(temaActual);
+
+  btnDark?.addEventListener("click", () => setTema("dark"));
+  btnLight?.addEventListener("click", () => setTema("light"));
+
+  if (quickToggle) {
+    quickToggle.addEventListener("click", () => {
+      const actual = document.documentElement.getAttribute("data-theme") || "dark";
+      setTema(actual === "dark" ? "light" : "dark");
+    });
+  }
 }

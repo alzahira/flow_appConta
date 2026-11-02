@@ -48,25 +48,23 @@ export async function navegar() {
   const actual = rutasRegistradas().find((v) => v.nombre === ruta) || rutasRegistradas()[0];
   if (!actual) return;
 
-  // Resaltar la pestaña del grupo activo en el menú superior
-  const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "pagos-recurrentes"];
-  const grupoAhorro = ["ahorro", "botes", "deben"];
-  const grupoMas = ["prevision-gastos", "categorias", "importar", "copia-seguridad", "pagos-recurrentes"];
+  // Resaltar la pestaña del grupo activo en la barra inferior flotante
+  const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo"];
+  const grupoBotes = ["botes", "ahorro"];
+  const grupoMas = ["pagos-diarios", "gastos-tarjetas", "prestamos", "prevision-gastos", "pagos-recurrentes", "categorias", "copia-seguridad", "deben", "importar"];
 
   document.querySelectorAll("nav a[data-nav-group]").forEach((a) => {
     const grupo = a.dataset.navGroup;
     let activa = false;
     if (grupo === "inicio" && actual.nombre === "inicio") activa = true;
-    else if (grupo === "pagos-diarios" && (actual.nombre === "pagos-diarios" || actual.nombre === "gastos-tarjetas")) activa = true;
-    else if (grupo === "cuentas-grupo" && grupoCuentas.includes(actual.nombre)) activa = true;
-    else if (grupo === "prestamos" && actual.nombre === "prestamos") activa = true;
-    else if (grupo === "ahorro-grupo" && grupoAhorro.includes(actual.nombre)) activa = true;
+    else if (grupo === "cuentas" && grupoCuentas.includes(actual.nombre)) activa = true;
+    else if (grupo === "botes" && grupoBotes.includes(actual.nombre)) activa = true;
     else if (grupo === "movimientos" && actual.nombre === "movimientos") activa = true;
     a.classList.toggle("activa", activa);
   });
 
-  // Resaltar elementos del desplegable Más si corresponde
-  document.querySelectorAll(".dropdown-item[data-vista]").forEach((a) => {
+  // Resaltar elementos del menú desplegable / drawer de cristal Más
+  document.querySelectorAll(".glass-sheet-item[data-vista], .dropdown-item[data-vista]").forEach((a) => {
     a.classList.toggle("activa", a.dataset.vista === actual.nombre);
   });
 
