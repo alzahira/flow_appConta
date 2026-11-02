@@ -53,8 +53,8 @@ export const CATEGORIAS_BOTES = {
     id: "inversion",
     nombre: "Inversión",
     icono: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
-    color: "#059669",
-    colorBg: "#d1fae5",
+    color: "#0d9488",
+    colorBg: "#ccfbf1",
   },
   gasolina: {
     id: "gasolina",

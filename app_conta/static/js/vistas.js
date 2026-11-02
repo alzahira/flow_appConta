@@ -102,7 +102,7 @@ export function importe(centimosStr, extraClase = "") {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  const colorAttr = esNeg ? 'style="color: #ef4444 !important;"' : "";
+  const colorAttr = esNeg ? 'style="color: var(--accent-negative) !important;"' : "";
   return `<span class="importe ${clase} ${extraClase}" ${colorAttr}><span class="signo">${signo}</span>${absVal}&nbsp;<span class="moneda">€</span></span>`;
 }
 
@@ -191,9 +191,9 @@ export function clasificarMovimientoVisual(descripcion, categoriaNombre = "", bo
       key: "nomina",
       label: "Ingreso / Nómina",
       icono: ICONOS.nomina,
-      bg: "rgba(16, 185, 129, 0.12)",
-      color: "#059669",
-      borderColor: "rgba(16, 185, 129, 0.3)",
+      bg: "rgba(13, 148, 136, 0.12)",
+      color: "#0d9488",
+      borderColor: "rgba(13, 148, 136, 0.3)",
     };
   }
   if (txt.includes("mercadona") || txt.includes("carrefour") || txt.includes("lidl") || txt.includes("día") || txt.includes("dia") || txt.includes("alcampo") || txt.includes("eroski") || txt.includes("supermercado") || txt.includes("compra") || txt.includes("alimentación") || txt.includes("alimentacion") || txt.includes("comida")) {
@@ -271,9 +271,9 @@ export function clasificarMovimientoVisual(descripcion, categoriaNombre = "", bo
       key: "salud",
       label: "Salud y Bienestar",
       icono: ICONOS.salud,
-      bg: "rgba(239, 68, 68, 0.12)",
-      color: "#dc2626",
-      borderColor: "rgba(239, 68, 68, 0.3)",
+      bg: "rgba(190, 18, 60, 0.10)",
+      color: "#be123c",
+      borderColor: "rgba(190, 18, 60, 0.25)",
     };
   }
   if (txt.includes("ahorro") || txt.includes("paro") || txt.includes("reserva") || txt.includes("bote") || txt.includes("guardado")) {
@@ -293,9 +293,9 @@ export function clasificarMovimientoVisual(descripcion, categoriaNombre = "", bo
       key: "ingreso-general",
       label: "Ingreso",
       icono: ICONOS.flechaArriba,
-      bg: "rgba(16, 185, 129, 0.12)",
-      color: "#059669",
-      borderColor: "rgba(16, 185, 129, 0.3)",
+      bg: "rgba(13, 148, 136, 0.12)",
+      color: "#0d9488",
+      borderColor: "rgba(13, 148, 136, 0.3)",
     };
   }
   return {
@@ -341,9 +341,9 @@ export function renderInsigniaCuenta(cuenta) {
     border = "rgba(15, 23, 42, 0.25)";
     icon = ICONOS.revolut;
   } else if (cuenta.tipo === "efectivo" || texto.includes("efectivo") || texto.includes("caja")) {
-    bg = "rgba(5, 150, 105, 0.08)";
-    color = "#059669";
-    border = "rgba(5, 150, 105, 0.25)";
+    bg = "rgba(13, 148, 136, 0.08)";
+    color = "#0d9488";
+    border = "rgba(13, 148, 136, 0.25)";
     icon = ICONOS.efectivo;
   } else if (cuenta.tipo === "tarjeta" || texto.includes("tarjeta")) {
     bg = "rgba(124, 58, 237, 0.08)";

@@ -6,7 +6,7 @@ const PERFILES_DEUDA = {
   comercio: { label: "Comercio", iconoKey: "carrito", color: "#ea580c", bg: "#fff7ed", border: "#fed7aa" },
   banco: { label: "Banco", iconoKey: "banco", color: "#0284c7", bg: "#e0f2fe", border: "#bae6fd" },
   servicio: { label: "Servicio", iconoKey: "prevision", color: "#0d9488", bg: "#f0fdfa", border: "#99f6e4" },
-  bote: { label: "Bote", iconoKey: "botes", color: "#059669", bg: "#ecfdf5", border: "#a7f3d0" },
+  bote: { label: "Bote", iconoKey: "botes", color: "#0d9488", bg: "#f0fdfa", border: "#ccfbf1" },
   ocio: { label: "Ocio", iconoKey: "ocio", color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8" },
   tecnologia: { label: "Tecnología", iconoKey: "telefono", color: "#4f46e5", bg: "#eef2ff", border: "#c7d2fe" },
   seguro: { label: "Seguro", iconoKey: "seguro", color: "#0f766e", bg: "#f0fdfa", border: "#99f6e4" },

@@ -38,7 +38,7 @@ function obtenerEstiloComercio(entidad, nombre) {
   if (txt.includes("ikea")) return { clase: "gift-ikea", badge: "IKEA", color: "#ffcc00" };
   if (txt.includes("decathlon")) return { clase: "gift-decathlon", badge: "Decathlon", color: "#0082c3" };
   if (txt.includes("zalando")) return { clase: "gift-zalando", badge: "Zalando", color: "#ff6900" };
-  return { clase: "gift-generica", badge: entidad || "Tarjeta Regalo", color: "#10b981" };
+  return { clase: "gift-generica", badge: entidad || "Tarjeta Regalo", color: "#0d9488" };
 }
 
 function tarjetaRegaloItem(c) {

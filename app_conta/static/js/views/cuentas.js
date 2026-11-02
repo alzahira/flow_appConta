@@ -6,7 +6,7 @@ const BANCOS_CONFIG = [
   { id: "deutsche", nombre: "Deutsche Bank", iconoKey: "deutsche", color: "#0018a8" },
   { id: "bbva", nombre: "BBVA", iconoKey: "bbva", color: "#004481" },
   { id: "revolut", nombre: "Revolut", iconoKey: "revolut", color: "#0f172a" },
-  { id: "otros", nombre: "Otros Depósitos y Entidades", iconoKey: "banco", color: "#059669" },
+  { id: "otros", nombre: "Otros Depósitos y Entidades", iconoKey: "banco", color: "#0d9488" },
 ];
 
 function clasificarBanco(cuenta) {
@@ -27,7 +27,7 @@ function tarjetaCuentaRow(c) {
     id: "otros",
     nombre: c.entidad || "Depósito Bancario",
     iconoKey: c.tipo === "efectivo" ? "efectivo" : "banco",
-    color: "#059669",
+    color: "#0d9488",
   };
   const iconoKey = c.tipo === "efectivo" ? "efectivo" : bancoConfig.iconoKey;
   const esEfectivo = c.tipo === "efectivo";

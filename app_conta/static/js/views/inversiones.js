@@ -25,7 +25,7 @@ const COLORES_TIPO = {
   fondos: "#0284c7",
   acciones_etfs: "#6366f1",
   renta_fija: "#d97706",
-  pensiones: "#059669",
+  pensiones: "#0d9488",
   cripto: "#db2777",
   inmobiliario: "#ea580c",
   otros: "#64748b",

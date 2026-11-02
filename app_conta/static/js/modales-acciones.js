@@ -230,7 +230,7 @@ export async function abrirModalGasto() {
           <h3>Error</h3>
           <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
         </div>
-        <p style="color: #ef4444; padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
+        <p style="color: var(--accent-negative); padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
       </div>
     `;
   }
@@ -546,7 +546,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           infoDestino.style.color = "#0284c7";
         } else if (val.startsWith("bote:")) {
           infoDestino.innerHTML = `🐷 <strong>Ingreso en Sobre:</strong> El dinero se asignará directamente a este sobre de ahorro.`;
-          infoDestino.style.color = "#10b981";
+          infoDestino.style.color = "var(--accent-positive)";
         } else {
           infoDestino.innerHTML = `🏦 El dinero quedará como saldo libre en la cuenta seleccionada.`;
           infoDestino.style.color = "var(--text-muted)";
@@ -891,7 +891,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           <h3>Error</h3>
           <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
         </div>
-        <p style="color: #ef4444; padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
+        <p style="color: var(--accent-negative); padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
       </div>
     `;
   }
@@ -1290,7 +1290,7 @@ export async function abrirModalPlantillasNomina(plantillaAEditarId = null) {
           <h3>Error</h3>
           <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
         </div>
-        <p style="color: #ef4444; padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
+        <p style="color: var(--accent-negative); padding: 1rem;">No se pudieron cargar los datos: ${err.message}</p>
       </div>
     `;
   }
@@ -1416,7 +1416,7 @@ export async function abrirModalDesgloseCuadre() {
           <h3>Error</h3>
           <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
         </div>
-        <p style="color: #ef4444; padding: 1rem;">No se pudo calcular la conciliación: ${err.message}</p>
+        <p style="color: var(--accent-negative); padding: 1rem;">No se pudo calcular la conciliación: ${err.message}</p>
       </div>
     `;
   }
@@ -1534,7 +1534,7 @@ export async function abrirModalLiquidarTarjeta(tarjetaIdPorDefecto = null) {
               💡 <strong>Sin doble gasto:</strong> Los gastos individuales ya se descontaron de sus sobres al hacer las compras diarias. Esta liquidación solo traslada los fondos del banco a la tarjeta para saldar la deuda.
             </div>
 
-            <div id="liq-err" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+            <div id="liq-err" style="color: var(--accent-negative); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
 
             <div class="modal-footer" style="padding: 0; display: flex; justify-content: flex-end; gap: 0.75rem;">
               <button type="button" class="btn-secondary" id="btn-cancelar-liq">Cancelar</button>
@@ -1599,7 +1599,7 @@ export async function abrirModalLiquidarTarjeta(tarjetaIdPorDefecto = null) {
           <h3>Error</h3>
           <button type="button" class="modal-btn-close" onclick="document.getElementById('fintech-modal-overlay')?.remove()">&times;</button>
         </div>
-        <p style="color: #ef4444; padding: 1rem;">No se pudieron cargar las tarjetas: ${err.message}</p>
+        <p style="color: var(--accent-negative); padding: 1rem;">No se pudieron cargar las tarjetas: ${err.message}</p>
       </div>
     `;
   }

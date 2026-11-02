@@ -76,7 +76,7 @@ export default vista("copia-seguridad", async () => {
         </div>
         <div>
           <h3 class="card-backup-title">3. Vaciar Base de Datos</h3>
-          <span class="badge-subtle" style="color: #e11d48; background: #ffe4e6;">ELIMINA TODO</span>
+          <span class="badge-subtle" style="color: var(--accent-negative); background: var(--accent-negative-soft); border: 1px solid var(--accent-negative-border);">ELIMINA TODO</span>
         </div>
       </div>
       <p class="card-backup-desc">
