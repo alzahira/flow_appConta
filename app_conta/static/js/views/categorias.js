@@ -115,38 +115,37 @@ export default vista("categorias", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Nueva Categoría</h3>
-          <p class="form-card-subtitle">Crea una etiqueta con color para tus transacciones</p>
-        </div>
-      </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Crear Nueva Categoría
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Crea una etiqueta con color para tus transacciones</p>
 
-      <form data-accion="crear-categoria" data-err="err-categoria" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-3">
-            <label for="cat-nombre" class="form-label">Nombre de la Categoría</label>
-            <input id="cat-nombre" name="nombre" placeholder="Ej. Alimentación, Suministros, Gasolina, Ocio..." required>
-          </div>
-          <div class="form-group">
-            <label for="cat-color" class="form-label">Color Distintivo</label>
-            <div class="color-picker-wrap">
-              <input id="cat-color" name="color" type="color" value="#6366f1" class="color-picker-input">
+        <form data-accion="crear-categoria" data-err="err-categoria" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-3">
+              <label for="cat-nombre" class="form-label">Nombre de la Categoría</label>
+              <input id="cat-nombre" name="nombre" placeholder="Ej. Alimentación, Suministros, Gasolina, Ocio..." required>
+            </div>
+            <div class="form-group">
+              <label for="cat-color" class="form-label">Color Distintivo</label>
+              <div class="color-picker-wrap">
+                <input id="cat-color" name="color" type="color" value="#6366f1" class="color-picker-input">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="err-categoria"></div>
+          <div id="err-categoria"></div>
 
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Crear Categoría
-          </button>
-        </div>
-      </form>
-    </div>
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Crear Categoría
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
   </section>
   `;
 });

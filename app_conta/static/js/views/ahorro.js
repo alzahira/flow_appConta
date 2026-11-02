@@ -161,58 +161,56 @@ async function renderDetalleFondoAhorro(fondoId, cuentas) {
 
     <!-- Formulario para meter ahorro o registrar amortización -->
     <section class="section-block">
-      <div class="form-card-container">
-        <div class="form-card-header">
-          <div class="form-card-icon">${icono("plus")}</div>
-          <div>
-            <h3 class="form-card-title">Añadir Dinero o Salida a este Fondo</h3>
-            <p class="form-card-subtitle">Registra una aportación de ahorro o aplica fondos a pagar cuota/hipoteca</p>
-          </div>
+      <details class="form-inversion-details">
+        <summary class="btn-nuevo-inversion-trigger">
+          ${icono("plus")} Añadir Dinero o Salida a este Fondo
+        </summary>
+        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+          <p class="form-desc">Registra una aportación de ahorro o aplica fondos a pagar cuota/hipoteca</p>
+          <form data-accion="crear-movimiento-ahorro" data-bote-id="${bote.id}" class="fintech-form">
+            <div class="sign-selector-row">
+              <label class="sign-option in">
+                <input type="radio" name="signo" value="+" checked>
+                <span class="sign-btn">🟢 Guardar dinero (+ Aportación al fondo)</span>
+              </label>
+              <label class="sign-option out">
+                <input type="radio" name="signo" value="-">
+                <span class="sign-btn">🔴 Disponer de dinero (− Amortización / Gasto)</span>
+              </label>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Importe (€)</label>
+                <input name="importe" inputmode="decimal" placeholder="0.00" required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Cuenta de Origen / Destino</label>
+                <select name="cuenta_id" required>
+                  ${opcionesCuentas}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Concepto / Motivo</label>
+                <input name="descripcion" placeholder="Ej. Ahorro para hipoteca mes actual, Pago amortización anticipada..." required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Fecha</label>
+                <input name="fecha" type="date" value="${hoy()}" required>
+              </div>
+            </div>
+
+            <div class="form-actions-right">
+              <button type="submit" class="btn-primary">
+                ${icono("plus")} Guardar en este Fondo
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form data-accion="crear-movimiento-ahorro" data-bote-id="${bote.id}" class="fintech-form">
-          <div class="sign-selector-row">
-            <label class="sign-option in">
-              <input type="radio" name="signo" value="+" checked>
-              <span class="sign-btn">🟢 Guardar dinero (+ Aportación al fondo)</span>
-            </label>
-            <label class="sign-option out">
-              <input type="radio" name="signo" value="-">
-              <span class="sign-btn">🔴 Disponer de dinero (− Amortización / Gasto)</span>
-            </label>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Importe (€)</label>
-              <input name="importe" inputmode="decimal" placeholder="0.00" required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Cuenta de Origen / Destino</label>
-              <select name="cuenta_id" required>
-                ${opcionesCuentas}
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Concepto / Motivo</label>
-              <input name="descripcion" placeholder="Ej. Ahorro para hipoteca mes actual, Pago amortización anticipada..." required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Fecha</label>
-              <input name="fecha" type="date" value="${hoy()}" required>
-            </div>
-          </div>
-
-          <div class="form-actions-right">
-            <button type="submit" class="btn-primary">
-              ${icono("plus")} Guardar en este Fondo
-            </button>
-          </div>
-        </form>
-      </div>
+      </details>
     </section>
 
     <!-- Listado separado de movimientos de este fondo -->
@@ -272,21 +270,16 @@ export default vista("ahorro", async () => {
 
   <div class="page-header-row">
     <div>
-      <h2 class="page-title">Ahorro y Previsión Futura</h2>
-      <p class="page-subtitle">Reserva de capital para pagar hipotecas a futuro, amortizaciones de préstamo y fondos estratégicos. Pulsa en un fondo para ver sus movimientos.</p>
-    </div>
-    <div class="header-total-card">
-      <span class="header-total-label">Total Ahorro Acumulado</span>
-      <span class="header-total-value">${importe(totalAhorrado.toFixed(2))}</span>
-      ${pctGlobal !== null ? `<span class="header-total-sub">${pctGlobal}% de las metas fijadas (${totalMetas.toFixed(2)} €)</span>` : ""}
+      <h2 class="page-title">Fondo Ahorro Hipoteca</h2>
+      <p class="page-subtitle">Reserva de capital para amortización anticipada de hipoteca y blindaje financiero. Pulsa en el fondo para ver sus movimientos.</p>
     </div>
   </div>
 
   <section class="section-block">
     <div class="section-header">
       <div>
-        <h3 class="section-title">Fondos de Ahorro e Hipotecas</h3>
-        <p class="section-desc">Sobres independientes para blindar el pago futuro de cuotas o amortizaciones</p>
+        <h3 class="section-title">Fondo Ahorro Hipoteca</h3>
+        <p class="section-desc">Fondo independiente para blindar y amortizar las cuotas de la hipoteca</p>
       </div>
     </div>
 
@@ -297,54 +290,52 @@ export default vista("ahorro", async () => {
           : `<div class="empty-state">
               <span class="empty-icon">${icono("ahorro")}</span>
               <p>No tienes ningún fondo de ahorro registrado todavía.</p>
-              <span class="empty-sub">Crea un fondo para amortización de hipoteca o colchón de seguridad con el formulario inferior.</span>
+              <span class="empty-sub">Crea un fondo para amortización de hipoteca con el formulario inferior.</span>
             </div>`
       }
     </div>
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Crear Nuevo Fondo de Ahorro</h3>
-          <p class="form-card-subtitle">Asigna fondos para amortizar hipoteca a futuro o reservas estratégicas</p>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Crear Nuevo Fondo de Ahorro
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Asigna fondos para amortizar hipoteca a futuro o reservas estratégicas</p>
+        <div class="quick-pills-suggestions">
+          <span class="suggestions-label">Sugerencias rápidas:</span>
+          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Hipoteca'; document.getElementById('ah-obj').focus();">+ Amortización Hipoteca</button>
+          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Reserva Cuotas Hipoteca'; document.getElementById('ah-obj').focus();">+ Reserva Cuotas Hipoteca</button>
+          <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Colchón de Emergencia (6 meses)'; document.getElementById('ah-obj').focus();">+ Colchón de Emergencia</button>
         </div>
+
+        <form data-accion="crear-bote-ahorro" data-err="err-ahorro" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="ah-nombre" class="form-label">Nombre del Fondo</label>
+              <input id="ah-nombre" name="nombre" placeholder="Ej. Amortización Hipoteca, Reserva Cuotas..." required>
+            </div>
+            <div class="form-group">
+              <label for="ah-obj" class="form-label">Objetivo de Ahorro (€) (Opcional)</label>
+              <input id="ah-obj" name="objetivo" inputmode="decimal" placeholder="Ej. 10000.00">
+            </div>
+            <div class="form-group">
+              <label for="ah-fecha" class="form-label">Fecha Límite (Opcional)</label>
+              <input id="ah-fecha" name="objetivo_fecha" type="date">
+            </div>
+          </div>
+
+          <div id="err-ahorro"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Crear Fondo de Ahorro
+            </button>
+          </div>
+        </form>
       </div>
-
-      <div class="quick-pills-suggestions">
-        <span class="suggestions-label">Sugerencias rápidas:</span>
-        <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Amortización Hipoteca'; document.getElementById('ah-obj').focus();">+ Amortización Hipoteca</button>
-        <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Reserva Cuotas Hipoteca'; document.getElementById('ah-obj').focus();">+ Reserva Cuotas Hipoteca</button>
-        <button type="button" class="btn-suggestion" onclick="document.getElementById('ah-nombre').value='Colchón de Emergencia (6 meses)'; document.getElementById('ah-obj').focus();">+ Colchón de Emergencia</button>
-      </div>
-
-      <form data-accion="crear-bote-ahorro" data-err="err-ahorro" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="ah-nombre" class="form-label">Nombre del Fondo</label>
-            <input id="ah-nombre" name="nombre" placeholder="Ej. Amortización Hipoteca, Reserva Cuotas, IBI..." required>
-          </div>
-          <div class="form-group">
-            <label for="ah-obj" class="form-label">Objetivo de Ahorro (€) (Opcional)</label>
-            <input id="ah-obj" name="objetivo" inputmode="decimal" placeholder="Ej. 10000.00">
-          </div>
-          <div class="form-group">
-            <label for="ah-fecha" class="form-label">Fecha Límite (Opcional)</label>
-            <input id="ah-fecha" name="objetivo_fecha" type="date">
-          </div>
-        </div>
-
-        <div id="err-ahorro"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Crear Fondo de Ahorro
-          </button>
-        </div>
-      </form>
-    </div>
+    </details>
   </section>
   `;
 });

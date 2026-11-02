@@ -250,58 +250,57 @@ async function renderDetalleBote(boteId, cuentas) {
 
     <!-- Formulario para meter o sacar dinero directamente de este bote -->
     <section class="section-block">
-      <div class="form-card-container">
-        <div class="form-card-header">
-          <div class="form-card-icon">${icono("plus")}</div>
-          <div>
-            <h3 class="form-card-title">Añadir Dinero o Gasto a este Bote</h3>
-            <p class="form-card-subtitle">Registra una aportación o descuenta un gasto asignado directamente a este sobre</p>
-          </div>
+      <details class="form-inversion-details">
+        <summary class="btn-nuevo-inversion-trigger">
+          ${icono("plus")} Añadir Dinero o Gasto a este Bote
+        </summary>
+        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+          <p class="form-desc">Registra una aportación o descuenta un gasto asignado directamente a este sobre</p>
+
+          <form data-accion="crear-movimiento-bote" data-bote-id="${bote.id}" class="fintech-form">
+            <div class="sign-selector-row">
+              <label class="sign-option in">
+                <input type="radio" name="signo" value="+" checked>
+                <span class="sign-btn">🟢 Meter dinero (+ Aportación)</span>
+              </label>
+              <label class="sign-option out">
+                <input type="radio" name="signo" value="-">
+                <span class="sign-btn">🔴 Sacar dinero (− Gasto del sobre)</span>
+              </label>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Importe (€)</label>
+                <input name="importe" inputmode="decimal" placeholder="0.00" required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Cuenta Bancaria o Efectivo de Origen / Destino</label>
+                <select name="cuenta_id" required>
+                  ${opcionesCuentas}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Concepto / Motivo</label>
+                <input name="descripcion" placeholder="Ej. Aportación de ahorro, Factura de seguro..." required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Fecha</label>
+                <input name="fecha" type="date" value="${hoy()}" required>
+              </div>
+            </div>
+
+            <div class="form-actions-right">
+              <button type="submit" class="btn-primary">
+                ${icono("plus")} Guardar Movimiento en este Bote
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form data-accion="crear-movimiento-bote" data-bote-id="${bote.id}" class="fintech-form">
-          <div class="sign-selector-row">
-            <label class="sign-option in">
-              <input type="radio" name="signo" value="+" checked>
-              <span class="sign-btn">🟢 Meter dinero (+ Aportación)</span>
-            </label>
-            <label class="sign-option out">
-              <input type="radio" name="signo" value="-">
-              <span class="sign-btn">🔴 Sacar dinero (− Gasto del sobre)</span>
-            </label>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Importe (€)</label>
-              <input name="importe" inputmode="decimal" placeholder="0.00" required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Cuenta Bancaria o Efectivo de Origen / Destino</label>
-              <select name="cuenta_id" required>
-                ${opcionesCuentas}
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Concepto / Motivo</label>
-              <input name="descripcion" placeholder="Ej. Aportación de ahorro, Factura de seguro..." required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Fecha</label>
-              <input name="fecha" type="date" value="${hoy()}" required>
-            </div>
-          </div>
-
-          <div class="form-actions-right">
-            <button type="submit" class="btn-primary">
-              ${icono("plus")} Guardar Movimiento en este Bote
-            </button>
-          </div>
-        </form>
-      </div>
+      </details>
     </section>
 
     <!-- Listado separado de movimientos de este bote -->
@@ -433,70 +432,69 @@ export default vista("botes", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Crear Nuevo Bote</h3>
-          <p class="form-card-subtitle">Define el objetivo, categoría y tipo de sobre para distribuir tu disponible</p>
-        </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Crear Nuevo Bote
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Define el objetivo, categoría y tipo de sobre para distribuir tu disponible</p>
+
+        <form data-accion="crear-bote" data-err="err-bote" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="bo-nombre" class="form-label">Nombre del Bote</label>
+              <input id="bo-nombre" name="nombre" placeholder="Ej. Viajes, Ropa, Dentista, Mantenimiento casa..." required>
+            </div>
+            <div class="form-group">
+              <label for="bo-categoria" class="form-label">Categoría e Icono</label>
+              <select id="bo-categoria" name="categoria">
+                <option value="">— Detección automática según nombre —</option>
+                <option value="viajes">✈️ Viajes</option>
+                <option value="mantenimiento">🏠 Mantenimiento casa</option>
+                <option value="ropa">👕 Ropa</option>
+                <option value="dentista">🦷 Dentista y Salud</option>
+                <option value="fianzas">🔐 Fianzas</option>
+                <option value="inversion">📈 Inversión</option>
+                <option value="gasolina">⛽ Gasolina</option>
+                <option value="ocio">🍹 Ocio</option>
+                <option value="reserva">🛡️ Reserva y Paro</option>
+                <option value="personal">👤 Personal y Familia</option>
+                <option value="gastos">🔁 Gastos y Pagos</option>
+                <option value="otros">📦 Otros</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bo-tipo" class="form-label">Tipo de Sobre</label>
+              <select id="bo-tipo" name="tipo" required>
+                <option value="ahorro" selected>🐷 Fondo de Ahorro</option>
+                <option value="proyecto">🎯 Proyecto / Compra Concreta</option>
+                <option value="recurrente">🔁 Gasto Recurrente Anual</option>
+                <option value="ajeno">👥 Dinero Ajeno (Fianzas / Terceros)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="bo-objetivo" class="form-label">Meta / Objetivo (€) (Opcional)</label>
+              <input id="bo-objetivo" name="objetivo" inputmode="decimal" placeholder="Ej. 1200.00 (positivo) o -500.00 (presupuesto)">
+            </div>
+            <div class="form-group form-span-2">
+              <label for="bo-fecha" class="form-label">Fecha Límite (Opcional)</label>
+              <input id="bo-fecha" name="objetivo_fecha" type="date">
+            </div>
+          </div>
+
+          <div id="err-bote"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Crear Bote
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form data-accion="crear-bote" data-err="err-bote" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="bo-nombre" class="form-label">Nombre del Bote</label>
-            <input id="bo-nombre" name="nombre" placeholder="Ej. Viajes, Ropa, Dentista, Mantenimiento casa..." required>
-          </div>
-          <div class="form-group">
-            <label for="bo-categoria" class="form-label">Categoría e Icono</label>
-            <select id="bo-categoria" name="categoria">
-              <option value="">— Detección automática según nombre —</option>
-              <option value="viajes">✈️ Viajes</option>
-              <option value="mantenimiento">🏠 Mantenimiento casa</option>
-              <option value="ropa">👕 Ropa</option>
-              <option value="dentista">🦷 Dentista y Salud</option>
-              <option value="fianzas">🔐 Fianzas</option>
-              <option value="inversion">📈 Inversión</option>
-              <option value="gasolina">⛽ Gasolina</option>
-              <option value="ocio">🍹 Ocio</option>
-              <option value="reserva">🛡️ Reserva y Paro</option>
-              <option value="personal">👤 Personal y Familia</option>
-              <option value="gastos">🔁 Gastos y Pagos</option>
-              <option value="otros">📦 Otros</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="bo-tipo" class="form-label">Tipo de Sobre</label>
-            <select id="bo-tipo" name="tipo" required>
-              <option value="ahorro" selected>🐷 Fondo de Ahorro</option>
-              <option value="proyecto">🎯 Proyecto / Compra Concreta</option>
-              <option value="recurrente">🔁 Gasto Recurrente Anual</option>
-              <option value="ajeno">👥 Dinero Ajeno (Fianzas / Terceros)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="bo-objetivo" class="form-label">Meta / Objetivo (€) (Opcional)</label>
-            <input id="bo-objetivo" name="objetivo" inputmode="decimal" placeholder="Ej. 1200.00 (positivo) o -500.00 (presupuesto)">
-          </div>
-          <div class="form-group form-span-2">
-            <label for="bo-fecha" class="form-label">Fecha Límite (Opcional)</label>
-            <input id="bo-fecha" name="objetivo_fecha" type="date">
-          </div>
-        </div>
-
-        <div id="err-bote"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Crear Bote
-          </button>
-        </div>
-      </form>
-    </div>
+    </details>
   </section>
   `;
 });

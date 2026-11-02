@@ -116,66 +116,65 @@ export default vista("tarjetas-regalo", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("regalo")}</div>
-        <div>
-          <h3 class="form-card-title">Añadir Tarjeta Regalo o Monedero</h3>
-          <p class="form-card-subtitle">Registra el saldo disponible para tenerlo computado en tus fondos</p>
-        </div>
-      </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Dar de alta nueva Tarjeta Regalo o Monedero
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Registra el saldo disponible para tenerlo computado en tus fondos</p>
 
-      <div class="template-pills-row">
-        <span class="template-label">Comercios habituales:</span>
-        <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Amazon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Amazon'; document.getElementById('gr-saldo').focus();">
-          🛒 Amazon
-        </button>
-        <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='El Corte Inglés (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta El Corte Inglés'; document.getElementById('gr-saldo').focus();">
-          🛍️ El Corte Inglés
-        </button>
-        <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Carrefour (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo Carrefour'; document.getElementById('gr-saldo').focus();">
-          ⛽ Carrefour
-        </button>
-        <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='IKEA (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo IKEA'; document.getElementById('gr-saldo').focus();">
-          🪑 IKEA
-        </button>
-        <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Decathlon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Decathlon'; document.getElementById('gr-saldo').focus();">
-          🏃 Decathlon
-        </button>
-      </div>
-
-      <form data-accion="crear-tarjeta-regalo" data-err="err-regalo" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="gr-nombre" class="form-label">Nombre descriptivo</label>
-            <input id="gr-nombre" name="nombre" placeholder="Ej. Tarjeta Amazon 50€, Tarjeta Regalo El Corte Inglés..." required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="gr-entidad" class="form-label">Comercio / Emisor</label>
-            <input id="gr-entidad" name="entidad" placeholder="Ej. Amazon, El Corte Inglés, Carrefour, IKEA, Zara..." required>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="gr-saldo" class="form-label">Saldo Disponible en la Tarjeta (€)</label>
-            <input id="gr-saldo" name="saldo_inicial" inputmode="decimal" placeholder="Ej. 50.00" required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="gr-fecha" class="form-label">Fecha de Recepción / Alta</label>
-            <input id="gr-fecha" name="fecha_apertura" type="date" value="${hoy()}" required>
-          </div>
-        </div>
-
-        <div id="err-regalo"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Guardar Tarjeta Regalo
+        <div class="template-pills-row">
+          <span class="template-label">Comercios habituales:</span>
+          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Amazon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Amazon'; document.getElementById('gr-saldo').focus();">
+            🛒 Amazon
+          </button>
+          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='El Corte Inglés (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta El Corte Inglés'; document.getElementById('gr-saldo').focus();">
+            🛍️ El Corte Inglés
+          </button>
+          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Carrefour (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo Carrefour'; document.getElementById('gr-saldo').focus();">
+            ⛽ Carrefour
+          </button>
+          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='IKEA (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Regalo IKEA'; document.getElementById('gr-saldo').focus();">
+            🪑 IKEA
+          </button>
+          <button type="button" class="btn-template-pill" onclick="document.getElementById('gr-entidad').value='Decathlon (Regalo)'; document.getElementById('gr-nombre').value='Tarjeta Decathlon'; document.getElementById('gr-saldo').focus();">
+            🏃 Decathlon
           </button>
         </div>
-      </form>
-    </div>
+
+        <form data-accion="crear-tarjeta-regalo" data-err="err-regalo" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="gr-nombre" class="form-label">Nombre descriptivo</label>
+              <input id="gr-nombre" name="nombre" placeholder="Ej. Tarjeta Amazon 50€, Tarjeta Regalo El Corte Inglés..." required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="gr-entidad" class="form-label">Comercio / Emisor</label>
+              <input id="gr-entidad" name="entidad" placeholder="Ej. Amazon, El Corte Inglés, Carrefour, IKEA, Zara..." required>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="gr-saldo" class="form-label">Saldo Disponible en la Tarjeta (€)</label>
+              <input id="gr-saldo" name="saldo_inicial" inputmode="decimal" placeholder="Ej. 50.00" required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="gr-fecha" class="form-label">Fecha de Recepción / Alta</label>
+              <input id="gr-fecha" name="fecha_apertura" type="date" value="${hoy()}" required>
+            </div>
+          </div>
+
+          <div id="err-regalo"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Guardar Tarjeta Regalo
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
   </section>
   `;
 });

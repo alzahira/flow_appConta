@@ -14,6 +14,7 @@ import "./views/prevision-gastos.js";
 import "./views/deben.js";
 import "./views/movimientos.js";
 import "./views/gastos-tarjetas.js";
+import "./views/pagos-diarios.js";
 import "./views/prestamos.js";
 import "./views/categorias.js";
 import "./views/importar.js";
@@ -27,15 +28,15 @@ async function navegar() {
   if (!actual) return;
 
   // Resaltar la pestaña del grupo activo en el menú superior
-  const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "gastos-tarjetas", "pagos-recurrentes"];
+  const grupoCuentas = ["cuentas", "inversiones", "tarjetas", "tarjetas-regalo", "pagos-recurrentes"];
   const grupoAhorro = ["ahorro", "botes", "deben"];
   const grupoMas = ["prevision-gastos", "categorias", "importar", "copia-seguridad", "pagos-recurrentes"];
-
 
   document.querySelectorAll("nav a[data-nav-group]").forEach((a) => {
     const grupo = a.dataset.navGroup;
     let activa = false;
     if (grupo === "inicio" && actual.nombre === "inicio") activa = true;
+    else if (grupo === "pagos-diarios" && (actual.nombre === "pagos-diarios" || actual.nombre === "gastos-tarjetas")) activa = true;
     else if (grupo === "cuentas-grupo" && grupoCuentas.includes(actual.nombre)) activa = true;
     else if (grupo === "prestamos" && actual.nombre === "prestamos") activa = true;
     else if (grupo === "ahorro-grupo" && grupoAhorro.includes(actual.nombre)) activa = true;
@@ -87,7 +88,7 @@ document.addEventListener("submit", async (e) => {
       form.reset();
       await navegar();
     } else if (form.dataset.accion === "crear-movimiento") {
-      const signo = form.querySelector("[name=signo]:checked")?.value || "-";
+      const signo = datos.get("signo") || form.querySelector("[name=signo]:checked")?.value || "-";
       const valor = String(datos.get("importe") || "").replace(",", ".").trim();
       const boteId = datos.get("bote_id");
       const categoriaId = datos.get("categoria_id");

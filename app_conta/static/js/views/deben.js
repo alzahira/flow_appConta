@@ -186,56 +186,55 @@ export default vista("deben", async () => {
   </section>
 
   <section class="section-block">
-    <div class="form-card-container">
-      <div class="form-card-header">
-        <div class="form-card-icon">${icono("plus")}</div>
-        <div>
-          <h3 class="form-card-title">Añadir Dinero que te Deben</h3>
-          <p class="form-card-subtitle">Registra un nuevo préstamo, fianza o dinero adelantado</p>
-        </div>
+    <details class="form-inversion-details">
+      <summary class="btn-nuevo-inversion-trigger">
+        ${icono("plus")} Añadir Dinero que te Deben
+      </summary>
+      <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+        <p class="form-desc">Registra un nuevo préstamo, fianza o dinero adelantado</p>
+
+        <form data-accion="crear-deuda" data-err="err-deuda" class="fintech-form">
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="deu-persona" class="form-label">¿Quién te debe el dinero? (Nombre de la persona o entidad)</label>
+              <input id="deu-persona" name="deudor" placeholder="Ej. Juan García, Hermano, Inquilino, Amigos cena..." required>
+            </div>
+            <div class="form-group form-span-2">
+              <label for="deu-concepto" class="form-label">Concepto o Motivo</label>
+              <input id="deu-concepto" name="concepto" placeholder="Ej. Préstamo personal, Adelanto viaje, Fianza alquiler..." required>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group form-span-2">
+              <label for="deu-importe" class="form-label">Importe que te deben (€)</label>
+              <input id="deu-importe" name="importe" inputmode="decimal" placeholder="Ej. 150.00" required>
+            </div>
+            <div class="form-group">
+              <label for="deu-fecha" class="form-label">Fecha del Préstamo</label>
+              <input id="deu-fecha" name="fecha" type="date" value="${hoy()}" required>
+            </div>
+            <div class="form-group">
+              <label for="deu-limite" class="form-label">Fecha Límite Estimada (Opcional)</label>
+              <input id="deu-limite" name="fecha_limite" type="date">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="deu-notas" class="form-label">Notas Adicionales (Opcional)</label>
+            <input id="deu-notas" name="notas" placeholder="Ej. Me dijo que me lo paga a final de mes por Bizum">
+          </div>
+
+          <div id="err-deuda"></div>
+
+          <div class="form-actions-right">
+            <button type="submit" class="btn-primary">
+              ${icono("plus")} Guardar Deuda
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form data-accion="crear-deuda" data-err="err-deuda" class="fintech-form">
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="deu-persona" class="form-label">¿Quién te debe el dinero? (Nombre de la persona o entidad)</label>
-            <input id="deu-persona" name="deudor" placeholder="Ej. Juan García, Hermano, Inquilino, Amigos cena..." required>
-          </div>
-          <div class="form-group form-span-2">
-            <label for="deu-concepto" class="form-label">Concepto o Motivo</label>
-            <input id="deu-concepto" name="concepto" placeholder="Ej. Préstamo personal, Adelanto viaje, Fianza alquiler..." required>
-          </div>
-        </div>
-
-        <div class="form-row-grid">
-          <div class="form-group form-span-2">
-            <label for="deu-importe" class="form-label">Importe que te deben (€)</label>
-            <input id="deu-importe" name="importe" inputmode="decimal" placeholder="Ej. 150.00" required>
-          </div>
-          <div class="form-group">
-            <label for="deu-fecha" class="form-label">Fecha del Préstamo</label>
-            <input id="deu-fecha" name="fecha" type="date" value="${hoy()}" required>
-          </div>
-          <div class="form-group">
-            <label for="deu-limite" class="form-label">Fecha Límite Estimada (Opcional)</label>
-            <input id="deu-limite" name="fecha_limite" type="date">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="deu-notas" class="form-label">Notas Adicionales (Opcional)</label>
-          <input id="deu-notas" name="notas" placeholder="Ej. Me dijo que me lo paga a final de mes por Bizum">
-        </div>
-
-        <div id="err-deuda"></div>
-
-        <div class="form-actions-right">
-          <button type="submit" class="btn-primary">
-            ${icono("plus")} Guardar Deuda
-          </button>
-        </div>
-      </form>
-    </div>
+    </details>
   </section>
   `;
 });

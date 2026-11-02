@@ -243,56 +243,55 @@ export default vista("prevision-gastos", async () => {
 
     <!-- Formulario para dar de alta nuevo gasto periódico -->
     <section class="section-block">
-      <div class="form-card-container">
-        <div class="form-card-header">
-          <div class="form-card-icon">${icono("plus")}</div>
-          <div>
-            <h3 class="form-card-title">Añadir Nuevo Gasto Anual / Recurrente</h3>
-            <p class="form-card-subtitle">Registra un nuevo impuesto, seguro o cuota periódica para integrarlo en la cuota mensual</p>
-          </div>
+      <details class="form-inversion-details">
+        <summary class="btn-nuevo-inversion-trigger">
+          ${icono("plus")} Añadir Nuevo Gasto Anual / Recurrente
+        </summary>
+        <div class="form-container" style="padding: 0 1.5rem 1.5rem 1.5rem;">
+          <p class="form-desc">Registra un nuevo impuesto, seguro o cuota periódica para integrarlo en la cuota mensual</p>
+
+          <form data-accion="crear-gasto-recurrente" class="fintech-form">
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Concepto del Gasto</label>
+                <input name="concepto" placeholder="Ej. Seguro Dental Sanitas, Tasa de Vado..." required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Fecha o Mes de Cobro Habitual</label>
+                <input name="fecha_cobro" placeholder="Ej. Octubre, Trimestral, Marzo / Julio..." required>
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Importe Anual Estimado (€)</label>
+                <input name="importe_anual" inputmode="decimal" placeholder="Ej. 180.00" required>
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Cuota Mensual a Guardar (€, opcional)</label>
+                <input name="cuota_mensual" inputmode="decimal" placeholder="Si se deja vacío, se divide entre 12">
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="form-group form-span-2">
+                <label class="form-label">Pagado Real hasta ahora (€, opcional)</label>
+                <input name="pagado_real" inputmode="decimal" placeholder="0.00">
+              </div>
+              <div class="form-group form-span-2">
+                <label class="form-label">Notas o Referencia (opcional)</label>
+                <input name="notas" placeholder="Ej. Domiciliado en Caixa, póliza 12345...">
+              </div>
+            </div>
+
+            <div class="form-actions-right">
+              <button type="submit" class="btn-primary">
+                ${icono("plus")} Guardar Gasto Recurrente
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form data-accion="crear-gasto-recurrente" class="fintech-form">
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Concepto del Gasto</label>
-              <input name="concepto" placeholder="Ej. Seguro Dental Sanitas, Tasa de Vado..." required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Fecha o Mes de Cobro Habitual</label>
-              <input name="fecha_cobro" placeholder="Ej. Octubre, Trimestral, Marzo / Julio..." required>
-            </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Importe Anual Estimado (€)</label>
-              <input name="importe_anual" inputmode="decimal" placeholder="Ej. 180.00" required>
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Cuota Mensual a Guardar (€, opcional)</label>
-              <input name="cuota_mensual" inputmode="decimal" placeholder="Si se deja vacío, se divide entre 12">
-            </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group form-span-2">
-              <label class="form-label">Pagado Real hasta ahora (€, opcional)</label>
-              <input name="pagado_real" inputmode="decimal" placeholder="0.00">
-            </div>
-            <div class="form-group form-span-2">
-              <label class="form-label">Notas o Referencia (opcional)</label>
-              <input name="notas" placeholder="Ej. Domiciliado en Caixa, póliza 12345...">
-            </div>
-          </div>
-
-          <div class="form-actions-right">
-            <button type="submit" class="btn-primary">
-              ${icono("plus")} Guardar Gasto Recurrente
-            </button>
-          </div>
-        </form>
-      </div>
+      </details>
     </section>
   `;
 });

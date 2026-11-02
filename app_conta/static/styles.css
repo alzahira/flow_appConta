@@ -6101,6 +6101,176 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-main, #0f172a);
 }
 
+/* ==========================================================================
+   PAGOS DIARIOS CON TARJETA (Caixa, DB, Carrefour Pass)
+   ========================================================================== */
+.pd-tarjetas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pd-tarjeta-selector-card {
+  background: #ffffff;
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.35rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  outline: none;
+}
+
+.pd-tarjeta-selector-card:hover {
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.pd-tarjeta-selector-card.activa {
+  border-color: var(--accent-brand, #6366f1);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(255, 255, 255, 0.95) 100%);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.16);
+}
+
+.pd-card-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.pd-card-bank-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: var(--accent-brand, #6366f1);
+}
+
+.pd-tarjeta-selector-card.activa .pd-card-bank-icon {
+  background: var(--accent-brand, #6366f1);
+  color: #ffffff;
+}
+
+.pd-card-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.pd-tarjeta-selector-card.activa .pd-card-badge {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-brand, #6366f1);
+}
+
+.pd-card-nombre {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main, #0f172a);
+}
+
+.pd-card-entidad {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.pd-card-saldo {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-subtle);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.pd-card-saldo-label {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.pd-card-saldo-val {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pd-botes-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pd-bote-kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pd-bote-kpi-card.alerta {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.pd-bote-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pd-bote-kpi-icon {
+  font-size: 1.25rem;
+}
+
+.pd-bote-kpi-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+}
+
+.pd-bote-kpi-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.pd-bote-kpi-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-main, #0f172a);
+}
+
+.pd-bote-kpi-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  line-height: 1.3;
+}
+
+
 
 
 

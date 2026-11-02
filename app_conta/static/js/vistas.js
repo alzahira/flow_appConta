@@ -139,7 +139,7 @@ export function subnavCuentas(activa) {
     { id: "inversiones", href: "#/inversiones", label: "Inversiones", iconoKey: "inversion" },
     { id: "tarjetas", href: "#/tarjetas", label: "Tarjetas Bancarias", iconoKey: "tarjetas" },
     { id: "tarjetas-regalo", href: "#/tarjetas-regalo", label: "Tarjetas Regalo", iconoKey: "regalo" },
-    { id: "gastos-tarjetas", href: "#/gastos-tarjetas", label: "Gastos Tarjetas", iconoKey: "gastos-tarjetas" },
+    { id: "pagos-diarios", href: "#/pagos-diarios", label: "Pagos Diarios", iconoKey: "carrito" },
     { id: "pagos-recurrentes", href: "#/pagos-recurrentes", label: "Recibos Fijos", iconoKey: "prevision" },
   ];
 
@@ -162,9 +162,9 @@ export function subnavCuentas(activa) {
 /** Barra de subnavegación tipo píldora para el grupo Ahorro y Botes */
 export function subnavAhorro(activa) {
   const tabs = [
-    { id: "ahorro", href: "#/ahorro", label: "Fondos de Ahorro e Hipotecas", iconoKey: "ahorro" },
     { id: "botes", href: "#/botes", label: "Sobres y Botes", iconoKey: "botes" },
     { id: "deben", href: "#/deben", label: "Dinero que me deben", iconoKey: "prestamo" },
+    { id: "ahorro", href: "#/ahorro", label: "Fondo Ahorro Hipoteca", iconoKey: "ahorro" },
   ];
 
   return `
