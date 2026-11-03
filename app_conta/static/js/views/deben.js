@@ -77,11 +77,6 @@ function tarjetaDeudaItem(d, cuentas) {
         </div>
       </div>
 
-      <div class="debt-card-meta-row">
-        <span class="debt-meta-badge">${d.fecha_limite ? `Límite: ${fechaCorta(d.fecha_limite)}` : "Sin fecha límite"}</span>
-        <span class="debt-date-label">Fecha apunte: ${fechaCorta(d.fecha)}</span>
-      </div>
-
       ${
         !saldada
           ? `
