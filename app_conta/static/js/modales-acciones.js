@@ -248,17 +248,19 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
   `;
 
   try {
-    const [resCuentas, resBotes, resPlantillas, resPagos, resPrestamos] = await Promise.all([
+    const [resCuentas, resBotes, resPlantillas, resPagos, resPrestamos, resCats] = await Promise.all([
       API.get("/cuentas"),
       API.get("/botes"),
       API.get("/plantillas-reparto"),
       API.get("/pagos-recurrentes"),
       API.get("/prestamos"),
+      API.get("/categorias"),
     ]);
 
     const cuentas = resCuentas.items || [];
     const botes = resBotes.items || [];
     const plantillas = resPlantillas || [];
+    const categorias = resCats.items || [];
     const prestamos = (resPrestamos.items || []).filter(
       (p) => p.activo && Number(p.importe_pendiente) > 0
     );
@@ -345,7 +347,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
 
             <div class="modal-grid-fields">
               <div class="modal-field">
-                <label for="mi-cuenta" class="form-label">¿En qué cuenta entra el dinero?</label>
+                <label for="mi-cuenta" class="form-label">¿En qué cuenta entra el dinero? *</label>
                 <select id="mi-cuenta" name="cuenta_id" required>
                   ${cuentas
                     .map(
@@ -360,10 +362,24 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               </div>
 
               <div class="modal-field">
+                <label for="mi-categoria" class="form-label">Categoría contable</label>
+                <select id="mi-categoria" name="categoria_id">
+                  <option value="">— Sin categoría (General) —</option>
+                  ${categorias
+                    .map(
+                      (cat) => `
+                    <option value="${cat.id}">${esc(cat.nombre)}</option>
+                  `
+                    )
+                    .join("")}
+                </select>
+              </div>
+
+              <div class="modal-field">
                 <label for="mi-destino" class="form-label">¿A qué destinar este ingreso? *</label>
                 <select id="mi-destino" name="destino">
                   <optgroup label="Cuenta Bancaria">
-                    <option value="cuenta" selected>— Dejar libre en la cuenta corriente (Sin asignar) —</option>
+                    <option value="cuenta" selected>— Dejar libre en la cuenta corriente (Sin sobre) —</option>
                   </optgroup>
                   ${
                     botes.length > 0
@@ -384,7 +400,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
                   ${
                     prestamos.length > 0
                       ? `
-                  <optgroup label="Préstamos y Financiaciones (Amortizar / Ingresar en préstamo)">
+                  <optgroup label="Préstamos y Financiaciones (Amortizar / Ingresar)">
                     ${prestamos
                       .map(
                         (p) => `
@@ -398,19 +414,22 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
                       : ""
                   }
                 </select>
-                <div id="mi-destino-info" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
-                  🏦 El dinero quedará como saldo libre en la cuenta seleccionada.
-                </div>
               </div>
 
               <div class="modal-field">
-                <label for="mi-fecha" class="form-label">Fecha del ingreso</label>
+                <label for="mi-fecha" class="form-label">Fecha del ingreso *</label>
                 <input id="mi-fecha" name="fecha" type="date" value="${hoy}" required>
               </div>
 
-              <div class="modal-field">
-                <label for="mi-desc" class="form-label">Concepto o Descripción</label>
+              <div class="modal-field modal-span-2">
+                <label for="mi-desc" class="form-label">Concepto o Descripción *</label>
                 <input id="mi-desc" name="descripcion" placeholder="Ej. Nómina, Bizum recibido, Venta, Ingreso extra..." required>
+              </div>
+
+              <div class="modal-span-2">
+                <div id="mi-destino-info" class="dest-info-pill">
+                  🏦 El dinero quedará como saldo libre en la cuenta seleccionada.
+                </div>
               </div>
             </div>
 
@@ -571,6 +590,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
         const destino = String(fData.get("destino") || fData.get("bote_id") || "");
         const fecha = fData.get("fecha");
         const descripcion = fData.get("descripcion");
+        const categoriaId = fData.get("categoria_id") ? Number(fData.get("categoria_id")) : null;
 
         try {
           if (destino.startsWith("prestamo:")) {
@@ -581,6 +601,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               importe: `+${valor}`,
               descripcion: descripcion,
               cuenta_id: Number(cuentaId),
+              categoria_id: categoriaId,
             });
             // 2. Destinamos y amortizamos el dinero en el préstamo
             await API.post(`/prestamos/${prestamoId}/pagar`, {
@@ -596,6 +617,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               importe: `+${valor}`,
               descripcion: descripcion,
               cuenta_id: Number(cuentaId),
+              categoria_id: categoriaId,
               bote_id: boteId,
             });
           } else {
@@ -605,6 +627,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               importe: `+${valor}`,
               descripcion: descripcion,
               cuenta_id: Number(cuentaId),
+              categoria_id: categoriaId,
               bote_id: boteId,
             });
           }

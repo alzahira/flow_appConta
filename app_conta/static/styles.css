@@ -1477,6 +1477,355 @@ body {
   margin-top: 0.5rem;
 }
 
+/* Pestañas de Modal Fintech (Segmented Pill Switcher) */
+.modal-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: rgba(18, 20, 26, 0.06);
+  border: 1px solid var(--line);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 0.75rem;
+}
+
+[data-theme="dark"] .modal-tabs {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-tab-btn {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.modal-tab-btn:hover {
+  color: var(--fg);
+}
+
+.modal-tab-btn.activo {
+  background: #ffffff;
+  color: var(--fg);
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(80, 70, 140, 0.12);
+}
+
+[data-theme="dark"] .modal-tab-btn.activo {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.modal-tab-content {
+  display: none;
+}
+
+.modal-tab-content.activo {
+  display: block;
+  animation: fadeIn 0.22s ease-out;
+}
+
+/* Hero del Ingreso */
+.modal-importe-hero.ingreso {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.08));
+  border: 1.5px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+}
+
+[data-theme="dark"] .modal-importe-hero.ingreso {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(6, 182, 212, 0.14));
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+/* Tarjetas de selección de nómina */
+.nomina-cards-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 0.75rem 0 1rem 0;
+}
+
+.card-nomina-selector {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  transition: all var(--transition-fast);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+.card-nomina-selector:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(106, 77, 240, 0.12);
+}
+
+.card-nomina-selector.seleccionada {
+  border-color: var(--accent);
+  background: rgba(106, 77, 240, 0.06);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 24px rgba(106, 77, 240, 0.14);
+}
+
+[data-theme="dark"] .card-nomina-selector.seleccionada {
+  background: rgba(124, 92, 255, 0.12);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.card-nomina-radio-chip {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all var(--transition-fast);
+}
+
+.card-nomina-selector.seleccionada .card-nomina-radio-chip {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.card-nomina-check {
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: none;
+}
+
+.card-nomina-selector.seleccionada .card-nomina-check {
+  display: block;
+}
+
+.card-nomina-body {
+  flex: 1;
+}
+
+.card-nomina-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.card-nomina-titulo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 2px;
+}
+
+.card-nomina-sub {
+  font-size: 0.75rem;
+  color: var(--fg-2);
+  margin-bottom: 0.4rem;
+}
+
+.card-nomina-cifra {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--pos);
+  margin-bottom: 0.5rem;
+}
+
+.card-nomina-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.card-nomina-tags span {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: rgba(18, 20, 26, 0.05);
+  color: var(--fg-2);
+}
+
+[data-theme="dark"] .card-nomina-tags span {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Detalle reactivo de nómina */
+.nomina-resumen-box {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.nomina-resumen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.resumen-titulo {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.badge-recibos-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: rgba(106, 77, 240, 0.1);
+  color: var(--accent);
+}
+
+.nomina-bancos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.nomina-bancos-grid.single {
+  grid-template-columns: 1fr;
+}
+
+.nomina-banco-card {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+}
+
+[data-theme="dark"] .nomina-banco-card {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.banco-card-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--fg);
+}
+
+.banco-card-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  margin-bottom: 0.25rem;
+}
+
+.banco-card-item.total {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed var(--line);
+  font-weight: 600;
+}
+
+.bci-val.pos { color: var(--pos); }
+.bci-val.neg { color: var(--neg); }
+
+.nomina-balance-summary-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(18, 20, 26, 0.04);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme="dark"] .nomina-balance-summary-strip {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.strip-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.strip-label {
+  font-size: 0.68rem;
+  color: var(--fg-2);
+  text-transform: uppercase;
+}
+
+.strip-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.strip-val.pos { color: var(--pos); }
+.strip-val.neg { color: var(--neg); }
+.strip-val.neto { color: var(--accent); }
+
+.strip-operator {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fg-2);
+}
+
+.nomina-info-alert {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.78rem;
+  color: var(--fg-2);
+  line-height: 1.4;
+  background: rgba(106, 77, 240, 0.06);
+  border: 1px solid rgba(106, 77, 240, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+}
+
+.nomina-fecha-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.dest-info-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(106, 77, 240, 0.06);
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--fg-2);
+  margin-top: 0.45rem;
+  line-height: 1.35;
+}
+
+
 /* --------------------------------------------------------------------------
    INPUTS Y CONTROLES DE FORMULARIO DE CRISTAL UNIFICADOS
    -------------------------------------------------------------------------- */

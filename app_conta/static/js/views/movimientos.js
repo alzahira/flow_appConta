@@ -368,14 +368,14 @@ export default vista("movimientos", async () => {
             Anota una entrada o salida y asígnala opcionalmente a un sobre de ahorro o amortización de préstamo.
           </p>
 
-          <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
-            <label class="glass-filter-chip" style="cursor: pointer;">
-              <input type="radio" name="signo" value="-" checked style="margin-right: 0.4rem;">
+          <div class="segmented-control" style="max-width: 400px; margin-bottom: 1.25rem;">
+            <label class="seg-btn activo" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+              <input type="radio" name="signo" value="-" checked style="display: none;" onchange="this.closest('.segmented-control').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('activo')); this.closest('.seg-btn').classList.add('activo');">
               <span>− Gasto (Salida de dinero)</span>
             </label>
-            <label class="glass-filter-chip" style="cursor: pointer;">
-              <input type="radio" name="signo" value="+" style="margin-right: 0.4rem;">
-              <span>+ Ingreso (Entrada de dinero)</span>
+            <label class="seg-btn" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+              <input type="radio" name="signo" value="+" style="display: none;" onchange="this.closest('.segmented-control').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('activo')); this.closest('.seg-btn').classList.add('activo');">
+              <span style="color: var(--pos); font-weight: 600;">+ Ingreso (Entrada)</span>
             </label>
           </div>
 
