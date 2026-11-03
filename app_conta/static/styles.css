@@ -541,7 +541,7 @@ body {
 
 .ring-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.07);
+  stroke: var(--track);
 }
 
 .ring-bar {
@@ -551,7 +551,7 @@ body {
 
 .ring-track-inner {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.05);
+  stroke: var(--track);
 }
 
 .ring-center-info {
@@ -567,41 +567,53 @@ body {
 
 .ring-center-caption {
   font-size: 0.72rem;
-  color: var(--text-tertiary);
+  color: var(--fg-2);
   font-weight: 500;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .ring-center-val {
   font-size: 1.35rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--fg);
   line-height: 1.15;
   margin: 0.15rem 0;
 }
 
 .ring-center-val .centimos {
   font-size: 0.65em;
-  color: var(--text-secondary);
+  color: var(--fg-2);
 }
 
 .ring-center-badge {
-  font-size: 0.7rem;
-  color: var(--accent-cyan);
-  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--accent-text);
+  font-weight: 600;
+  background: var(--accent-soft);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  margin-top: 0.2rem;
 }
 
 .ring-metrics-panel {
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  min-width: 200px;
+  min-width: 220px;
 }
 
 .metric-glass-row {
   display: flex;
   align-items: flex-start;
   gap: 0.85rem;
+}
+
+.metric-total-goal {
+  font-size: 0.72em;
+  font-weight: 400;
+  color: var(--fg-2);
+  margin-left: 0.35rem;
 }
 
 .glow-indicator-dot {
@@ -613,8 +625,8 @@ body {
 }
 
 .dot-cyan {
-  background: var(--accent-cyan);
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
+  background: var(--accent-2);
+  box-shadow: 0 0 10px rgba(8, 145, 178, 0.55);
 }
 
 .dot-coral {
@@ -623,6 +635,9 @@ body {
 }
 
 .dot-violet {
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(106, 77, 240, 0.55);
+}
   background: var(--accent-brand);
   box-shadow: 0 0 10px rgba(124, 92, 255, 0.65);
 }

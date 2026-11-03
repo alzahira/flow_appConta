@@ -95,14 +95,14 @@ export default vista("inicio", async () => {
   const dineroOcioNum = Number(boteOcio?.saldo || 0);
   const dineroOcio = dineroOcioNum.toFixed(2);
 
-  // Cálculos para el anillo de progreso circular
-  const metaMes = Number(boteMes?.objetivo_centimos ? boteMes.objetivo_centimos / 100 : (boteMes?.meta || 1200));
-  const pctMes = Math.min(100, Math.max(0, Math.round((dineroMesNum / (metaMes > 0 ? metaMes : 1200)) * 100)));
+  // Cálculos para el anillo de progreso circular sobre el total presupuestado (Mes: 400 €, Ocio: 230 €)
+  const metaMes = Number(boteMes?.objetivo_centimos ? boteMes.objetivo_centimos / 100 : 400) || 400;
+  const pctMes = Math.min(100, Math.max(0, Math.round((dineroMesNum / metaMes) * 100)));
   const circunferenciaMes = 2 * Math.PI * 72; // r=72 -> 452.39
   const offsetMes = circunferenciaMes - (pctMes / 100) * circunferenciaMes;
 
-  const metaOcio = Number(boteOcio?.objetivo_centimos ? boteOcio.objetivo_centimos / 100 : 400);
-  const pctOcio = Math.min(100, Math.max(0, Math.round((dineroOcioNum / (metaOcio > 0 ? metaOcio : 400)) * 100)));
+  const metaOcio = Number(boteOcio?.objetivo_centimos ? boteOcio.objetivo_centimos / 100 : 230) || 230;
+  const pctOcio = Math.min(100, Math.max(0, Math.round((dineroOcioNum / metaOcio) * 100)));
   const circunferenciaOcio = 2 * Math.PI * 56; // r=56 -> 351.86
   const offsetOcio = circunferenciaOcio - (pctOcio / 100) * circunferenciaOcio;
 
@@ -173,14 +173,14 @@ export default vista("inicio", async () => {
             <defs>
               <linearGradient id="ringMonthGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#6A4DF0"/>
-                <stop offset="100%" stop-color="#0891B2"/>
+                <stop offset="100%" stop-color="#3B82F6"/>
               </linearGradient>
               <linearGradient id="ringOcioGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#0891B2"/>
-                <stop offset="100%" stop-color="#A5D8FF"/>
+                <stop offset="100%" stop-color="#22D3EE"/>
               </linearGradient>
             </defs>
-            <!-- Anillo Exterior: Mes -->
+            <!-- Anillo Exterior: Mes (Presupuesto 400 €) -->
             <circle class="ring-track" cx="90" cy="90" r="72" stroke-width="8"/>
             <circle class="ring-bar ring-bar-mes" cx="90" cy="90" r="72" stroke-width="8"
                     stroke="url(#ringMonthGrad)"
@@ -188,9 +188,9 @@ export default vista("inicio", async () => {
                     stroke-dashoffset="${offsetMes}"
                     stroke-linecap="round"/>
             
-            <!-- Anillo Interior: Ocio -->
-            <circle class="ring-track-inner" cx="90" cy="90" r="56" stroke-width="6"/>
-            <circle class="ring-bar ring-bar-ocio" cx="90" cy="90" r="56" stroke-width="6"
+            <!-- Anillo Interior: Ocio (Presupuesto 230 €) -->
+            <circle class="ring-track-inner" cx="90" cy="90" r="56" stroke-width="7"/>
+            <circle class="ring-bar ring-bar-ocio" cx="90" cy="90" r="56" stroke-width="7"
                     stroke="url(#ringOcioGrad)"
                     stroke-dasharray="351.86"
                     stroke-dashoffset="${offsetOcio}"
@@ -201,25 +201,31 @@ export default vista("inicio", async () => {
           <div class="ring-center-info">
             <span class="ring-center-caption">Dinero del mes</span>
             <div class="ring-center-val">${importe(dineroMes, "ring-amount", true)}</div>
-            <span class="ring-center-badge">${pctMes}% asignado</span>
+            <span class="ring-center-badge">${pctMes}% de ${metaMes} €</span>
           </div>
         </div>
 
         <!-- Columna de Métricas de Cristal -->
         <div class="ring-metrics-panel">
           <div class="metric-glass-row">
-            <div class="glow-indicator-dot dot-cyan"></div>
+            <div class="glow-indicator-dot dot-violet"></div>
             <div class="metric-info-group">
-              <span class="metric-tag">Disponible para el mes</span>
-              <div class="metric-amount">${importe(dineroMes, "", false)}</div>
+              <span class="metric-tag">Disponible para el mes · <strong>${pctMes}%</strong></span>
+              <div class="metric-amount">
+                ${importe(dineroMes, "", false)}
+                <span class="metric-total-goal">/ ${importe(metaMes, "", false)}</span>
+              </div>
             </div>
           </div>
 
           <div class="metric-glass-row">
-            <div class="glow-indicator-dot dot-coral"></div>
+            <div class="glow-indicator-dot dot-cyan"></div>
             <div class="metric-info-group">
-              <span class="metric-tag">Ocio libre & caprichos</span>
-              <div class="metric-amount">${importe(dineroOcio, "", false)}</div>
+              <span class="metric-tag">Ocio libre & caprichos · <strong>${pctOcio}%</strong></span>
+              <div class="metric-amount">
+                ${importe(dineroOcio, "", false)}
+                <span class="metric-total-goal">/ ${importe(metaOcio, "", false)}</span>
+              </div>
             </div>
           </div>
 
