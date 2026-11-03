@@ -14,11 +14,15 @@ const API = {
     return r.json();
   },
   async post(ruta, cuerpo) {
-    const r = await fetch(`/api/v1${ruta}`, {
+    const opciones = {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(cuerpo),
-    });
+      headers: { Accept: "application/json" },
+    };
+    if (cuerpo !== undefined) {
+      opciones.headers["Content-Type"] = "application/json";
+      opciones.body = JSON.stringify(cuerpo);
+    }
+    const r = await fetch(`/api/v1${ruta}`, opciones);
     if (!r.ok) await lanzarErrorHttp(r);
     return r.json();
   },

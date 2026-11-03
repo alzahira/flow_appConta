@@ -311,6 +311,17 @@ def eliminar_movimiento(db: Session, movimiento_id: int) -> None:
     db.add(AuditoriaMovimiento(movimiento_id=mov.id, accion="eliminado", cambios={}))
 
 
+def restaurar_movimiento(db: Session, movimiento_id: int) -> Movimiento:
+    """Restaura un movimiento eliminado (soft-delete rollback) con auditoría."""
+    mov = db.get(Movimiento, movimiento_id)
+    if mov is None:
+        raise ErrorNoEncontrado(f"Movimiento {movimiento_id} no encontrado")
+    mov.eliminado = False
+    db.add(AuditoriaMovimiento(movimiento_id=mov.id, accion="restaurado", cambios={}))
+    db.flush()
+    return mov
+
+
 def saldo_cuenta(db: Session, cuenta: Cuenta) -> int:
     """Saldo derivado en céntimos: inicial + Σ importes vivos (Principio II)."""
     suma = db.scalar(

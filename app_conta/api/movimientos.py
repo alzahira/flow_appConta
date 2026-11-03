@@ -24,6 +24,7 @@ from app_conta.services.movimientos import (
     eliminar_movimiento,
     listar_movimientos,
     obtener_movimiento,
+    restaurar_movimiento,
 )
 
 router = APIRouter(prefix="/movimientos", tags=["movimientos"])
@@ -129,6 +130,18 @@ def delete_movimiento(movimiento_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise
     db.commit()
+
+
+@router.post("/{movimiento_id}/restaurar", status_code=200)
+def post_restaurar_movimiento(movimiento_id: int, db: Session = Depends(get_db)) -> dict:
+    try:
+        mov = restaurar_movimiento(db, movimiento_id)
+    except ErrorNoEncontrado:
+        db.rollback()
+        raise
+    db.commit()
+    db.refresh(mov)
+    return _serializar_movimiento(mov)
 
 
 @router.patch("/{movimiento_id}/bote")

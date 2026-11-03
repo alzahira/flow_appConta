@@ -113,7 +113,7 @@ export function pintarFilaMovimiento(m) {
         <span class="tx-meta">${badgeCuenta}</span>
         ${selectorBote(m)}
         ${selectorCategoria(m)}
-        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" title="Eliminar este movimiento" style="margin-left: auto;">
+        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" data-concepto="${esc(m.descripcion || '')}" data-importe="${m.importe}" title="Eliminar este movimiento" style="margin-left: auto;">
           ${icono("borrar")}
         </button>
       </div>

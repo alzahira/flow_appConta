@@ -82,9 +82,11 @@ export default vista("inicio", async () => {
   const dineroPrevision = conc.total_prevision_formula || "0.00";
   const dineroMeDeben = conc.total_me_deben_formula || "0.00";
   const dineroPrestamos = conc.total_prestamos_formula || "0.00";
-  const dineroDiferencia = conc.diferencia || "0.00";
+  const dineroDiferencia = conc.diferencia_formula !== undefined ? conc.diferencia_formula : (conc.diferencia || "0.00");
 
-  const esCuadrado = conc.estado === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 0.05;
+  const esCuadrado = conc.estado_formula
+    ? conc.estado_formula === "cuadrado"
+    : (conc.estado === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 0.05);
 
   // Botes clave: Mes y Ocio
   const botesItems = botes.items || [];
@@ -132,9 +134,9 @@ export default vista("inicio", async () => {
     <header class="home-hero-balance-wrap">
       <div class="hero-status-pill-container" data-accion-fintech="ver-cuadre" style="cursor: pointer;" title="Ver diagnóstico de cuadre">
         ${badgeEstado(
-    esCuadrado ? "cuadrado" : "revisar",
-    esCuadrado ? "Contabilidad al día" : `Diferencia: ${importe(dineroDiferencia, "", false)}`
-  )}
+          esCuadrado ? "cuadrado" : "revisar",
+          esCuadrado ? "Contabilidad al día" : `⚠️ Descuadre: ${importe(dineroDiferencia, "", false)}`
+        )}
       </div>
 
       <span class="hero-balance-caption">Patrimonio disponible</span>

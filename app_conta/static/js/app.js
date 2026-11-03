@@ -456,9 +456,17 @@ document.addEventListener("click", async (e) => {
   const btnBorrarMov = e.target.closest('[data-accion="borrar-movimiento"]');
   if (btnBorrarMov) {
     const id = Number(btnBorrarMov.dataset.id);
-    if (!confirm("¿Deseas eliminar este movimiento?")) return;
+    const concepto = btnBorrarMov.dataset.concepto || "este movimiento";
+    const imp = btnBorrarMov.dataset.importe ? `${btnBorrarMov.dataset.importe} €` : "";
+
+    let mensajeConfirm = `¿Deseas eliminar "${concepto}" ${imp}?`;
+    if (concepto.toLowerCase().includes("saldo consolidado")) {
+      mensajeConfirm = `⚠️ ATENCIÓN:\n"${concepto}" es el saldo base o consolidado de un bote (${imp}).\n\nSi lo eliminas, ese dinero desaparecerá del bote y causará un descuadre en tu contabilidad.\n\n¿Estás completamente seguro de que deseas eliminarlo?`;
+    }
+    if (!confirm(mensajeConfirm)) return;
     try {
       await API.del(`/movimientos/${id}`);
+      mostrarToastDeshacer(id, concepto, imp);
       await navegar();
     } catch (err) {
       alert(`No se pudo eliminar el movimiento: ${err.message}`);
@@ -804,6 +812,40 @@ document.addEventListener("click", (e) => {
 });
 
 let usuarioActual = null;
+export function mostrarToastDeshacer(movId, concepto, imp) {
+  let toast = document.getElementById("flow-toast-undo");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "flow-toast-undo";
+    toast.className = "flow-floating-undo-toast";
+    document.body.appendChild(toast);
+  }
+  const cleanNom = String(concepto || "").replace(/<[^>]*>/g, "").slice(0, 32);
+  toast.innerHTML = `
+    <span>🗑️ Eliminado: <strong>${cleanNom}</strong> ${imp ? `(${imp})` : ""}</span>
+    <button type="button" class="btn-toast-undo" id="btn-undo-delete-mov">Deshacer</button>
+  `;
+  toast.classList.add("is-visible");
+
+  const btnUndo = toast.querySelector("#btn-undo-delete-mov");
+  if (btnUndo) {
+    btnUndo.onclick = async () => {
+      try {
+        await API.post(`/movimientos/${movId}/restaurar`);
+        toast.classList.remove("is-visible");
+        await navegar();
+      } catch (err) {
+        alert(`No se pudo restaurar el movimiento: ${err.message}`);
+      }
+    };
+  }
+
+  if (window._flowToastTimer) clearTimeout(window._flowToastTimer);
+  window._flowToastTimer = setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 8500);
+}
+
 export function obtenerUsuarioActual() {
   return usuarioActual;
 }
