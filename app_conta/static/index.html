@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=60" />
+  <link rel="stylesheet" href="/static/styles.css?v=61" />
   
   <!-- Inicialización inmediata de tema (Modo Claro como principal) -->
   <script>
@@ -82,13 +82,14 @@
 
   <!-- Modal y Drawer Backdrop Global -->
   <div class="nav-dropdown-backdrop" id="nav-dropdown-backdrop"></div>
+  <div id="nav-sheet-portal"></div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=60"></script>
-  <script type="module" src="/static/js/app.js?v=60"></script>
+  <script src="/static/js/api.js?v=61"></script>
+  <script type="module" src="/static/js/app.js?v=61"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=60").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=61").then((reg) => {
         reg.update();
       });
       let refreshing = false;

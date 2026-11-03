@@ -21,6 +21,7 @@ export function pintarNav(_rutas) {
   const nav = document.getElementById("nav");
   if (!nav) return;
 
+  // 1. Barra flotante principal
   nav.innerHTML = `
     <div class="glass-nav-container">
       ${ITEMS_PRINCIPALES.map(
@@ -36,7 +37,17 @@ export function pintarNav(_rutas) {
         <span class="glass-nav-label">Más</span>
       </button>
     </div>
+  `;
 
+  // 2. Portal para el Drawer / Bottom Sheet de "Más" fuera del nav
+  let portal = document.getElementById("nav-sheet-portal");
+  if (!portal) {
+    portal = document.createElement("div");
+    portal.id = "nav-sheet-portal";
+    document.body.appendChild(portal);
+  }
+
+  portal.innerHTML = `
     <!-- Menú Bottom Sheet / Drawer de Cristal para "Más" -->
     <div class="glass-sheet-menu" id="glass-sheet-menu">
       <div class="glass-sheet-header">
@@ -130,12 +141,12 @@ export function pintarNav(_rutas) {
   };
 
   const setTema = (tema) => {
-    document.documentElement.setAttribute("data-theme", tema);
-    localStorage.setItem("flow-theme", tema);
+    document.documentElement?.setAttribute("data-theme", tema);
+    try { localStorage.setItem("flow-theme", tema); } catch (_e) {}
     actualizarBotonesTema(tema);
   };
 
-  const temaActual = document.documentElement.getAttribute("data-theme") || "dark";
+  const temaActual = document.documentElement?.getAttribute("data-theme") || "light";
   actualizarBotonesTema(temaActual);
 
   btnDark?.addEventListener("click", () => setTema("dark"));
@@ -143,7 +154,7 @@ export function pintarNav(_rutas) {
 
   if (quickToggle) {
     quickToggle.addEventListener("click", () => {
-      const actual = document.documentElement.getAttribute("data-theme") || "dark";
+      const actual = document.documentElement?.getAttribute("data-theme") || "light";
       setTema(actual === "dark" ? "light" : "dark");
     });
   }

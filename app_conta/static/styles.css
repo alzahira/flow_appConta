@@ -934,41 +934,46 @@ body {
 .glass-sheet-menu {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100vw;
+  left: 50%;
+  right: auto;
+  width: 100%;
+  max-width: 520px;
   max-height: 85vh;
   overflow-y: auto;
-  background: rgba(15, 18, 26, 0.92);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--glass-strong);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   border-radius: 28px 28px 0 0;
-  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.5);
-  padding: 1.25rem 1.5rem 3rem 1.5rem;
-  z-index: 9999;
-  transform: translateY(105%);
+  box-shadow: 0 -16px 48px rgba(80, 70, 140, 0.22);
+  padding: 1.25rem 1.5rem 5rem 1.5rem;
+  z-index: 10000;
+  transform: translate(-50%, 115%);
   transition: transform var(--transition-normal);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  box-sizing: border-box;
 }
 
-[data-theme="light"] .glass-sheet-menu {
-  background: rgba(255, 255, 255, 0.94);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+[data-theme="dark"] .glass-sheet-menu {
+  background: rgba(15, 18, 26, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.65);
 }
 
 .glass-sheet-menu.visible {
-  transform: translateY(0);
+  transform: translate(-50%, 0) !important;
 }
 
 .nav-dropdown-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(18, 20, 26, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 9998;
   opacity: 0;
   pointer-events: none;
@@ -991,7 +996,7 @@ body {
   width: 36px;
   height: 4px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--divider);
 }
 
 .glass-sheet-title-row {
@@ -1004,21 +1009,34 @@ body {
 .glass-sheet-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--fg);
 }
 
 .glass-sheet-close {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: var(--text-secondary);
-  width: 30px;
-  height: 30px;
+  background: rgba(18, 20, 26, 0.06);
+  border: 1px solid var(--line);
+  color: var(--fg-2);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.glass-sheet-close:hover {
+  background: rgba(18, 20, 26, 0.12);
+  color: var(--fg);
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .glass-sheet-close {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--fg-2);
 }
 
 /* Conmutador de Tema de Cristal */
@@ -1026,37 +1044,47 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 20, 26, 0.04);
+  border: 1px solid rgba(18, 20, 26, 0.08);
   border-radius: var(--radius-lg);
   padding: 0.85rem 1.15rem;
+}
+
+[data-theme="dark"] .theme-switcher-glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .theme-switcher-title {
   display: block;
   font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--fg);
 }
 
 .theme-switcher-desc {
   font-size: 0.74rem;
-  color: var(--text-secondary);
+  color: var(--fg-2);
 }
 
 /* Segmented Control Component */
 .segmented-control {
   display: inline-flex;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(18, 20, 26, 0.06);
   border-radius: var(--radius-pill);
   padding: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--line);
+}
+
+[data-theme="dark"] .segmented-control {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .seg-btn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--fg-2);
   font-size: 0.8rem;
   font-weight: 500;
   padding: 0.35rem 0.85rem;
@@ -1066,46 +1094,53 @@ body {
 }
 
 .seg-btn.activo {
-  background: var(--text-primary);
-  color: var(--bg-app);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  font-weight: 600;
 }
 
 /* Lista de enlaces dentro de Más */
 .glass-sheet-links-list {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .glass-sheet-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.1rem;
   border-radius: var(--radius-md);
   text-decoration: none;
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
+  color: var(--fg);
+  background: rgba(18, 20, 26, 0.03);
+  border: 1px solid rgba(18, 20, 26, 0.06);
   transition: all var(--transition-fast);
 }
 
+[data-theme="dark"] .glass-sheet-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .glass-sheet-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(106, 77, 240, 0.09);
+  border-color: rgba(106, 77, 240, 0.28);
   transform: translateX(3px);
 }
 
 .glass-sheet-item-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.06);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(106, 77, 240, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-brand);
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .glass-sheet-item-info {
@@ -1115,18 +1150,21 @@ body {
 }
 
 .glass-sheet-item-title {
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--fg);
 }
 
 .glass-sheet-item-desc {
   font-size: 0.74rem;
-  color: var(--text-secondary);
+  color: var(--fg-2);
+  margin-top: 2px;
 }
 
 .glass-sheet-arrow {
-  color: var(--text-tertiary);
-  font-size: 1.1rem;
+  color: var(--accent);
+  font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .glass-sheet-pdf-btn {
@@ -1136,105 +1174,225 @@ body {
   gap: 0.6rem;
   padding: 0.85rem;
   border-radius: var(--radius-pill);
-  background: rgba(124, 92, 255, 0.12);
-  border: 1px solid rgba(124, 92, 255, 0.25);
-  color: #9b82ff;
+  background: var(--accent-soft);
+  border: 1px solid rgba(106, 77, 240, 0.25);
+  color: var(--accent-text);
   text-decoration: none;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all var(--transition-fast);
 }
 
 .glass-sheet-pdf-btn:hover {
-  background: rgba(124, 92, 255, 0.2);
-  border-color: rgba(124, 92, 255, 0.4);
+  background: rgba(106, 77, 240, 0.2);
+  border-color: rgba(106, 77, 240, 0.45);
 }
 
 /* --------------------------------------------------------------------------
-   10. MODALES FINTECH OVERLAY CON GLASSMORPHISM
+   10. MODALES FINTECH OVERLAY Y FORMULARIOS GLASSMORPHISM
    -------------------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(18, 20, 26, 0.45);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 10001;
   padding: 1.25rem;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-normal);
 }
 
-.modal-overlay.abierto {
+.modal-overlay.abierto,
+.modal-overlay[style*="display: flex"] {
   opacity: 1;
   pointer-events: auto;
 }
 
+.modal-card,
 .modal-fintech-content {
-  background: rgba(18, 22, 32, 0.88);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: var(--glass-strong);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 24px 64px rgba(80, 70, 140, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  color: var(--text-primary);
-  transform: scale(0.95);
+  color: var(--fg);
+  padding: 1.75rem;
+  box-sizing: border-box;
+  transform: scale(0.96);
   transition: transform var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-[data-theme="light"] .modal-fintech-content {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 24px 60px rgba(120, 100, 160, 0.2);
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .modal-fintech-content {
+  background: rgba(18, 22, 32, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+.modal-overlay.abierto .modal-card,
+.modal-overlay[style*="display: flex"] .modal-card,
 .modal-overlay.abierto .modal-fintech-content {
   transform: scale(1);
 }
 
-.modal-fintech-header {
+.modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 1rem;
 }
 
-.modal-fintech-header h3 {
-  font-size: 1.15rem;
+.modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-title {
+  font-size: 1.2rem;
   font-weight: 600;
+  color: var(--fg);
+  margin: 0;
+  letter-spacing: -0.01em;
 }
 
+.modal-subtitle {
+  font-size: 0.8rem;
+  color: var(--fg-2);
+  margin: 0;
+}
+
+.modal-btn-close,
 .modal-close-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: var(--text-secondary);
+  background: rgba(18, 20, 26, 0.06);
+  border: 1px solid var(--line);
+  color: var(--fg-2);
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
+.modal-btn-close:hover,
 .modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--text-primary);
+  background: rgba(18, 20, 26, 0.12);
+  color: var(--fg);
+  transform: scale(1.05);
 }
 
-.modal-fintech-body {
-  padding: 1.5rem;
+[data-theme="dark"] .modal-btn-close,
+[data-theme="dark"] .modal-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--fg-2);
+}
+
+/* Hero de Importe Grande en Modal (Gasto / Ingreso) */
+.modal-importe-hero {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(80, 70, 140, 0.06);
+}
+
+[data-theme="dark"] .modal-importe-hero {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-importe-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-2);
+  margin-bottom: 0.35rem;
+}
+
+.modal-input-amount-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.modal-amount-symbol {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--fg-2);
+}
+
+.modal-importe-hero input {
+  font-size: 2.2rem !important;
+  font-weight: 400 !important;
+  font-variant-numeric: tabular-nums !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: var(--fg) !important;
+  width: auto !important;
+  max-width: 220px !important;
+}
+
+.modal-importe-hero.ingreso .modal-amount-symbol,
+.modal-importe-hero.ingreso input {
+  color: var(--pos) !important;
+}
+
+.modal-badge-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+
+.modal-badge-action.gasto {
+  background: rgba(18, 20, 26, 0.08);
+  color: var(--fg);
+}
+
+.modal-badge-action.ingreso {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+
+.modal-badge-action.neutral {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .modal-grid-fields {
@@ -1243,91 +1401,237 @@ body {
   gap: 1rem;
 }
 
+@media (max-width: 540px) {
+  .modal-grid-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
 .modal-span-2 {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
-.form-group-fintech {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.form-group-fintech label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-/* Inputs de Cristal */
-input[type="text"], input[type="number"], input[type="date"], select, textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.92rem;
-  transition: all var(--transition-fast);
-}
-
-[data-theme="light"] input[type="text"], [data-theme="light"] input[type="number"], [data-theme="light"] input[type="date"], [data-theme="light"] select, [data-theme="light"] textarea {
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--accent-brand);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.modal-fintech-footer {
+.modal-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.85rem;
-  padding: 1.25rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.5rem;
 }
 
-/* Botones de Cristal */
-.btn, .btn-secondary, .btn-cancelar {
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-primary);
-  padding: 0.65rem 1.35rem;
-  font-size: 0.88rem;
+/* --------------------------------------------------------------------------
+   INPUTS Y CONTROLES DE FORMULARIO DE CRISTAL UNIFICADOS
+   -------------------------------------------------------------------------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]),
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md); /* 16px soft fintech */
+  padding: 0.85rem 1.15rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
   font-weight: 500;
-  cursor: pointer;
+  color: var(--fg);
+  box-shadow: 0 2px 10px rgba(80, 70, 140, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.85);
   transition: all var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.btn:hover, .btn-secondary:hover, .btn-cancelar:hover {
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--fg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 0 0 3.5px var(--accent-soft), 0 6px 20px rgba(106, 77, 240, 0.15);
+}
+
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]):focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3.5px rgba(124, 92, 255, 0.3), 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-.btn-primary, .btn-fintech-primary, .btn-guardar, button[type="submit"] {
+input::placeholder, textarea::placeholder {
+  color: var(--fg-2);
+  opacity: 0.65;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  filter: invert(0.2);
+  transition: opacity var(--transition-fast);
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+}
+
+.modal-error-box,
+[id^="err-"] {
+  background: rgba(194, 54, 74, 0.08);
+  border: 1px solid rgba(194, 54, 74, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--neg);
+  padding: 0.65rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+[id^="err-"]:empty {
+  display: none !important;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236A4DF0' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.15rem center;
+  background-size: 16px;
+  padding-right: 2.75rem;
+  cursor: pointer;
+}
+
+[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C5CFF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+select option {
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0.5rem;
+}
+
+/* Estructura de Formularios Fintech */
+.fintech-form,
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.15rem;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.15rem;
+}
+
+.campo,
+.modal-field,
+.form-group,
+.form-group-fintech {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.campo label,
+.modal-field label,
+.form-label,
+.form-group label,
+label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+/* Botones de Cristal Fintech */
+.btn, .btn-secondary, .btn-cancelar, .modal-btn-cancelar {
   border-radius: var(--radius-pill);
-  background: var(--accent-brand);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
-  padding: 0.65rem 1.5rem;
+  background: rgba(18, 20, 26, 0.06);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  padding: 0.65rem 1.35rem;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(124, 92, 255, 0.35);
   transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
 }
 
-.btn-primary:hover, .btn-fintech-primary:hover, .btn-guardar:hover, button[type="submit"]:hover {
-  background: #8b6dff;
+[data-theme="dark"] .btn,
+[data-theme="dark"] .btn-secondary,
+[data-theme="dark"] .btn-cancelar,
+[data-theme="dark"] .modal-btn-cancelar {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.btn:hover, .btn-secondary:hover, .btn-cancelar:hover, .modal-btn-cancelar:hover {
+  background: rgba(18, 20, 26, 0.12);
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(124, 92, 255, 0.5);
+}
+
+.btn-primary, .btn-fintech-primary, .btn-guardar, .modal-btn-primary, button[type="submit"] {
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(106, 77, 240, 0.32);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.btn-primary:hover, .btn-fintech-primary:hover, .btn-guardar:hover, .modal-btn-primary:hover, button[type="submit"]:hover {
+  background: #5a3cd9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(106, 77, 240, 0.45);
 }
 
 /* --------------------------------------------------------------------------
@@ -1772,21 +2076,34 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.65rem;
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 600;
   color: var(--fg);
   list-style: none;
   user-select: none;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .glass-accordion summary::-webkit-details-marker {
   display: none;
 }
 
+.glass-accordion summary::after {
+  content: "▾";
+  font-size: 1.15rem;
+  color: var(--accent);
+  transition: transform var(--transition-fast);
+}
+
+.glass-accordion[open] summary::after {
+  transform: rotate(180deg);
+}
+
 .glass-accordion summary:hover {
   color: var(--accent-text);
+  background: rgba(106, 77, 240, 0.04);
 }
 
 .glass-accordion[open] summary {
@@ -1795,6 +2112,38 @@ input:focus, select:focus, textarea:focus {
 
 .accordion-body {
   padding: 1.5rem;
+}
+
+/* Acordeón compacto en línea (amortizar cuota, etc.) */
+.loan-pay-details {
+  margin-top: 0.5rem;
+}
+
+.loan-pay-details summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  transition: all var(--transition-fast);
+}
+
+.loan-pay-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.loan-pay-details summary:hover {
+  background: rgba(106, 77, 240, 0.2);
+}
+
+.loan-pay-details[open] summary {
+  margin-bottom: 0.75rem;
 }
 
 /* Tarjeta vacía */
@@ -2611,12 +2960,14 @@ input:focus, select:focus, textarea:focus {
   .glass-sheet-menu {
     max-width: 500px;
     left: 50%;
-    transform: translate(-50%, 105%);
+    bottom: 5.5rem;
+    transform: translate(-50%, 115%);
     border-radius: 28px;
-    bottom: 2rem;
+    border: 1px solid var(--line);
+    padding: 1.5rem 1.75rem 2rem 1.75rem;
   }
 
   .glass-sheet-menu.visible {
-    transform: translate(-50%, 0);
+    transform: translate(-50%, 0) !important;
   }
 }
