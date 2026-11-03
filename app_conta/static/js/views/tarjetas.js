@@ -9,9 +9,9 @@ function generarSparklineTarjeta(seed, saldo) {
   const y1 = 26 + Math.cos(s * 1.8) * 8;
   const y2 = 18 + Math.sin(s * 2.5) * 8;
   const y3 = 24 + Math.cos(s * 3.1) * 6;
-  const y4 = isPos ? 12 : 36;
-  
-  const strokeColor = isPos ? "var(--accent)" : "var(--neg)";
+  const y4 = isPos ? 12 : 28;
+
+  const strokeColor = "var(--accent)";
   const gradId = `spark-tarjeta-${seed}`;
 
   return `
@@ -32,7 +32,8 @@ function generarSparklineTarjeta(seed, saldo) {
 
 function tarjetaCreditoItem(c) {
   const saldoNum = Number(c.saldo);
-  const esDeuda = saldoNum < 0;
+  const esDispuesto = saldoNum < 0;
+  const importeMostrar = esDispuesto ? Math.abs(saldoNum).toFixed(2) : c.saldo;
 
   return `
     <article class="glass-account-card">
@@ -43,7 +44,7 @@ function tarjetaCreditoItem(c) {
           </div>
           <div class="acc-card-name-group">
             <h3 class="acc-card-name" title="${esc(c.nombre)}">${esc(c.nombre)}</h3>
-            <span class="acc-card-badge">${esc(c.entidad || "Tarjeta")} · &bull;&bull;&bull;&bull; 2026</span>
+            <span class="acc-card-badge">${esc(c.entidad || "Tarjeta crédito")} · ${esDispuesto ? "Pendiente de liquidar" : "Al día"}</span>
           </div>
         </div>
 
@@ -64,8 +65,8 @@ function tarjetaCreditoItem(c) {
       </div>
 
       <div class="acc-card-balance-block">
-        <span class="acc-card-balance-label">${esDeuda ? "Deuda / Saldo dispuesto" : "Saldo disponible"}</span>
-        <div class="acc-card-balance-val ${esDeuda ? 'text-neg' : ''}">${importe(c.saldo)}</div>
+        <span class="acc-card-balance-label">${esDispuesto ? "Gasto dispuesto (a pagar en banco)" : "Saldo disponible"}</span>
+        <div class="acc-card-balance-val">${importe(importeMostrar)}</div>
       </div>
 
       ${generarSparklineTarjeta(c.id, c.saldo)}
@@ -89,17 +90,18 @@ export default vista("tarjetas", async () => {
       !esTarjetaRegalo(c)
   );
 
-  const totalTarjetas = tarjetas.reduce((acc, c) => acc + Number(c.saldo), 0);
-  const esTotalNegativo = totalTarjetas < 0;
+  const totalGastoDispuesto = tarjetas
+    .filter((c) => Number(c.saldo) < 0)
+    .reduce((acc, c) => acc + Math.abs(Number(c.saldo)), 0);
 
   return `
   ${subnavCuentas("tarjetas")}
 
   <!-- 1. Total Arriba Protagonista -->
   <div class="accounts-hero-total">
-    <span class="hero-total-label">${esTotalNegativo ? "Deuda Total Dispuesto en Tarjetas" : "Saldo Neto Disponible"}</span>
-    <div class="hero-total-amount ${esTotalNegativo ? 'text-neg' : ''}">${importe(totalTarjetas.toFixed(2))}</div>
-    <span class="hero-total-sub">${tarjetas.length} tarjetas bancarias activas</span>
+    <span class="hero-total-label">Gasto Acumulado en Tarjetas</span>
+    <div class="hero-total-amount">${importe(totalGastoDispuesto.toFixed(2))}</div>
+    <span class="hero-total-sub">Dinero adelantado pendiente de cobro mensual en banco · ${tarjetas.length} tarjeta(s)</span>
   </div>
 
   <!-- 2. Carrusel Horizontal con Scroll-Snap -->

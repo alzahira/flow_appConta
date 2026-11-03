@@ -60,12 +60,20 @@ export default vista("inicio", async () => {
     .reduce((acc, c) => acc + Math.round(Number(c.saldo || 0) * 100), 0);
   const dineroBancos = (centimosBancos / 100).toFixed(2);
 
-  const centimosTarjetas = itemsCuentas
-    .filter((c) => c.tipo === "tarjeta")
+  // Tarjetas monedero / prepago con saldo a favor
+  const centimosMonederos = itemsCuentas
+    .filter((c) => c.tipo === "tarjeta" && Number(c.saldo || 0) >= 0)
     .reduce((acc, c) => acc + Math.round(Number(c.saldo || 0) * 100), 0);
-  const dineroTarjetas = (centimosTarjetas / 100).toFixed(2);
+  const dineroMonederos = (centimosMonederos / 100).toFixed(2);
 
-  const centimosTotalCuentas = centimosCaja + centimosBancos + centimosTarjetas;
+  // Gasto acumulado en tarjetas de crédito (adelanto mensual a pagar en banco)
+  const centimosTarjetasDispuesto = itemsCuentas
+    .filter((c) => c.tipo === "tarjeta" && Number(c.saldo || 0) < 0)
+    .reduce((acc, c) => acc + Math.abs(Math.round(Number(c.saldo || 0) * 100)), 0);
+  const dineroTarjetaDispuesto = (centimosTarjetasDispuesto / 100).toFixed(2);
+
+  // Patrimonio neto real (bancos + efectivo + monederos - crédito a liquidar)
+  const centimosTotalCuentas = centimosCaja + centimosBancos + centimosMonederos - centimosTarjetasDispuesto;
   const dineroTotalCuentasNum = centimosTotalCuentas / 100;
   const dineroTotalCuentas = dineroTotalCuentasNum.toFixed(2);
 
@@ -140,7 +148,13 @@ export default vista("inicio", async () => {
         <span class="breakdown-dot">·</span>
         <span class="breakdown-tag">Efectivo <strong>${importe(dineroCaja, "", false)}</strong></span>
         <span class="breakdown-dot">·</span>
-        <span class="breakdown-tag">Tarjetas <strong>${importe(dineroTarjetas, "", false)}</strong></span>
+        <span class="breakdown-tag">Monederos <strong>${importe(dineroMonederos, "", false)}</strong></span>
+        ${
+          centimosTarjetasDispuesto > 0
+            ? `<span class="breakdown-dot">·</span>
+               <span class="breakdown-tag" title="Gasto con tarjeta a pagar a final de mes">Tarjeta pendiente <strong>${importe(dineroTarjetaDispuesto, "", false)}</strong></span>`
+            : ""
+        }
       </div>
     </header>
 

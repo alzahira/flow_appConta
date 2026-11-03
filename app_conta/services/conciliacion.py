@@ -138,8 +138,14 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     # 1) Inversiones fuera de cuentas bancarias (Etoro + CRO)
     centimos_inversiones = tot_inversiones_formula
 
-    # 2) Bote emergencias (deducción del remanente histórico de 186,00 € del Excel,
-    # topado al saldo disponible del bote para no romper entornos limpios o de test)
+    # 2) Bote emergencias / remanente de efectivo: si el hogar ya tiene cuenta de efectivo
+    # en mano (los ~180 € en cartera), ese dinero ya está en cuentas y no se resta dos veces.
+    tiene_efectivo_mano = any(
+        c.tipo == "efectivo"
+        and "fondo" not in c.nombre.lower()
+        and "guardado" not in c.nombre.lower()
+        for c in cuentas
+    )
     bote_extras_pair = next(
         (
             p
@@ -151,9 +157,13 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         None,
     )
     centimos_extras = (
-        min(18600, bote_extras_pair[1])
-        if (bote_extras_pair and bote_extras_pair[1] > 0)
-        else 0
+        0
+        if tiene_efectivo_mano
+        else (
+            min(18600, bote_extras_pair[1])
+            if (bote_extras_pair and bote_extras_pair[1] > 0)
+            else 0
+        )
     )
     centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
 

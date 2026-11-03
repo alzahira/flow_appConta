@@ -41,9 +41,10 @@ def ejecutar():
             25: ("La Caixa", "banco", 273470),
             19: ("Deustche Bank", "banco", 434100),
             33: ("BBVA", "banco", 3950),
-            23: ("Fondo Bols. (Efectivo)", "efectivo", 50000),
             21: ("Revolut", "banco", 3800),
             22: ("Paypal", "banco", 2000),
+            23: ("Dinero en efectivo", "efectivo", 18040),
+            24: ("Fondo Bols. (Efectivo)", "efectivo", 50000),
             8: ("Tarjeta C&A", "tarjeta", 1800),
             9: ("Tarjeta Sprinter", "tarjeta", 1800),
             10: ("Tarjeta Carrefour", "tarjeta", 3100),
@@ -52,6 +53,20 @@ def ejecutar():
             13: ("Dirhams", "tarjeta", 3600),
             28: ("Tarjeta Carrefour Pass", "tarjeta", -56565),
         }
+
+        c24 = db.get(Cuenta, 24)
+        if not c24:
+            c24 = Cuenta(
+                id=24,
+                hogar_id=hogar_id,
+                nombre="Fondo Bols. (Efectivo)",
+                tipo="efectivo",
+                saldo_inicial_centimos=50000,
+                fecha_apertura=hoy,
+                archivada=False,
+            )
+            db.add(c24)
+            db.flush()
 
         # Actualizar saldos iniciales para que el saldo derivado sea exacto
         for cid, (nom, tipo, sal_target) in saldos_cuentas.items():
