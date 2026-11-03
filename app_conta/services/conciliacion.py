@@ -181,9 +181,9 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     def _es_prev_prestamo_o_deuda(m: Movimiento) -> bool:
         desc = (m.descripcion or "").lower()
         es_prev = "previsi" in desc or "seguros e ibi" in desc or "gastos anuales" in desc
-        es_prestamo = "coche" in desc or "prstamo" in desc or "prestamo" in desc
-        es_dazn = "dazn" in desc
-        return es_prev or es_prestamo or es_dazn
+        es_prestamo = "coche" in desc or "prstamo" in desc or "prestamo" in desc or "amortizaci" in desc
+        es_deuda = "deuda" in desc or "cobro" in desc or "dazn" in desc
+        return es_prev or es_prestamo or es_deuda
 
     sin_asignar_formula = sum(
         m.importe_centimos for m in movs_sin_bote if not _es_prev_prestamo_o_deuda(m)
