@@ -19,6 +19,14 @@ build/
 backups/
 app_conta/backups/
 
+# Archivos personales y hojas de cálculo privadas
+docs/*.xlsx
+docs/*.xls
+*.xlsx
+*.xls
+scripts/aplicar_datos_javier.py
+scripts/actualizar_datos_reales.py
+
 # Tests / cobertura
 .coverage
 htmlcov/
