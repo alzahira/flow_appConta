@@ -184,3 +184,15 @@ def test_poner_a_cero_conserva_botes_y_cuentas(admin_client):
     assert conc["total_prestamos_formula"] == "0.00"
     assert conc["diferencia_formula"] == "0.00"
     assert conc["estado_formula"] == "cuadrado"
+
+
+def test_restaurar_backup_con_password_incorrecta(admin_client):
+    fichero_bytes = b'{"app": "Flow", "tablas": {}}'
+    r = admin_client.post(
+        "/api/v1/backup/restaurar",
+        files={"archivo": ("backup.json", io.BytesIO(fichero_bytes), "application/json")},
+        data={"password": "password_erroneo_totalmente"},
+    )
+    assert r.status_code == 401
+    assert "incorrecta" in r.text
+

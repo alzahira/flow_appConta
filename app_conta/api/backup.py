@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
@@ -100,6 +100,7 @@ def post_poner_a_cero(
 @router.post("/restaurar", response_model=dict[str, Any])
 async def post_restaurar_backup(
     archivo: UploadFile | None = None,
+    password: str | None = Form(None),
     db: Session = Depends(get_db),
     admin: Usuario = Depends(requerir_admin),
 ) -> dict[str, Any]:
@@ -108,6 +109,11 @@ async def post_restaurar_backup(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="El usuario demo no puede restaurar bases de datos.",
+        )
+    if password is not None and not verificar_password(password, admin.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña de usuario incorrecta. No se ha podido restaurar.",
         )
     if archivo is None:
         raise HTTPException(
