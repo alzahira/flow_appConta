@@ -65,9 +65,15 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
 
     ids_cuentas = [c.id for c in cuentas]
     if ids_cuentas:
+        # Universo de cálculo: movimientos de cuentas activas más los movimientos
+        # de contrapartida de traspasos entre cuentas (para mantener suma neta 0
+        # si una cuenta origen o destino de un traspaso histórico es archivada).
         stmt_m = select(Movimiento).where(
             Movimiento.eliminado.is_(False),
-            Movimiento.cuenta_id.in_(ids_cuentas),
+            (
+                Movimiento.cuenta_id.in_(ids_cuentas)
+                | Movimiento.descripcion.like("Traspaso %")
+            ),
         )
         if hogar_id is not None:
             stmt_m = stmt_m.where(Movimiento.hogar_id == hogar_id)
