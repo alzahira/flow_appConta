@@ -1,7 +1,6 @@
 /**
  * Vista de Login & Acceso Multi-Usuario / Modo Demo
  */
-import { api } from "../api.js";
 
 export function renderLogin(container, onLoginSuccess) {
   container.innerHTML = `
