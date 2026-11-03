@@ -333,6 +333,11 @@ export default vista("movimientos", async () => {
       <option value="sin-bote">🏦 Libre en cuenta</option>
       ${botesCache.map((b) => `<option value="${b.id}">📦 ${esc(b.nombre)}</option>`).join("")}
     </select>
+
+    <!-- Botón Papelera de Seguridad -->
+    <button type="button" class="btn-subtle mini" data-accion="abrir-papelera-movimientos" title="Ver y recuperar movimientos eliminados" style="margin-left: auto; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500; font-size: 0.82rem; padding: 0.4rem 0.75rem;">
+      🗑️ Papelera
+    </button>
   </div>
 
   <!-- 3. Formulario desplegable para nuevo movimiento -->

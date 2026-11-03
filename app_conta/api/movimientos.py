@@ -15,7 +15,7 @@ from app_conta.api.cuentas import _serializar_movimiento
 from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.services.botes import reasignar_bote
-from app_conta.services.errors import ErrorNoEncontrado
+from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.movimientos import (
     DEFAULT_LIMIT,
     MAX_LIMIT,
@@ -23,6 +23,7 @@ from app_conta.services.movimientos import (
     editar_movimiento,
     eliminar_movimiento,
     listar_movimientos,
+    listar_movimientos_eliminados,
     obtener_movimiento,
     restaurar_movimiento,
 )
@@ -106,6 +107,19 @@ def get_movimientos(
     }
 
 
+@router.get("/eliminados")
+def get_movimientos_eliminados(
+    limit: int = Query(default=30, ge=1, le=100),
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    filas = listar_movimientos_eliminados(db, hogar_id=hogar_id, limit=limit)
+    return {
+        "items": [_serializar_movimiento(m) for m in filas],
+        "total": len(filas),
+    }
+
+
 @router.get("/{movimiento_id}")
 def get_movimiento(movimiento_id: int, db: Session = Depends(get_db)) -> dict:
     mov = obtener_movimiento(db, movimiento_id)
@@ -125,10 +139,17 @@ def patch_movimiento(
 
 
 @router.delete("/{movimiento_id}", status_code=204)
-def delete_movimiento(movimiento_id: int, db: Session = Depends(get_db)):
+def delete_movimiento(
+    movimiento_id: int,
+    forzar: bool = Query(default=False),
+    db: Session = Depends(get_db),
+):
     try:
-        eliminar_movimiento(db, movimiento_id)
+        eliminar_movimiento(db, movimiento_id, forzar=forzar)
     except ErrorNoEncontrado:
+        db.rollback()
+        raise
+    except ErrorValidacion:
         db.rollback()
         raise
     db.commit()

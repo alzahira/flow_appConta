@@ -1810,6 +1810,126 @@ export async function abrirModalEditarMovimiento(movimientoId) {
 }
 
 // --------------------------------------------------------------------------
+// 10. MODAL PAPELERA DE SEGURIDAD (Restaurar movimientos eliminados)
+// --------------------------------------------------------------------------
+export async function abrirModalPapelera() {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card modal-lg">
+      <div class="modal-loading">Cargando papelera de seguridad...</div>
+    </div>
+  `;
+
+  try {
+    const res = await API.get("/movimientos/eliminados?limit=50");
+    const eliminados = res.items || [];
+
+    function renderLista() {
+      if (eliminados.length === 0) {
+        return `
+          <div class="tarjeta-vacia" style="padding: 2.5rem 1rem;">
+            <div class="tarjeta-vacia-icon">🗑️</div>
+            <h4>La papelera está vacía</h4>
+            <p style="color: var(--fg-2); font-size: 0.9rem;">No hay ningún movimiento eliminado recientemente.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 60vh; overflow-y: auto; padding-right: 0.25rem;">
+          ${eliminados
+            .map((m) => {
+              const num = Number(m.importe || 0);
+              const esGasto = num < 0;
+              const absNum = Math.abs(num).toLocaleString("es-ES", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
+
+              return `
+              <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: var(--radius-md); gap: 0.75rem;">
+                <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-weight: 600; font-size: 0.92rem; color: var(--fg);">${esc(m.descripcion || "Operación")}</span>
+                    <span class="badge ${esGasto ? "negativo" : "positivo"}" style="font-size: 0.82rem; font-weight: 700;">
+                      ${esGasto ? "−" : "+"}${absNum}&nbsp;€
+                    </span>
+                  </div>
+                  <div style="font-size: 0.8rem; color: var(--fg-2); margin-top: 0.2rem; display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                    <span>📅 ${m.fecha}</span>
+                    <span>🏛️ Cuenta #${m.cuenta_id}</span>
+                    ${m.bote_id ? `<span>📦 Sobre #${m.bote_id}</span>` : `<span>🏦 Sin sobre</span>`}
+                  </div>
+                </div>
+                <button type="button" class="btn-primary mini" data-accion="restaurar-mov-id" data-id="${m.id}" style="white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem;">
+                  ♻️ Restaurar
+                </button>
+              </div>
+            `;
+            })
+            .join("\n")}
+        </div>
+      `;
+    }
+
+    overlay.innerHTML = `
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">🗑️ Papelera de Seguridad</h3>
+            <p class="modal-sub">Si eliminaste un movimiento por error o falta dinero en un bote, recupéralo aquí.</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-papelera">&times;</button>
+        </div>
+        <div class="modal-body" id="papelera-lista-container">
+          ${renderLista()}
+        </div>
+        <div class="modal-actions" style="margin-top: 1rem; border-top: 1px solid var(--border-soft); padding-top: 0.8rem;">
+          <button type="button" class="btn-secondary" id="btn-cerrar-papelera-pie">Cerrar</button>
+        </div>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-papelera")?.addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cerrar-papelera-pie")?.addEventListener("click", cerrarModalActivo);
+
+    const container = overlay.querySelector("#papelera-lista-container");
+    container?.addEventListener("click", async (e) => {
+      const btnRestaurar = e.target.closest('[data-accion="restaurar-mov-id"]');
+      if (!btnRestaurar) return;
+
+      const id = Number(btnRestaurar.dataset.id);
+      btnRestaurar.disabled = true;
+      btnRestaurar.textContent = "Restaurando...";
+
+      try {
+        await API.post(`/movimientos/${id}/restaurar`);
+        // Quitar de la lista local
+        const idx = eliminados.findIndex((m) => m.id === id);
+        if (idx !== -1) eliminados.splice(idx, 1);
+        container.innerHTML = renderLista();
+        if (window.navegar) await window.navegar();
+      } catch (err) {
+        alert(`No se pudo restaurar el movimiento: ${err.message}`);
+        btnRestaurar.disabled = false;
+        btnRestaurar.textContent = "♻️ Restaurar";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {

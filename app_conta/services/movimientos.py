@@ -304,11 +304,39 @@ def editar_movimiento(db: Session, movimiento_id: int, cambios_peticion: dict) -
     return mov
 
 
-def eliminar_movimiento(db: Session, movimiento_id: int) -> None:
-    """Borrado lógico + auditoría `eliminado` (data-model)."""
+def eliminar_movimiento(db: Session, movimiento_id: int, forzar: bool = False) -> None:
+    """Borrado lógico + auditoría `eliminado` (data-model).
+
+    Protección activa: los movimientos de saldo consolidado o base de botes
+    requieren confirmación forzada explícita para evitar descuadres en el hogar.
+    """
     mov = obtener_movimiento(db, movimiento_id)
+    desc_baja = (mov.descripcion or "").lower().strip()
+    if not forzar and ("saldo consolidado" in desc_baja or "saldo base" in desc_baja):
+        raise ErrorValidacion(
+            f"El movimiento {movimiento_id} es un saldo base/consolidado ('{mov.descripcion}'). "
+            "Para evitar descuadres en la contabilidad, no se puede eliminar sin confirmación explícita (forzar=true)."
+        )
     mov.eliminado = True
     db.add(AuditoriaMovimiento(movimiento_id=mov.id, accion="eliminado", cambios={}))
+
+
+def listar_movimientos_eliminados(
+    db: Session, hogar_id: int | str | None = None, limit: int = 30
+) -> list[Movimiento]:
+    """Papelera de seguridad: devuelve los últimos movimientos eliminados."""
+    stmt = select(Movimiento).where(Movimiento.eliminado.is_(True))
+    if hogar_id is not None:
+        stmt = stmt.where(
+            (Movimiento.hogar_id == str(hogar_id)) | (Movimiento.hogar_id == hogar_id)
+        )
+    return list(
+        db.scalars(
+            stmt.order_by(Movimiento.actualizado_en.desc(), Movimiento.id.desc()).limit(
+                min(max(limit, 1), 100)
+            )
+        ).all()
+    )
 
 
 def restaurar_movimiento(db: Session, movimiento_id: int) -> Movimiento:

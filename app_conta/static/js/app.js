@@ -469,8 +469,30 @@ document.addEventListener("click", async (e) => {
       mostrarToastDeshacer(id, concepto, imp);
       await navegar();
     } catch (err) {
-      alert(`No se pudo eliminar el movimiento: ${err.message}`);
+      if (err.message && (err.message.includes("forzar=true") || err.message.includes("saldo base/consolidado"))) {
+        const forzar = confirm(`⚠️ PROTECCIÓN CONTABLE:\n\n${err.message}\n\n¿Deseas forzar el borrado de todas formas?`);
+        if (forzar) {
+          try {
+            await API.del(`/movimientos/${id}?forzar=true`);
+            mostrarToastDeshacer(id, concepto, imp);
+            await navegar();
+          } catch (errForzar) {
+            alert(`No se pudo forzar el borrado: ${errForzar.message}`);
+          }
+          return;
+        }
+      } else {
+        alert(`No se pudo eliminar el movimiento: ${err.message}`);
+      }
     }
+    return;
+  }
+
+  // Abrir Papelera de Seguridad
+  const btnPapelera = e.target.closest('[data-accion="abrir-papelera-movimientos"]');
+  if (btnPapelera) {
+    const { abrirModalPapelera } = await import("./modales-acciones.js");
+    await abrirModalPapelera();
     return;
   }
 

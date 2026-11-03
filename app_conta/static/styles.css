@@ -3690,14 +3690,93 @@ label {
   color: var(--fg-2);
 }
 
-.btn-action-icon.edit {
+/* Botones de acción en filas de transacciones (Editar / Borrar) */
+.btn-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border-subtle);
   color: var(--fg-2);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .btn-action-icon {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--fg-2);
+}
+
+.btn-action-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.btn-action-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .btn-action-icon.edit:hover {
   background: rgba(99, 102, 241, 0.12);
   color: var(--violet);
-  border-color: var(--violet);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.btn-action-icon.delete:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--neg);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.btn-action-icon:active {
+  transform: scale(0.92);
+}
+
+/* Modificadores mini para botones generales */
+.btn-primary.mini,
+.btn-secondary.mini,
+.btn.mini {
+  padding: 0.35rem 0.85rem !important;
+  font-size: 0.8rem !important;
+  border-radius: var(--radius-sm) !important;
+  gap: 0.35rem !important;
+  height: auto !important;
+}
+
+/* Botón sutil sin bordes para acciones secundarias */
+.btn-subtle {
+  background: transparent;
+  border: none;
+  color: var(--fg-2);
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.btn-subtle:hover {
+  color: var(--fg);
+  background: rgba(18, 20, 26, 0.05);
+}
+
+[data-theme="dark"] .btn-subtle:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ==========================================================================

@@ -31,16 +31,17 @@ def get_conciliacion(request: Request, db: Session = Depends(get_db)) -> dict:
             hogar_id = u.hogar_id
 
     r = calcular_conciliacion(db, hogar_id)
+
     return {
         "fecha_calculo": r["fecha_calculo"].isoformat(),
-        # Campos heredados
+        # Campos contrato REST T025 (identidad técnica de saldos)
         "saldo_total_cuentas": euros_str(int(r["saldo_total_cuentas"])),
         "saldo_inicial_total": euros_str(int(r["saldo_inicial_total"])),
         "saldo_total_botes": euros_str(int(r["saldo_total_botes"])),
         "sin_asignar": euros_str(int(r["sin_asignar"])),
         "diferencia": euros_str(int(r["diferencia"])),
         "estado": r["estado"],
-        # Fórmula Global del Hogar
+        # Fórmula Global del Hogar (conciliación real física)
         "total_botes_formula": euros_str(int(r["total_botes_formula"])),
         "total_prevision_formula": euros_str(int(r["total_prevision_formula"])),
         "total_me_deben_formula": euros_str(int(r["total_me_deben_formula"])),
