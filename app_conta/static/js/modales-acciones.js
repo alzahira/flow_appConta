@@ -1632,6 +1632,184 @@ export async function abrirModalLiquidarTarjeta(tarjetaIdPorDefecto = null) {
 }
 
 // --------------------------------------------------------------------------
+// 6. MODAL EDITAR MOVIMIENTO SEGURO
+// --------------------------------------------------------------------------
+export async function abrirModalEditarMovimiento(movimientoId) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando datos del movimiento...</div>
+    </div>
+  `;
+
+  try {
+    const [mov, resCuentas, resBotes, resCats] = await Promise.all([
+      API.get(`/movimientos/${movimientoId}`),
+      API.get("/cuentas"),
+      API.get("/botes"),
+      API.get("/categorias"),
+    ]);
+
+    const cuentas = resCuentas.items || [];
+    const botes = resBotes.items || [];
+    const cats = resCats.items || [];
+    const numVal = Number(mov.importe || 0);
+    const esGasto = numVal < 0;
+    const absVal = Math.abs(numVal).toFixed(2);
+
+    overlay.innerHTML = `
+      <div class="modal-card modal-card-form">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-badge-action neutral">MODIFICAR MOVIMIENTO</span>
+            <h3 class="modal-title">Editar Operación</h3>
+            <p class="modal-subtitle">Modifica de forma deliberada el importe, la cuenta, el sobre de ahorro o la categoría</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+
+        <form id="form-editar-movimiento" class="modal-form">
+          <div class="modal-amount-hero">
+            <span class="modal-amount-currency">€</span>
+            <input type="number" step="0.01" min="0.01" class="modal-amount-input ${esGasto ? 'text-neg' : 'text-pos'}" id="edit-mov-importe" value="${absVal}" required>
+          </div>
+
+          <!-- Selector de Signo (Gasto / Ingreso) -->
+          <div class="segmented-control pill-control" style="margin-bottom: 1.25rem;">
+            <button type="button" class="segmented-control-btn btn-tipo-signo ${esGasto ? 'activo' : ''}" data-signo="-">
+              − Gasto
+            </button>
+            <button type="button" class="segmented-control-btn btn-tipo-signo ${!esGasto ? 'activo' : ''}" data-signo="+">
+              + Ingreso
+            </button>
+          </div>
+
+          <div class="modal-grid-fields">
+            <div class="modal-field modal-span-2">
+              <label for="edit-mov-concepto" class="form-label">Concepto / Descripción *</label>
+              <input type="text" id="edit-mov-concepto" value="${esc(mov.descripcion || '')}" placeholder="Ej. Compra supermercado, Nómina, Recibo..." required>
+            </div>
+
+            <div class="modal-field">
+              <label for="edit-mov-cuenta" class="form-label">🏛️ Cuenta Bancaria / Tarjeta *</label>
+              <select id="edit-mov-cuenta" required>
+                ${cuentas.map(c => `<option value="${c.id}" ${c.id === mov.cuenta_id ? 'selected' : ''}>🏛️ ${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`).join("")}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="edit-mov-fecha" class="form-label">📅 Fecha de Operación *</label>
+              <input type="date" id="edit-mov-fecha" value="${mov.fecha}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="edit-mov-bote" class="form-label">📦 Sobre / Bote de Ahorro</label>
+              <select id="edit-mov-bote">
+                <option value="">— Sin sobre asignado (Libre en cuenta) —</option>
+                ${botes.map(b => `<option value="${b.id}" ${b.id === mov.bote_id ? 'selected' : ''}>📦 ${esc(b.nombre)}</option>`).join("")}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="edit-mov-categoria" class="form-label">🏷️ Categoría Contable</label>
+              <select id="edit-mov-categoria">
+                <option value="">— Sin categoría —</option>
+                ${cats.map(c => `<option value="${c.id}" ${c.id === mov.categoria_id ? 'selected' : ''}>🏷️ ${esc(c.nombre)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div id="edit-mov-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-edit">Cancelar</button>
+            <button type="submit" class="btn-primary ok" id="btn-guardar-edit">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-edit").addEventListener("click", cerrarModalActivo);
+
+    let signoActual = esGasto ? "-" : "+";
+    const btnsSigno = overlay.querySelectorAll(".btn-tipo-signo");
+    const inputImp = overlay.querySelector("#edit-mov-importe");
+    btnsSigno.forEach(btn => {
+      btn.addEventListener("click", () => {
+        btnsSigno.forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+        signoActual = btn.dataset.signo;
+        if (signoActual === "-") {
+          inputImp.classList.add("text-neg");
+          inputImp.classList.remove("text-pos");
+        } else {
+          inputImp.classList.add("text-pos");
+          inputImp.classList.remove("text-neg");
+        }
+      });
+    });
+
+    const form = overlay.querySelector("#form-editar-movimiento");
+    const errBox = overlay.querySelector("#edit-mov-err");
+    const btnSubmit = overlay.querySelector("#btn-guardar-edit");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      btnSubmit.disabled = true;
+
+      try {
+        const rawImp = parseFloat(inputImp.value || "0");
+        if (isNaN(rawImp) || rawImp <= 0) {
+          throw new Error("El importe debe ser mayor a 0 €.");
+        }
+        const importeFinal = (signoActual === "-" ? -rawImp : rawImp).toFixed(2);
+        const descripcion = overlay.querySelector("#edit-mov-concepto").value.trim();
+        const cuenta_id = Number(overlay.querySelector("#edit-mov-cuenta").value);
+        const fecha = overlay.querySelector("#edit-mov-fecha").value;
+        const boteVal = overlay.querySelector("#edit-mov-bote").value;
+        const bote_id = boteVal === "" ? null : Number(boteVal);
+        const catVal = overlay.querySelector("#edit-mov-categoria").value;
+        const categoria_id = catVal === "" ? null : Number(catVal);
+
+        // 1. Patch datos generales
+        await API.patch(`/movimientos/${mov.id}`, {
+          descripcion,
+          fecha,
+          importe: importeFinal,
+          cuenta_id,
+          categoria_id,
+        });
+
+        // 2. Patch bote si ha cambiado
+        if (bote_id !== mov.bote_id) {
+          await API.patch(`/movimientos/${mov.id}/bote`, { bote_id });
+        }
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+      } catch (err) {
+        errBox.textContent = err.message || "Error al actualizar el movimiento";
+        errBox.style.display = "block";
+        btnSubmit.disabled = false;
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {

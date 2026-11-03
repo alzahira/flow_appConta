@@ -474,6 +474,34 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  // Editar Movimiento (Modal seguro sin cambios accidentales)
+  const btnEditMov = e.target.closest('[data-accion="editar-movimiento"]');
+  if (btnEditMov) {
+    const id = Number(btnEditMov.dataset.id);
+    const { abrirModalEditarMovimiento } = await import("./modales-acciones.js");
+    await abrirModalEditarMovimiento(id);
+    return;
+  }
+
+  // Toggle menú contextual en tarjetas de botes y fondos de ahorro
+  const btnMenuBote = e.target.closest('[data-accion="toggle-menu-bote"]');
+  if (btnMenuBote) {
+    const wrapper = btnMenuBote.closest(".card-more-menu-wrapper");
+    const dropdown = wrapper?.querySelector(".card-more-dropdown");
+    document.querySelectorAll(".card-more-dropdown.is-open").forEach((d) => {
+      if (d !== dropdown) d.classList.remove("is-open");
+    });
+    dropdown?.classList.toggle("is-open");
+    return;
+  }
+
+  // Cerrar cualquier menú desplegable si se hace clic fuera
+  if (!e.target.closest(".card-more-menu-wrapper")) {
+    document.querySelectorAll(".card-more-dropdown.is-open").forEach((d) => {
+      d.classList.remove("is-open");
+    });
+  }
+
   // Filtrar Botes por Categoría
   const btnCatBote = e.target.closest('[data-accion="filtrar-categoria-bote"]');
   if (btnCatBote) {
@@ -487,6 +515,7 @@ document.addEventListener("click", async (e) => {
   // Ver Detalle / Extracto de un Bote
   const btnVerBote = e.target.closest('[data-accion="ver-detalle-bote"]');
   if (btnVerBote) {
+    if (e.target.closest(".card-more-menu-wrapper")) return;
     const id = Number(btnVerBote.dataset.id);
     const { seleccionarBote } = await import("./views/botes.js");
     seleccionarBote(id);
@@ -506,6 +535,7 @@ document.addEventListener("click", async (e) => {
   // Ver Detalle / Extracto de Fondo de Ahorro
   const btnVerAhorro = e.target.closest('[data-accion="ver-detalle-ahorro"]');
   if (btnVerAhorro) {
+    if (e.target.closest(".card-more-menu-wrapper")) return;
     const id = Number(btnVerAhorro.dataset.id);
     const { seleccionarFondoAhorro } = await import("./views/ahorro.js");
     seleccionarFondoAhorro(id);

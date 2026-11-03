@@ -43,7 +43,7 @@ export default vista("inicio", async () => {
     API.get("/botes"),
     API.get("/prevision-gastos").catch(() => null),
     API.get("/inversiones").catch(() => null),
-    API.get("/movimientos?limit=5").catch(() => ({ items: [] })),
+    API.get("/movimientos?limit=5&orden=desc").catch(() => ({ items: [] })),
   ]);
 
   const itemsCuentas = cuentas.items || [];

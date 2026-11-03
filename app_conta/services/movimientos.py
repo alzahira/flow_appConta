@@ -343,8 +343,9 @@ def listar_movimientos(
     categoria: int | None = None,
     limit: int = DEFAULT_LIMIT,
     offset: int = 0,
+    orden: str = "asc",
 ) -> tuple[list[Movimiento], int]:
-    """Lista filtrable de movimientos vivos, ordenada por fecha asc + id.
+    """Lista filtrable de movimientos vivos, ordenada por fecha + id.
 
     Devuelve `(movimientos, total)` donde `total` es el recuento del filtro.
     """
@@ -365,8 +366,13 @@ def listar_movimientos(
         stmt = stmt.where(Movimiento.categoria_id == categoria)
 
     total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+    order_clause = (
+        (Movimiento.fecha.desc(), Movimiento.id.desc())
+        if str(orden).lower() == "desc"
+        else (Movimiento.fecha.asc(), Movimiento.id.asc())
+    )
     filas: list = db.scalars(
-        stmt.order_by(Movimiento.fecha.asc(), Movimiento.id.asc())
+        stmt.order_by(*order_clause)
         .limit(min(max(limit, 1), MAX_LIMIT))
         .offset(max(offset, 0))
     ).all()

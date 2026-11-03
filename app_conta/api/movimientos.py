@@ -80,6 +80,7 @@ def get_movimientos(
     cuenta: int | None = Query(default=None),
     bote: int | None = Query(default=None),
     categoria: int | None = Query(default=None),
+    orden: str = Query(default="asc"),
     limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     offset: int = Query(default=0, ge=0),
     hogar_id: int = Depends(obtener_hogar_activo),
@@ -95,6 +96,7 @@ def get_movimientos(
         categoria=categoria,
         limit=limit,
         offset=offset,
+        orden=orden,
     )
     return {
         "items": [_serializar_movimiento(m) for m in filas],

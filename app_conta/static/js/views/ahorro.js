@@ -27,8 +27,8 @@ function tarjetaFondoAhorro(b) {
           </div>
         </div>
 
-        <div class="card-more-menu-wrapper" onclick="event.stopPropagation();">
-          <button type="button" class="btn-card-more" aria-label="Opciones de ${esc(b.nombre)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
+        <div class="card-more-menu-wrapper">
+          <button type="button" class="btn-card-more" data-accion="toggle-menu-bote" aria-label="Opciones de ${esc(b.nombre)}" title="Opciones">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="5" cy="12" r="2"/>
               <circle cx="12" cy="12" r="2"/>
@@ -73,7 +73,7 @@ function tarjetaFondoAhorro(b) {
 async function renderDetalleFondoAhorro(fondoId, cuentas) {
   const [bote, movsData] = await Promise.all([
     API.get(`/botes/${fondoId}`),
-    API.get(`/movimientos?bote=${fondoId}&limit=100`),
+    API.get(`/movimientos?bote=${fondoId}&limit=100&orden=desc`),
   ]);
 
   const movs = movsData.items || [];

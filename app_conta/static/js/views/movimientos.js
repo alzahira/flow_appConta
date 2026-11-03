@@ -22,51 +22,25 @@ export function setGlobalCaches({ cuentas, botes, categorias } = {}) {
   if (categorias) categoriasCache = categorias;
 }
 
-function selectorBote(m) {
-  if (botesCache.length === 0) return "";
+function badgeBote(m) {
   const boteActual = botesCache.find((b) => b.id === m.bote_id);
   const nombreBote = boteActual ? esc(boteActual.nombre) : null;
   const tieneBote = Boolean(boteActual);
-
   return `
-    <div class="chip-select-wrapper bote ${tieneBote ? "asignado" : "vacio"}">
-      <span class="chip-select-label">${tieneBote ? `📦 ${nombreBote}` : "📦 Sin sobre"}</span>
-      <select class="sel-bote sel-bote-chip" data-id="${m.id}" aria-label="Asignar bote">
-        <option value="">— Sin sobre (Libre) —</option>
-        ${botesCache
-          .map(
-            (b) =>
-              `<option value="${b.id}" ${m.bote_id === b.id ? "selected" : ""}>📦 ${esc(
-                b.nombre
-              )}</option>`
-          )
-          .join("")}
-      </select>
-    </div>
+    <span class="tx-chip-badge bote ${tieneBote ? "asignado" : "vacio"}" title="Sobre asignado">
+      📦 ${tieneBote ? nombreBote : "Sin sobre"}
+    </span>
   `;
 }
 
-function selectorCategoria(m) {
-  if (categoriasCache.length === 0) return "";
+function badgeCategoria(m) {
   const catActual = categoriasCache.find((c) => c.id === m.categoria_id);
   const nombreCat = catActual ? esc(catActual.nombre) : null;
   const tieneCat = Boolean(catActual);
-
   return `
-    <div class="chip-select-wrapper cat ${tieneCat ? "asignado" : "vacio"}">
-      <span class="chip-select-label">${tieneCat ? `🏷️ ${nombreCat}` : "🏷️ Sin categoría"}</span>
-      <select class="sel-categoria sel-cat-chip" data-id="${m.id}" aria-label="Asignar categoría">
-        <option value="">— Sin categoría —</option>
-        ${categoriasCache
-          .map(
-            (c) =>
-              `<option value="${c.id}" ${
-                m.categoria_id === c.id ? "selected" : ""
-              }>🏷️ ${esc(c.nombre)}</option>`
-          )
-          .join("")}
-      </select>
-    </div>
+    <span class="tx-chip-badge cat ${tieneCat ? "asignado" : "vacio"}" title="Categoría contable">
+      🏷️ ${tieneCat ? nombreCat : "Sin categoría"}
+    </span>
   `;
 }
 
@@ -109,13 +83,18 @@ export function pintarFilaMovimiento(m) {
           <span class="${esGasto ? "gasto" : "positivo"}">${esGasto ? "−" : "+"}${absNum}&nbsp;€</span>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
+      <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.35rem;">
         <span class="tx-meta">${badgeCuenta}</span>
-        ${selectorBote(m)}
-        ${selectorCategoria(m)}
-        <button class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" data-concepto="${esc(m.descripcion || '')}" data-importe="${m.importe}" title="Eliminar este movimiento" style="margin-left: auto;">
-          ${icono("borrar")}
-        </button>
+        ${badgeBote(m)}
+        ${badgeCategoria(m)}
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 0.35rem;">
+          <button type="button" class="btn-action-icon edit mini" data-accion="editar-movimiento" data-id="${m.id}" title="Editar movimiento">
+            ${icono("editar")}
+          </button>
+          <button type="button" class="btn-action-icon delete mini" data-accion="borrar-movimiento" data-id="${m.id}" data-concepto="${esc(m.descripcion || '')}" data-importe="${m.importe}" title="Eliminar este movimiento">
+            ${icono("borrar")}
+          </button>
+        </div>
       </div>
     </div>
   </article>
@@ -240,7 +219,7 @@ function filtrarMovimientosDOM() {
 
 export default vista("movimientos", async () => {
   const [data, cuentas, botes, categorias, prestamos] = await Promise.all([
-    API.get("/movimientos?limit=100"),
+    API.get("/movimientos?limit=100&orden=desc"),
     API.get("/cuentas"),
     API.get("/botes"),
     API.get("/categorias"),
