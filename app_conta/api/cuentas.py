@@ -202,3 +202,72 @@ def post_liquidar_tarjeta(
         "saldo_banco": euros_str(saldo_cuenta(db, banco)),
     }
 
+
+class TraspasoCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    cuenta_origen_id: int
+    cuenta_destino_id: int
+    importe: str | int | float
+    fecha: str | None = None
+    concepto: str | None = None
+    bote_id: int | None = None
+
+
+@router.post("/traspaso", status_code=200)
+def post_traspaso(payload: TraspasoCreate, db: Session = Depends(get_db)) -> dict:
+    if payload.cuenta_origen_id == payload.cuenta_destino_id:
+        raise HTTPException(
+            status_code=400, detail="La cuenta de origen y de destino no pueden ser la misma."
+        )
+
+    origen = db.get(Cuenta, payload.cuenta_origen_id)
+    if not origen:
+        raise HTTPException(status_code=404, detail="Cuenta de origen no encontrada.")
+
+    destino = db.get(Cuenta, payload.cuenta_destino_id)
+    if not destino:
+        raise HTTPException(status_code=404, detail="Cuenta de destino no encontrada.")
+
+    try:
+        importe_cent = euros_a_centimos(str(payload.importe))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Importe de traspaso no válido.") from exc
+
+    if importe_cent <= 0:
+        raise HTTPException(
+            status_code=400, detail="El importe a traspasar debe ser mayor que 0."
+        )
+
+    fecha_traspaso = date.fromisoformat(payload.fecha) if payload.fecha else date.today()
+    concepto_salida = payload.concepto or f"Traspaso a {destino.nombre}"
+    concepto_entrada = payload.concepto or f"Traspaso desde {origen.nombre}"
+
+    mov_salida = Movimiento(
+        hogar_id=origen.hogar_id,
+        cuenta_id=origen.id,
+        fecha=fecha_traspaso,
+        descripcion=concepto_salida,
+        importe_centimos=-importe_cent,
+        bote_id=payload.bote_id,
+    )
+    mov_entrada = Movimiento(
+        hogar_id=destino.hogar_id,
+        cuenta_id=destino.id,
+        fecha=fecha_traspaso,
+        descripcion=concepto_entrada,
+        importe_centimos=importe_cent,
+        bote_id=payload.bote_id,
+    )
+
+    db.add(mov_salida)
+    db.add(mov_entrada)
+    db.commit()
+
+    return {
+        "mensaje": f"Traspaso de {euros_str(importe_cent)} € realizado con éxito de {origen.nombre} a {destino.nombre}.",
+        "importe": euros_str(importe_cent),
+        "saldo_origen": euros_str(saldo_cuenta(db, origen)),
+        "saldo_destino": euros_str(saldo_cuenta(db, destino)),
+    }
+

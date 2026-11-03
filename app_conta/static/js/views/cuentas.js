@@ -118,6 +118,11 @@ export default vista("cuentas", async () => {
     <span class="hero-total-label">Total en Cuentas y Depósitos</span>
     <div class="hero-total-amount">${importe(totalCuentas.toFixed(2))}</div>
     <span class="hero-total-sub">${cuentasValidas.length} cuentas y depósitos activos</span>
+    <div style="margin-top: 0.95rem; display: flex; justify-content: center;">
+      <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso" style="gap: 0.45rem; padding: 0.5rem 1.25rem; border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); font-size: 0.85rem;">
+        ⇄ Traspaso entre cuentas
+      </button>
+    </div>
   </div>
 
   <!-- 2. Carrusel Horizontal con Scroll-Snap -->

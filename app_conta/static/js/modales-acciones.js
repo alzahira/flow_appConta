@@ -1930,6 +1930,207 @@ export async function abrirModalPapelera() {
 }
 
 // --------------------------------------------------------------------------
+// 11. MODAL TRASPASO ENTRE CUENTAS (Mover dinero de efectivo a banco o entre cuentas)
+// --------------------------------------------------------------------------
+export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando cuentas para traspaso...</div>
+    </div>
+  `;
+
+  try {
+    const [resCuentas, resBotes] = await Promise.all([
+      API.get("/cuentas"),
+      API.get("/botes"),
+    ]);
+
+    const items = resCuentas.items || [];
+    const cuentas = items.filter(
+      (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
+    );
+    const botes = resBotes.items || [];
+
+    if (cuentas.length < 2) {
+      overlay.innerHTML = `
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Traspaso no disponible</h3>
+            <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+          </div>
+          <div class="modal-body"><p>Necesitas al menos 2 cuentas para realizar traspasos entre ellas.</p></div>
+        </div>
+      `;
+      overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+      return;
+    }
+
+    const cOrigenId = Number(cuentaOrigenDefecto) || cuentas[0].id;
+    const cDestinoId = cuentas.find((c) => c.id !== cOrigenId)?.id || cuentas[1].id;
+
+    overlay.innerHTML = `
+      <div class="modal-card modal-traspaso">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge-action neutral">⇄ TRASPASO ENTRE CUENTAS</span>
+            <h3 class="modal-title">Mover Dinero entre Cuentas</h3>
+            <p class="modal-subtitle">Pasa fondos de una cuenta a otra (ej. Efectivo a Banco, o entre bancos)</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form id="form-modal-traspaso" class="modal-form">
+          <div class="modal-importe-hero neutral">
+            <label for="mt-importe" class="modal-importe-label">Importe a traspasar</label>
+            <div class="modal-input-amount-wrap">
+              <span class="modal-amount-symbol">€</span>
+              <input id="mt-importe" name="importe" type="number" step="0.01" min="0.01" placeholder="0.00" required autofocus>
+            </div>
+          </div>
+
+          <div class="modal-grid-fields">
+            <div class="modal-field">
+              <label for="mt-origen" class="form-label">Cuenta de origen (Sale) *</label>
+              <select id="mt-origen" name="cuenta_origen_id" required>
+                ${cuentas
+                  .map(
+                    (c) => `
+                  <option value="${c.id}" ${c.id === cOrigenId ? "selected" : ""}>
+                    ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
+                  </option>
+                `
+                  )
+                  .join("")}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="mt-destino" class="form-label">Cuenta de destino (Entra) *</label>
+              <select id="mt-destino" name="cuenta_destino_id" required>
+                ${cuentas
+                  .map(
+                    (c) => `
+                  <option value="${c.id}" ${c.id === cDestinoId ? "selected" : ""}>
+                    ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
+                  </option>
+                `
+                  )
+                  .join("")}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="mt-fecha" class="form-label">Fecha de operación *</label>
+              <input id="mt-fecha" name="fecha" type="date" value="${hoy}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="mt-bote" class="form-label">Sobre o bote asociado</label>
+              <select id="mt-bote" name="bote_id">
+                <option value="">— Ninguno (Libre en cuenta) —</option>
+                ${botes
+                  .map(
+                    (b) => `
+                  <option value="${b.id}">
+                    📦 ${esc(b.nombre)}
+                  </option>
+                `
+                  )
+                  .join("")}
+              </select>
+            </div>
+
+            <div class="modal-field modal-span-2">
+              <label for="mt-concepto" class="form-label">Concepto o nota (Opcional)</label>
+              <input id="mt-concepto" name="concepto" placeholder="Ej. Ingreso de efectivo en cajero, Traspaso a Revolut...">
+            </div>
+          </div>
+
+          <div style="background: rgba(99, 102, 241, 0.08); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--fg-2); line-height: 1.45;">
+            💡 <strong>Sin descuadres:</strong> El dinero se traslada de una cuenta a otra en una sola operación atómica. Tu patrimonio neto total y la conciliación del hogar permanecen cuadrados al 100%.
+          </div>
+
+          <div id="modal-traspaso-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button type="submit" class="btn-primary" id="btn-ejecutar-traspaso">
+              ⇄ Realizar Traspaso
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    const form = overlay.querySelector("#form-modal-traspaso");
+    const errBox = overlay.querySelector("#modal-traspaso-err");
+    const btnSubmit = overlay.querySelector("#btn-ejecutar-traspaso");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+
+      const origenId = Number(overlay.querySelector("#mt-origen").value);
+      const destinoId = Number(overlay.querySelector("#mt-destino").value);
+      const rawImp = parseFloat(overlay.querySelector("#mt-importe").value || "0");
+      const fecha = overlay.querySelector("#mt-fecha").value;
+      const boteVal = overlay.querySelector("#mt-bote").value;
+      const boteId = boteVal ? Number(boteVal) : null;
+      const concepto = overlay.querySelector("#mt-concepto").value.trim() || null;
+
+      if (origenId === destinoId) {
+        errBox.textContent = "La cuenta de origen y de destino no pueden ser la misma.";
+        errBox.style.display = "block";
+        return;
+      }
+      if (isNaN(rawImp) || rawImp <= 0) {
+        errBox.textContent = "El importe debe ser estrictamente mayor a 0 €.";
+        errBox.style.display = "block";
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Procesando...";
+
+      try {
+        await API.post("/cuentas/traspaso", {
+          cuenta_origen_id: origenId,
+          cuenta_destino_id: destinoId,
+          importe: rawImp.toFixed(2),
+          fecha: fecha,
+          bote_id: boteId,
+          concepto: concepto,
+        });
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+        else location.reload();
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "⇄ Realizar Traspaso";
+        errBox.textContent = err.message || "Error al realizar el traspaso";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {
@@ -1954,6 +2155,9 @@ export function iniciarModalesAcciones() {
     } else if (accion === "liquidar-tarjeta") {
       const tarjetaId = btnAccion.dataset.tarjetaId ? Number(btnAccion.dataset.tarjetaId) : null;
       abrirModalLiquidarTarjeta(tarjetaId);
+    } else if (accion === "abrir-traspaso") {
+      const cuentaId = btnAccion.dataset.cuentaId ? Number(btnAccion.dataset.cuentaId) : null;
+      abrirModalTraspaso(cuentaId);
     }
   });
 }

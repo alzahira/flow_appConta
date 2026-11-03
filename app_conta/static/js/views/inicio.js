@@ -160,23 +160,30 @@ export default vista("inicio", async () => {
       </div>
     </header>
 
-    <!-- 2. 3 Botones de Acción (Iconos Redondos de Cristal con Etiqueta) -->
+    <!-- 2. Botones de Acción Rápida (Iconos Redondos de Cristal con Etiqueta) -->
     <section class="glass-actions-cluster">
-      <button type="button" class="glass-action-circle-btn ingreso" data-accion-fintech="abrir-ingreso">
+      <button type="button" class="glass-action-circle-btn ingreso" data-accion-fintech="abrir-ingreso" title="Registrar nuevo ingreso o nómina">
         <div class="action-circle">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </div>
         <span class="action-label">Ingreso</span>
       </button>
 
-      <button type="button" class="glass-action-circle-btn gasto" data-accion-fintech="abrir-gasto">
+      <button type="button" class="glass-action-circle-btn gasto" data-accion-fintech="abrir-gasto" title="Registrar salida o gasto">
         <div class="action-circle">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </div>
         <span class="action-label">Gasto</span>
       </button>
 
-      <a href="/pagos-diarios" class="glass-action-circle-btn diario" style="text-decoration: none;">
+      <button type="button" class="glass-action-circle-btn traspaso" data-accion-fintech="abrir-traspaso" title="Mover dinero entre cuentas (efectivo a banco, etc.)">
+        <div class="action-circle">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/></svg>
+        </div>
+        <span class="action-label">Traspaso</span>
+      </button>
+
+      <a href="/pagos-diarios" class="glass-action-circle-btn diario" style="text-decoration: none;" title="Ver gastos del día a día">
         <div class="action-circle">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         </div>

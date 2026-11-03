@@ -508,6 +508,11 @@ body {
   border-color: rgba(255, 107, 122, 0.4);
 }
 
+.glass-action-circle-btn.traspaso:hover .action-circle {
+  color: var(--accent);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
 .glass-action-circle-btn.diario:hover .action-circle {
   color: var(--accent-cyan);
   border-color: rgba(34, 211, 238, 0.4);
