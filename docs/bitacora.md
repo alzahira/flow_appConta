@@ -871,6 +871,32 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Versión del Service Worker actualizada a `app-conta-shell-v48`.
   - **168 tests pasando en verde (100% de éxito)** con 88% de cobertura global.
 
+### 28. Rediseño Visual Integral Fintech Glassmorphism (2026-11-03)
+
+- **Objetivo**: Transformación estética completa hacia una interfaz fintech prémium de estilo cristal (Revolut, Monzo, Linear, Apple Wallet), manteniendo intacta al 100% la lógica contable, modelos y rutas de backend.
+- **Tokens y Sistema de Diseño en `:root`**:
+  - Paleta base en modo claro: `--bg: #EEF0FB`, 3 manchas orgánicas fijas difuminadas (`blur(95px)` en lavanda `#C4B5FD`, melocotón `#FDBA9B` y cielo `#A5D8FF`).
+  - Cristal translúcido: `--glass: rgba(255,255,255,0.62)`, `--line: rgba(255,255,255,0.90)`, `backdrop-filter: blur(24px) saturate(140%)`, sombras suaves `0 8px 28px rgba(80,70,140,0.14)`.
+  - Jerarquía de color estricta: Gastos en color de texto principal (`--fg: #12141A`), ingresos en verde esmeralda suave (`--pos: #0A7A4C`), deudas o descubiertos en coral (`--neg: #C2364A`).
+  - Modo oscuro alternativo instantáneo con `[data-theme="dark"]` y selector en el menú "Más".
+- **Pantallas y Vistas Rediseñadas**:
+  1. **Inicio**: Saldo patrimonial gigante con desglose (Bancos, Efectivo, Tarjetas) y céntimos reducidos, 3 botones de acción circulares de cristal (Ingreso, Gasto, Pago diario), widget de anillo dual concéntrico (Dinero del Mes y Ocio libre), chips de resumen financiero y feed limpio de últimos movimientos.
+  2. **Cuentas y Tarjetas**: Carrusel horizontal con `scroll-snap`, tarjetas de banco con logos de entidades (CaixaBank, Deutsche Bank, BBVA, Revolut), gráfica SVG sparkline reactiva y menú contextual `···` con confirmación de borrado.
+  3. **Ahorro y Botes**: Filtro de categorías en chips horizontales con scroll táctil, cuadrícula de tarjetas compactas con anillo SVG de progreso circular, puntos de color pastel y alerta coral para sobres en negativo.
+  4. **Préstamos**: Tarjetas minimalistas con barra de progreso fina de 4px, importe pendiente grande, cuota mensual y % amortizado en gris secundario.
+  5. **Movimientos**: Agrupación cronológica por días con cabeceras sutiles, barra de búsqueda reactiva y filtros en chips.
+  6. **Vistas secundarias**: Pagos Diarios (atajos Mercadona, Gasoil, Casa, Ocio), Pagos Recurrentes (agrupación bancaria y ejecución masiva mensual en un clic), Categorías (gráficos de color), Previsión Anual y Copia de Seguridad.
+- **Correcciones y Refinamientos Clave**:
+  - **Portal del Menú "Más"**: Se trasladó el drawer a `#nav-sheet-portal` (`z-index: 10000`) fuera de la barra de navegación para evitar que el telón de fondo difuminara la pantalla sin dejar ver las opciones.
+  - **Formularios e Inputs de Cristal**: Se sustituyeron los controles nativos planos del navegador por campos de cristal satinado de 16px de radio, flecha SVG integrada y halo violeta en focus.
+  - **Tipografía**: Se adoptó **Plus Jakarta Sans** como fuente principal del sistema para armonizar con las esquinas redondeadas y se acotó `font-variant-numeric: tabular-nums` exclusivamente a los importes financieros.
+- **Calidad y Tests**:
+  - **178 tests pasando en verde (100% de éxito)** con 88% de cobertura global de código.
+  - Linter Ruff: 0 errores (`uv run ruff check app_conta`).
+  - Validación completa en Node.js de los 18 módulos JS sin fallos de importación ni sintaxis.
+  - Versión del Service Worker y assets actualizada a `app-conta-shell-v62`.
+
+
 
 
 
