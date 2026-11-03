@@ -1309,8 +1309,8 @@ export async function abrirModalDesgloseCuadre() {
 
   try {
     const conc = await API.get("/conciliacion");
-    const esCuadrado = conc.estado_formula === "cuadrado" || Math.abs(Number(conc.diferencia_formula || 0)) <= 2.0;
-    const difNum = Number(conc.diferencia_formula || 0);
+    const esCuadrado = conc.estado === "cuadrado" || Math.abs(Number(conc.diferencia || 0)) <= 0.05;
+    const difNum = Number(conc.diferencia || 0);
 
     overlay.innerHTML = `
       <div class="modal-card modal-card-wide">
@@ -1335,14 +1335,14 @@ export async function abrirModalDesgloseCuadre() {
                 Diferencia Actual
               </span>
               <strong style="font-size: 1.65rem;" class="${esCuadrado ? "positivo" : "negativo"}">
-                ${importe(conc.diferencia_formula, esCuadrado ? "" : "negativo")}
+                ${importe(conc.diferencia, esCuadrado ? "" : "negativo")}
               </strong>
             </div>
             <div style="max-width: 420px; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.4;">
               ${
                 esCuadrado
                   ? "🎉 <strong>Perfecto:</strong> Todo el dinero físico y bancario coincide con la suma de tus botes, sobres y previsiones."
-                  : `⚠️ <strong>Desfase de ${importe(conc.diferencia_formula, "negativo")}:</strong> Tus cuentas bancarias no coinciden con la suma de tus botes y recibos de previsión.`
+                  : `⚠️ <strong>Desfase de ${importe(conc.diferencia, "negativo")}:</strong> Tus cuentas bancarias no coinciden con la suma de tus botes y recibos de previsión.`
               }
             </div>
           </div>

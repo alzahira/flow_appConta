@@ -74,9 +74,9 @@ export default vista("inicio", async () => {
   const dineroPrevision = conc.total_prevision_formula || "0.00";
   const dineroMeDeben = conc.total_me_deben_formula || "0.00";
   const dineroPrestamos = conc.total_prestamos_formula || "0.00";
-  const dineroDiferencia = conc.diferencia_formula || "0.00";
+  const dineroDiferencia = conc.diferencia || "0.00";
 
-  const esCuadrado = conc.estado_formula === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 2.0;
+  const esCuadrado = conc.estado === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 0.05;
 
   // Botes clave: Mes y Ocio
   const botesItems = botes.items || [];

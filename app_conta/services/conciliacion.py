@@ -41,7 +41,7 @@ ESTADO_CUADRADO = "cuadrado"
 ESTADO_REVISAR = "revisar"
 
 
-def calcular_conciliacion(db: Session) -> dict[str, object]:
+def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str, object]:
     """Calcula el estado de conciliación completo (importes en céntimos enteros).
 
     Incluye la conciliación contable técnica (por movimientos de cuentas)
@@ -54,19 +54,24 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     contarse como descuadre (si no, meter una nómina con recibos pendientes
     mostraría un falso desfase).
     """
-    cuentas = list(db.scalars(select(Cuenta).where(Cuenta.archivada.is_(False))))
-    botes = list(db.scalars(select(Bote).where(Bote.archivado.is_(False))))
+    stmt_c = select(Cuenta).where(Cuenta.archivada.is_(False))
+    stmt_b = select(Bote).where(Bote.archivado.is_(False))
+    if hogar_id is not None:
+        stmt_c = stmt_c.where(Cuenta.hogar_id == hogar_id)
+        stmt_b = stmt_b.where((Bote.hogar_id == str(hogar_id)) | (Bote.hogar_id == hogar_id))
+
+    cuentas = list(db.scalars(stmt_c))
+    botes = list(db.scalars(stmt_b))
 
     ids_cuentas = [c.id for c in cuentas]
     if ids_cuentas:
-        movimientos = list(
-            db.scalars(
-                select(Movimiento).where(
-                    Movimiento.eliminado.is_(False),
-                    Movimiento.cuenta_id.in_(ids_cuentas),
-                )
-            )
+        stmt_m = select(Movimiento).where(
+            Movimiento.eliminado.is_(False),
+            Movimiento.cuenta_id.in_(ids_cuentas),
         )
+        if hogar_id is not None:
+            stmt_m = stmt_m.where(Movimiento.hogar_id == hogar_id)
+        movimientos = list(db.scalars(stmt_m))
     else:
         movimientos = []
 
@@ -83,27 +88,50 @@ def calcular_conciliacion(db: Session) -> dict[str, object]:
     diferencia = saldo_total_cuentas - saldo_inicial_total - (saldo_total_botes_saldo + sin_asignar)
 
     # 2. Fórmula Global del Hogar (Ajustada según instrucción del usuario)
-    botes_activos_pares, tot_botes_formula = listar_botes_activos(db)
+    pares_todos, tot_botes_formula = listar_botes_activos(db)
+    if hogar_id is not None:
+        botes_activos_pares = [
+            (b, s)
+            for b, s in pares_todos
+            if (str(b.hogar_id) == str(hogar_id) or b.hogar_id == hogar_id) and not b.archivado
+        ]
+        tot_botes_formula = sum(s for _b, s in botes_activos_pares)
+    else:
+        botes_activos_pares = pares_todos
 
-    hogar = db.scalars(select(Hogar)).first()
+    hogar_target_id = hogar_id
+    if hogar_target_id is None:
+        hogar_obj = db.scalars(select(Hogar)).first()
+        hogar_target_id = hogar_obj.id if hogar_obj else 1
+
     tot_prevision_formula = 0
-    if hogar is not None:
+    if hogar_target_id is not None:
         try:
-            prev = obtener_resumen_prevision(db, str(hogar.id))
+            prev = obtener_resumen_prevision(db, str(hogar_target_id))
             tot_prevision_formula = int(prev.get("total_saldo_centimos", 0))
         except Exception:
             db.rollback()
             tot_prevision_formula = 0
 
-    deudas = list(db.scalars(select(Deuda).where(Deuda.archivada.is_(False))))
+    stmt_d = select(Deuda).where(Deuda.archivada.is_(False))
+    stmt_p = select(Prestamo).where(Prestamo.activo.is_(True))
+    stmt_i = select(Inversion).where(Inversion.activo.is_(True))
+    if hogar_id is not None:
+        stmt_d = stmt_d.where(Deuda.hogar_id == hogar_id)
+        stmt_p = stmt_p.where(
+            (Prestamo.hogar_id == str(hogar_id)) | (Prestamo.hogar_id == hogar_id)
+        )
+        stmt_i = stmt_i.where(Inversion.hogar_id == hogar_id)
+
+    deudas = list(db.scalars(stmt_d))
     tot_me_deben_formula = sum(
         d.importe_inicial_centimos - d.importe_cobrado_centimos for d in deudas
     )
 
-    prestamos = list(db.scalars(select(Prestamo).where(Prestamo.activo.is_(True))))
+    prestamos = list(db.scalars(stmt_p))
     tot_prestamos_formula = sum(p.importe_pendiente_centimos for p in prestamos)
 
-    inversiones = list(db.scalars(select(Inversion).where(Inversion.activo.is_(True))))
+    inversiones = list(db.scalars(stmt_i))
     tot_inversiones_formula = sum(i.valor_actual_centimos for i in inversiones)
 
     # Deducciones solicitadas por el usuario para cuadrar con el dinero en bancos/tarjetas:
