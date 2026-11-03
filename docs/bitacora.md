@@ -896,6 +896,34 @@ A petición expresa del usuario para alinear la app con su flujo mental:
   - Validación completa en Node.js de los 18 módulos JS sin fallos de importación ni sintaxis.
   - Versión del Service Worker y assets actualizada a `app-conta-shell-v62`.
 
+### 29. Aislamiento Multi-Hogar, Rediseño "Me Deben" y Botón Cerrar Sesión Glassmorphism (2026-11-03)
+
+- **Aislamiento Estricto Multi-Hogar (Hogar 1 Familia Jaenes vs Hogar 2 Modo Demo)**:
+  - Se identificó la causa raíz por la cual el usuario `demo` visualizaba las cuentas reales de Javier: los routers de backend (`/cuentas`, `/botes`, `/movimientos`, `/deudas`, `/prestamos`, `/inversiones`, `/prevision-gastos`, `/categorias`, `/pagos-recurrentes`, `/plantillas-reparto`) llamaban a funciones de servicio sin filtrar por `hogar_id` o invocando el fallback estático `obtener_hogar_unico()`.
+  - Se implementó la dependencia reactiva `obtener_hogar_activo(request, db)` en `app_conta/api/dependencias.py`, que extrae y valida la cookie de sesión `flow_session` o el encabezado `Authorization: Bearer <token>`, resolviendo el `hogar_id` del usuario activo (`javier` -> Hogar 1, `demo` -> Hogar 2). Para llamadas de test de contrato sin sesión, mantiene el fallback predeterminado al primer hogar para preservar el 100% de compatibilidad.
+  - Se parametrizaron con filtro `hogar_id` las consultas de `listar_cuentas_activas`, `listar_botes_activos`, `listar_movimientos` y `listar_categorias_activas`.
+  - Se enriqueció el semillado de `seed_demo.py` y se inicializaron en `conta.db` para el Hogar 2 registros ficticios completos de cuentas (OpenBank Demo, Visa Demo, MyInvestor Demo), botes, deudas ficticias ("Amigo Carlos", "Marta Compañera"), préstamo ficticio ("Préstamo Reforma Cocina") e inversión ficticia ("Cartera Fondos Indexados").
+  - Se verificó mediante `TestClient` que `demo` y `javier` tienen entornos 100% independientes y estancos sin fuga de datos.
+
+- **Rediseño Unificado de "Me Deben"**:
+  - Se solucionó la discordancia tipográfica y visual de las tarjetas de deudores (`deben.js`), que utilizaban un diseño antiguo con peso ultraligero (`font-weight: 300`) y dimensiones dispares.
+  - Se migró al estándar `glass-account-card fintech-debt-card` con tipografía Plus Jakarta Sans / Inter en semibold (`font-weight: 600`), números tabulares, caja de icono circular con fondo tintado según el perfil del deudor (persona, comercio, servicio, tecnología, etc.).
+  - En la tarjeta se sustituyó la estructura antigua por el bloque unificado:
+    - Etiqueta clara: `Importe pendiente de cobro`
+    - Cifra en verde esmeralda suave (`--pos`) con tipografía contundente
+    - Fila inferior de metadatos: insignia suave `Sin fecha límite` (o fecha límite prevista si existe) y `Fecha apunte: DD/MM/AAAA`.
+    - Desplegable fintech estilizado para registrar devoluciones o cobros directos en cuenta.
+
+- **Eliminación del Manual Técnico y Rediseño de "Cerrar Sesión"**:
+  - Se retiró de la interfaz el enlace y botón de descarga al Manual Técnico de Arquitectura (`manual_arquitectura_app_conta.pdf`) del menú "Más".
+  - Se sustituyó el botón nativo cuadrado de cerrar sesión por un botón píldora de cristal (`.glass-logout-pill-btn` / `.glass-sheet-logout-btn`) en tono coral translúcido con icono vectorial suave y esquinas redondeadas completas (`border-radius: var(--radius-pill)`).
+  - Se añadió además un botón de acceso directo a cerrar sesión en la cabecera superior junto al conmutador de tema (`.btn-header-logout`).
+
+- **Control de Calidad**:
+  - **183 tests pasando al 100%** en verde (`uv run pytest -q`).
+  - Linter Ruff: 0 errores (`uv run ruff check app_conta`).
+  - Caché de app shell y service worker actualizada a `app-conta-shell-v68`.
+
 
 
 
