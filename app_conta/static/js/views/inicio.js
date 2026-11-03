@@ -80,17 +80,21 @@ export default vista("inicio", async () => {
 
   // Botes clave: Mes y Ocio
   const botesItems = botes.items || [];
-  const boteMes = botesItems.find(
-    (b) =>
-      b.nombre.toLowerCase().includes("mes en curso") ||
-      b.nombre.toLowerCase().includes("cash para el mes") ||
-      b.nombre.toLowerCase() === "dinero del mes"
-  );
+  const boteMes = botesItems.find((b) => {
+    const nom = (b.nombre || "").toLowerCase().trim();
+    return (
+      nom.includes("mes en curso") ||
+      nom.includes("cash para el mes") ||
+      nom === "dinero del mes" ||
+      nom === "mes" ||
+      nom.startsWith("mes ")
+    );
+  });
   const dineroMesNum = Number(boteMes?.saldo || 0);
   const dineroMes = dineroMesNum.toFixed(2);
 
-  const boteOcio = botesItems.find(
-    (b) => b.nombre.toLowerCase().includes("ocio")
+  const boteOcio = botesItems.find((b) =>
+    (b.nombre || "").toLowerCase().includes("ocio")
   );
   const dineroOcioNum = Number(boteOcio?.saldo || 0);
   const dineroOcio = dineroOcioNum.toFixed(2);

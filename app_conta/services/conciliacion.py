@@ -135,12 +135,8 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     tot_inversiones_formula = sum(i.valor_actual_centimos for i in inversiones)
 
     # Deducciones solicitadas por el usuario para cuadrar con el dinero en bancos/tarjetas:
-    # 1) Inversión Etoro (1.500 € fuera del banco)
-    etoro_inv = next(
-        (i for i in inversiones if "etoro" in (i.nombre + (i.entidad or "")).lower()),
-        None,
-    )
-    centimos_etoro = etoro_inv.valor_actual_centimos if etoro_inv else 0
+    # 1) Inversiones fuera de cuentas bancarias (Etoro + CRO)
+    centimos_inversiones = tot_inversiones_formula
 
     # 2) Bote emergencias (deducción del remanente histórico de 186,00 € del Excel,
     # topado al saldo disponible del bote para no romper entornos limpios o de test)
@@ -187,8 +183,8 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         - tot_prestamos_formula
     )
 
-    # Total teórico ajustado: quitando Etoro y Bote ahorro extras (con redondeo)
-    tot_teorico_formula = teorico_base - centimos_etoro - centimos_extras - centimos_redondeo
+    # Total teórico ajustado: quitando inversiones y Bote ahorro extras (con redondeo)
+    tot_teorico_formula = teorico_base - centimos_inversiones - centimos_extras - centimos_redondeo
 
     dif_formula = tot_teorico_formula - saldo_total_cuentas
     dif_con_inversiones = tot_teorico_formula - (saldo_total_cuentas + tot_inversiones_formula)
@@ -208,7 +204,8 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         "total_prevision_formula": tot_prevision_formula,
         "total_me_deben_formula": tot_me_deben_formula,
         "total_prestamos_formula": tot_prestamos_formula,
-        "deduccion_etoro_formula": centimos_etoro,
+        "deduccion_inversiones_formula": centimos_inversiones,
+        "deduccion_etoro_formula": centimos_inversiones,
         "deduccion_extras_formula": centimos_extras + centimos_redondeo,
         "total_teorico_base": teorico_base,
         "total_teorico_formula": tot_teorico_formula,

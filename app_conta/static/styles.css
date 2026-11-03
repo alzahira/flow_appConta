@@ -541,7 +541,7 @@ body {
 
 .ring-track {
   fill: none;
-  stroke: var(--track);
+  stroke: rgba(100, 116, 139, 0.16);
 }
 
 .ring-bar {
@@ -551,7 +551,7 @@ body {
 
 .ring-track-inner {
   fill: none;
-  stroke: var(--track);
+  stroke: rgba(100, 116, 139, 0.14);
 }
 
 .ring-center-info {
@@ -637,9 +637,6 @@ body {
 .dot-violet {
   background: var(--accent);
   box-shadow: 0 0 10px rgba(106, 77, 240, 0.55);
-}
-  background: var(--accent-brand);
-  box-shadow: 0 0 10px rgba(124, 92, 255, 0.65);
 }
 
 .dot-green {
