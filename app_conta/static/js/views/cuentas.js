@@ -83,6 +83,9 @@ function tarjetaCuentaCarousel(c) {
             </svg>
           </button>
           <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item" data-accion="editar-cuenta" data-id="${c.id}">
+              ${icono("editar")} Editar cuenta
+            </button>
             <button type="button" class="dropdown-item-danger" data-accion="borrar-cuenta" data-id="${c.id}" data-nombre="${esc(c.nombre)}">
               ${icono("borrar")} Eliminar cuenta
             </button>

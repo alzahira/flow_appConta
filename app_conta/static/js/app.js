@@ -505,6 +505,33 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  // Editar Sobre / Bote de ahorro
+  const btnEditBote = e.target.closest('[data-accion="editar-bote"]');
+  if (btnEditBote) {
+    const id = Number(btnEditBote.dataset.id);
+    const { abrirModalEditarBote } = await import("./modales-acciones.js");
+    await abrirModalEditarBote(id);
+    return;
+  }
+
+  // Editar Apunte de Dinero que me deben
+  const btnEditDeuda = e.target.closest('[data-accion="editar-deuda"]');
+  if (btnEditDeuda) {
+    const id = Number(btnEditDeuda.dataset.id);
+    const { abrirModalEditarDeuda } = await import("./modales-acciones.js");
+    await abrirModalEditarDeuda(id);
+    return;
+  }
+
+  // Editar Cuenta Bancaria / Depósito
+  const btnEditCuenta = e.target.closest('[data-accion="editar-cuenta"]');
+  if (btnEditCuenta) {
+    const id = Number(btnEditCuenta.dataset.id);
+    const { abrirModalEditarCuenta } = await import("./modales-acciones.js");
+    await abrirModalEditarCuenta(id);
+    return;
+  }
+
   // Toggle menú contextual en tarjetas de botes y fondos de ahorro
   const btnMenuBote = e.target.closest('[data-accion="toggle-menu-bote"]');
   if (btnMenuBote) {

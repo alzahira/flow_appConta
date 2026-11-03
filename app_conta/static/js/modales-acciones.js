@@ -2131,6 +2131,341 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
 }
 
 // --------------------------------------------------------------------------
+// 12. MODAL EDITAR BOTE / SOBRE
+// --------------------------------------------------------------------------
+export async function abrirModalEditarBote(boteId) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando datos del sobre...</div>
+    </div>
+  `;
+
+  try {
+    const bote = await API.get(`/botes/${boteId}`);
+    const catsBote = [
+      { id: "ahorro", nombre: "🐷 Ahorro general" },
+      { id: "vacaciones", nombre: "✈️ Vacaciones y viajes" },
+      { id: "casa", nombre: "🏠 Casa y mantenimiento" },
+      { id: "salud", nombre: "💊 Salud y bienestar" },
+      { id: "ocio", nombre: "🎉 Ocio y entretenimiento" },
+      { id: "vehiculo", nombre: "🚗 Coche y transporte" },
+      { id: "impuestos", nombre: "🏛️ Impuestos e IRPF" },
+      { id: "otros", nombre: "📦 Otros fines" },
+    ];
+
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge-action neutral">✏️ EDITAR SOBRE</span>
+            <h3 class="modal-title">Editar Sobre o Bote</h3>
+            <p class="modal-subtitle">Cambia el nombre, la categoría o la meta de ahorro</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form id="form-editar-bote" class="modal-form">
+          <div class="modal-grid-fields">
+            <div class="modal-field modal-span-2">
+              <label for="eb-nombre" class="form-label">Nombre del sobre *</label>
+              <input id="eb-nombre" name="nombre" value="${esc(bote.nombre || '')}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="eb-cat" class="form-label">Categoría temática</label>
+              <select id="eb-cat" name="categoria">
+                ${catsBote
+                  .map(
+                    (c) => `<option value="${c.id}" ${bote.categoria === c.id ? "selected" : ""}>${c.nombre}</option>`
+                  )
+                  .join("")}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="eb-objetivo" class="form-label">Meta de ahorro (€)</label>
+              <input id="eb-objetivo" name="objetivo" type="number" step="0.01" min="0" placeholder="0.00" value="${bote.objetivo || ''}">
+            </div>
+          </div>
+
+          <div id="eb-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button type="submit" class="btn-primary ok" id="btn-guardar-bote">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    const form = overlay.querySelector("#form-editar-bote");
+    const errBox = overlay.querySelector("#eb-err");
+    const btnSubmit = overlay.querySelector("#btn-guardar-bote");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      btnSubmit.disabled = true;
+
+      const nombre = overlay.querySelector("#eb-nombre").value.trim();
+      const categoria = overlay.querySelector("#eb-cat").value;
+      const rawObj = overlay.querySelector("#eb-objetivo").value.trim();
+      const objetivo = rawObj === "" ? null : parseFloat(rawObj).toFixed(2);
+
+      try {
+        await API.patch(`/botes/${bote.id}`, {
+          nombre,
+          categoria,
+          objetivo,
+        });
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+        else location.reload();
+      } catch (err) {
+        btnSubmit.disabled = false;
+        errBox.textContent = err.message || "Error al actualizar el sobre";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
+// 13. MODAL EDITAR DEUDA / LO QUE ME DEBEN
+// --------------------------------------------------------------------------
+export async function abrirModalEditarDeuda(deudaId) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando apunte...</div>
+    </div>
+  `;
+
+  try {
+    const data = await API.get("/deudas");
+    const deudas = data.items || [];
+    const deuda = deudas.find((d) => d.id === Number(deudaId));
+    if (!deuda) throw new Error("Apunte de deuda no encontrado");
+
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge-action neutral">✏️ EDITAR APUNTE</span>
+            <h3 class="modal-title">Editar Dinero que me Deben</h3>
+            <p class="modal-subtitle">Modifica la persona, el concepto o el importe</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form id="form-editar-deuda" class="modal-form">
+          <div class="modal-grid-fields">
+            <div class="modal-field">
+              <label for="ed-deudor" class="form-label">¿Quién te lo debe? *</label>
+              <input id="ed-deudor" name="deudor" value="${esc(deuda.deudor || '')}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="ed-concepto" class="form-label">Concepto o motivo *</label>
+              <input id="ed-concepto" name="concepto" value="${esc(deuda.concepto || '')}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="ed-importe" class="form-label">Importe total original (€) *</label>
+              <input id="ed-importe" name="importe_total" type="number" step="0.01" min="0.01" value="${deuda.importe_total || ''}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="ed-fecha" class="form-label">Fecha del apunte *</label>
+              <input id="ed-fecha" name="fecha" type="date" value="${deuda.fecha}" required>
+            </div>
+          </div>
+
+          <div id="ed-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button type="submit" class="btn-primary ok" id="btn-guardar-deuda">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    const form = overlay.querySelector("#form-editar-deuda");
+    const errBox = overlay.querySelector("#ed-err");
+    const btnSubmit = overlay.querySelector("#btn-guardar-deuda");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      btnSubmit.disabled = true;
+
+      const deudor = overlay.querySelector("#ed-deudor").value.trim();
+      const concepto = overlay.querySelector("#ed-concepto").value.trim();
+      const rawImp = parseFloat(overlay.querySelector("#ed-importe").value || "0");
+      const fecha = overlay.querySelector("#ed-fecha").value;
+
+      if (isNaN(rawImp) || rawImp <= 0) {
+        errBox.textContent = "El importe debe ser mayor que 0.";
+        errBox.style.display = "block";
+        btnSubmit.disabled = false;
+        return;
+      }
+
+      try {
+        await API.patch(`/deudas/${deuda.id}`, {
+          deudor,
+          concepto,
+          importe_total: rawImp.toFixed(2),
+          fecha,
+        });
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+        else location.reload();
+      } catch (err) {
+        btnSubmit.disabled = false;
+        errBox.textContent = err.message || "Error al actualizar el apunte";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
+// 14. MODAL EDITAR CUENTA BANCARIA
+// --------------------------------------------------------------------------
+export async function abrirModalEditarCuenta(cuentaId) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando cuenta...</div>
+    </div>
+  `;
+
+  try {
+    const cuenta = await API.get(`/cuentas/${cuentaId}`);
+
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge-action neutral">✏️ EDITAR CUENTA</span>
+            <h3 class="modal-title">Editar Cuenta o Depósito</h3>
+            <p class="modal-subtitle">Modifica el nombre o la entidad de la cuenta</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form id="form-editar-cuenta" class="modal-form">
+          <div class="modal-grid-fields">
+            <div class="modal-field modal-span-2">
+              <label for="ec-nombre" class="form-label">Nombre de la cuenta *</label>
+              <input id="ec-nombre" name="nombre" value="${esc(cuenta.nombre || '')}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="ec-entidad" class="form-label">Entidad bancaria</label>
+              <input id="ec-entidad" name="entidad" value="${esc(cuenta.entidad || '')}" placeholder="Ej. Caixa, BBVA, Efectivo...">
+            </div>
+
+            <div class="modal-field">
+              <label for="ec-tipo" class="form-label">Tipo de cuenta *</label>
+              <select id="ec-tipo" name="tipo">
+                <option value="banco" ${cuenta.tipo === "banco" ? "selected" : ""}>🏛️ Cuenta bancaria</option>
+                <option value="efectivo" ${cuenta.tipo === "efectivo" ? "selected" : ""}>💵 Dinero en efectivo</option>
+                <option value="inversion" ${cuenta.tipo === "inversion" ? "selected" : ""}>📈 Depósito / Inversión</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="ec-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button type="submit" class="btn-primary ok" id="btn-guardar-cuenta">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    const form = overlay.querySelector("#form-editar-cuenta");
+    const errBox = overlay.querySelector("#ec-err");
+    const btnSubmit = overlay.querySelector("#btn-guardar-cuenta");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      btnSubmit.disabled = true;
+
+      const nombre = overlay.querySelector("#ec-nombre").value.trim();
+      const entidad = overlay.querySelector("#ec-entidad").value.trim() || null;
+      const tipo = overlay.querySelector("#ec-tipo").value;
+
+      try {
+        await API.patch(`/cuentas/${cuenta.id}`, {
+          nombre,
+          entidad,
+          tipo,
+        });
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+        else location.reload();
+      } catch (err) {
+        btnSubmit.disabled = false;
+        errBox.textContent = err.message || "Error al actualizar la cuenta";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
 // DELEGACIÓN GLOBAL DE BOTONES DE ACCIÓN RÁPIDA
 // --------------------------------------------------------------------------
 export function iniciarModalesAcciones() {

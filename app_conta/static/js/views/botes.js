@@ -76,6 +76,9 @@ function tarjetaBoteCompacta(b) {
             </svg>
           </button>
           <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item" data-accion="editar-bote" data-id="${b.id}">
+              ${icono("editar")} Editar sobre
+            </button>
             <button type="button" class="dropdown-item-danger" data-accion="borrar-bote" data-id="${b.id}" data-nombre="${esc(b.nombre)}">
               ${icono("borrar")} Eliminar sobre
             </button>

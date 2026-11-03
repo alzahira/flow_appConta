@@ -63,6 +63,9 @@ function tarjetaDeudaItem(d, cuentas) {
             </svg>
           </button>
           <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item" data-accion="editar-deuda" data-id="${d.id}">
+              ${icono("editar")} Editar apunte
+            </button>
             <button type="button" class="dropdown-item-danger" data-accion="borrar-deuda" data-id="${d.id}" data-deudor="${esc(d.deudor)}">
               ${icono("borrar")} Eliminar apunte
             </button>
