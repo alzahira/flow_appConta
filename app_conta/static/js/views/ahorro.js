@@ -59,12 +59,7 @@ function tarjetaFondoAhorro(b) {
           <span>Meta: ${importe(b.objetivo)}</span>
         </div>
       `
-          : `
-        <div class="loan-card-bottom-meta">
-          <span>Sin meta prefijada</span>
-          <span>Disponible para amortizar</span>
-        </div>
-      `
+          : ""
       }
     </article>
   `;
