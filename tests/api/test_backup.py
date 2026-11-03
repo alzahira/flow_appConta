@@ -1,4 +1,4 @@
-"""Tests para el servicio y API de Backup, Vaciado y Restauración."""
+"""Tests para el servicio y API de Backup, Vaciado y Restauración con control de acceso."""
 
 from __future__ import annotations
 
@@ -6,7 +6,38 @@ import io
 import json
 
 
-def test_flujo_backup_vaciar_y_restaurar(client):
+def test_backup_requiere_autenticacion_y_prohibe_demo(client, db_module):
+    """Verifica que endpoints destructivos de backup rechazan anónimos y demo."""
+    from app_conta.services.hogar import asegurar_hogar_unico
+    from app_conta.services.usuarios import (
+        asegurar_usuarios_iniciales,
+        autenticar_usuario,
+        crear_sesion,
+    )
+
+    # 1. Anónimo -> 401
+    client.cookies.clear()
+    assert client.get("/api/v1/backup/exportar").status_code == 401
+    assert client.post("/api/v1/backup/vaciar", json={"confirmar": True}).status_code == 401
+    assert client.post("/api/v1/backup/poner-a-cero", json={"confirmar": True}).status_code == 401
+
+    # 2. Demo -> 403 Forbidden
+    with db_module.SessionLocal() as session:
+        asegurar_hogar_unico(session)
+        asegurar_usuarios_iniciales(session)
+        user = autenticar_usuario(session, "demo", "demo123")
+        assert user is not None
+        token, _sesion = crear_sesion(session, user.id)
+        session.commit()
+
+    client.cookies.set("flow_session", token)
+    assert client.get("/api/v1/backup/exportar").status_code == 403
+    assert client.post("/api/v1/backup/vaciar", json={"confirmar": True}).status_code == 403
+    assert client.post("/api/v1/backup/poner-a-cero", json={"confirmar": True}).status_code == 403
+
+
+def test_flujo_backup_vaciar_y_restaurar(admin_client):
+    client = admin_client
     # 1. Crear datos de prueba: una cuenta y un bote
     r_cta = client.post(
         "/api/v1/cuentas",
@@ -79,7 +110,8 @@ def test_flujo_backup_vaciar_y_restaurar(client):
     assert r_bote_check.json()["nombre"] == "Bote Para Backup"
 
 
-def test_poner_a_cero_conserva_botes_y_cuentas(client):
+def test_poner_a_cero_conserva_botes_y_cuentas(admin_client):
+    client = admin_client
     # 1. Crear una cuenta con saldo inicial 500 €
     r_cta = client.post(
         "/api/v1/cuentas",
@@ -152,5 +184,3 @@ def test_poner_a_cero_conserva_botes_y_cuentas(client):
     assert conc["total_prestamos_formula"] == "0.00"
     assert conc["diferencia_formula"] == "0.00"
     assert conc["estado_formula"] == "cuadrado"
-
-

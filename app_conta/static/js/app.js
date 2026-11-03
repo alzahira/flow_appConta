@@ -1,6 +1,7 @@
 // Router de la PWA (T023). Cada vista vive en /views y se auto-registra.
 import { rutasRegistradas, esc } from "./vistas.js";
 import { pintarNav } from "./nav.js";
+import { renderLogin } from "./views/login.js";
 
 // Import de vistas con efecto de registro (orden = orden de la navegación):
 import "./views/inicio.js";
@@ -35,6 +36,29 @@ export function irA(ruta, reemplazar = false) {
 window.irA = irA;
 
 export async function navegar() {
+  if (!usuarioActual) {
+    const u = await verificarSesion();
+    if (!u) {
+      const navContainer = document.getElementById("nav");
+      if (navContainer) navContainer.style.display = "none";
+      const portal = document.getElementById("nav-sheet-portal");
+      if (portal) portal.style.display = "none";
+      const mainEl = document.getElementById("vista");
+      if (mainEl) {
+        renderLogin(mainEl, async (user) => {
+          usuarioActual = user;
+          if (navContainer) navContainer.style.display = "";
+          if (portal) portal.style.display = "";
+          pintarNav(rutasRegistradas());
+          iniciarModalesAcciones();
+          await navegar();
+        });
+      }
+      return;
+    }
+    usuarioActual = u;
+  }
+
   // 1. Obtener la ruta limpia desde pathname o hash de compatibilidad
   let ruta = window.location.pathname.replace(/^\//, "") || "";
   if (!ruta && window.location.hash) {
@@ -779,7 +803,44 @@ document.addEventListener("click", (e) => {
   }
 });
 
+let usuarioActual = null;
+export function obtenerUsuarioActual() {
+  return usuarioActual;
+}
+
+export async function verificarSesion() {
+  try {
+    const res = await fetch("/api/v1/auth/me");
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_e) {
+    return null;
+  }
+}
+
 async function iniciarApp() {
+  const usuario = await verificarSesion();
+  const navContainer = document.getElementById("nav");
+  const vistaContainer = document.getElementById("vista");
+
+  if (!usuario) {
+    if (navContainer) navContainer.style.display = "none";
+    const portal = document.getElementById("nav-sheet-portal");
+    if (portal) portal.style.display = "none";
+
+    renderLogin(vistaContainer, async (user) => {
+      usuarioActual = user;
+      if (navContainer) navContainer.style.display = "";
+      if (portal) portal.style.display = "";
+      pintarNav(rutasRegistradas());
+      iniciarModalesAcciones();
+      await navegar();
+    });
+    return;
+  }
+
+  usuarioActual = usuario;
+  if (navContainer) navContainer.style.display = "";
   pintarNav(rutasRegistradas());
   iniciarModalesAcciones();
   await navegar();

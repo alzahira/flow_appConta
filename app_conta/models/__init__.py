@@ -13,6 +13,7 @@ from app_conta.models.movimiento import Movimiento
 from app_conta.models.pago_recurrente import PagoRecurrente
 from app_conta.models.plantilla_reparto import PlantillaReparto, PlantillaRepartoLinea
 from app_conta.models.prestamo import Prestamo
+from app_conta.models.usuario import SesionUsuario, Usuario
 
 __all__ = [
     "AuditoriaMovimiento",
@@ -30,4 +31,6 @@ __all__ = [
     "PlantillaRepartoLinea",
     "Prestamo",
     "PrevisionGastosConfig",
+    "SesionUsuario",
+    "Usuario",
 ]

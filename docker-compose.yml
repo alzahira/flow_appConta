@@ -1,0 +1,27 @@
+services:
+  flow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flow-app:latest
+    container_name: flow_conta
+    restart: unless-stopped
+    ports:
+      # Expuesto solo en localhost del VPS para acceso a través del proxy inverso Nginx / Caddy
+      - "127.0.0.1:8000:8000"
+    environment:
+      - APP_CONTA_ENV=production
+      - APP_CONTA_PORT=8000
+      - APP_CONTA_DB=/data/conta.db
+      # Puedes definir o cambiar las contraseñas iniciales aquí o en un fichero .env:
+      - APP_CONTA_ADMIN_PASSWORD=${APP_CONTA_ADMIN_PASSWORD:-flow2026}
+      - APP_CONTA_MUJER_PASSWORD=${APP_CONTA_MUJER_PASSWORD:-flow2026}
+    volumes:
+      # Volumen persistente: la base de datos SQLite y backups nunca se pierden al actualizar
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+

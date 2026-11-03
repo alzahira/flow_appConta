@@ -52,3 +52,6 @@ class Hogar(Base):
     pagos_recurrentes: Mapped[list[PagoRecurrente]] = relationship(  # noqa: F821
         back_populates="hogar", cascade="all, delete-orphan"
     )
+    usuarios: Mapped[list[Usuario]] = relationship(  # noqa: F821
+        back_populates="hogar", cascade="all, delete-orphan"
+    )

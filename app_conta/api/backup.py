@@ -10,7 +10,9 @@ from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, sta
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import requerir_admin
 from app_conta.db import get_db
+from app_conta.models.usuario import Usuario
 from app_conta.services.backup import (
     exportar_datos_completos,
     resetear_saldos_a_cero,
@@ -18,6 +20,7 @@ from app_conta.services.backup import (
     vaciar_base_de_datos,
 )
 from app_conta.services.errors import ErrorValidacion
+from app_conta.services.seguridad import verificar_password
 
 router = APIRouter(prefix="/backup", tags=["backup"])
 
@@ -25,11 +28,15 @@ router = APIRouter(prefix="/backup", tags=["backup"])
 class VaciarConfirmacion(BaseModel):
     model_config = ConfigDict(extra="ignore")
     confirmar: bool = False
+    password_admin: str | None = None
 
 
 @router.get("/exportar")
-def get_exportar_backup(db: Session = Depends(get_db)) -> Response:
-    """Descarga un archivo JSON con la copia completa de la base de datos."""
+def get_exportar_backup(
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(requerir_admin),
+) -> Response:
+    """Descarga un archivo JSON con la copia completa de la base de datos (solo Admin)."""
     backup_data = exportar_datos_completos(db)
     contenido = json.dumps(backup_data, ensure_ascii=False, indent=2)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -44,22 +51,44 @@ def get_exportar_backup(db: Session = Depends(get_db)) -> Response:
 
 @router.post("/vaciar", response_model=dict[str, Any])
 def post_vaciar_datos(
-    payload: VaciarConfirmacion, db: Session = Depends(get_db)
+    payload: VaciarConfirmacion,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(requerir_admin),
 ) -> dict[str, Any]:
-    """Vacía todos los datos de usuario para permitir probar la app en limpio."""
+    """Vacía todos los datos de usuario para permitir probar la app en limpio (solo Admin)."""
+    if admin.rol == "demo":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario demo no tiene permiso para vaciar la base de datos.",
+        )
     if not payload.confirmar:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Debe confirmar explícitamente el vaciado de datos.",
+        )
+    # Si se proporciona contraseña, se valida
+    if payload.password_admin and not verificar_password(
+        payload.password_admin, admin.password_hash
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña de administrador incorrecta.",
         )
     return vaciar_base_de_datos(db, guardar_copia_seguridad=True)
 
 
 @router.post("/poner-a-cero", response_model=dict[str, Any])
 def post_poner_a_cero(
-    payload: VaciarConfirmacion, db: Session = Depends(get_db)
+    payload: VaciarConfirmacion,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(requerir_admin),
 ) -> dict[str, Any]:
-    """Pone saldos y movimientos a cero conservando botes, cuentas y plantillas."""
+    """Pone saldos y movimientos a cero conservando botes, cuentas y plantillas (solo Admin)."""
+    if admin.rol == "demo":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario demo no puede resetear los saldos.",
+        )
     if not payload.confirmar:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -72,8 +101,14 @@ def post_poner_a_cero(
 async def post_restaurar_backup(
     archivo: UploadFile | None = None,
     db: Session = Depends(get_db),
+    admin: Usuario = Depends(requerir_admin),
 ) -> dict[str, Any]:
-    """Restaura la base de datos a partir de un archivo JSON subido."""
+    """Restaura la base de datos a partir de un archivo JSON subido (solo Admin)."""
+    if admin.rol == "demo":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario demo no puede restaurar bases de datos.",
+        )
     if archivo is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -115,4 +150,3 @@ async def post_restaurar_backup(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error durante la restauración: {exc}",
         ) from exc
-

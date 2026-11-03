@@ -5,10 +5,11 @@ Seed al arranque: crea el Hogar único si no existe (finding U1 del análisis).
 
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -16,6 +17,7 @@ import app_conta.models  # noqa: E402,F401  (registra todos los modelos antes de
 from app_conta.api.errors import register_error_handlers
 from app_conta.db import SessionLocal
 from app_conta.services.hogar import asegurar_hogar_unico
+from app_conta.services.usuarios import asegurar_usuarios_iniciales
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -24,17 +26,34 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 async def lifespan(_app: FastAPI):
     with SessionLocal() as db:
         asegurar_hogar_unico(db)
+        asegurar_usuarios_iniciales(db)
     _imprimir_urls_red()
     yield
 
+
+_es_produccion = os.environ.get("APP_CONTA_ENV", "").lower() == "production"
 
 app = FastAPI(
     title="Flow",
     description="Flow: Finanzas del hogar y control por sistema de botes",
     version="2.0.0",
     lifespan=lifespan,
+    docs_url=None if _es_produccion else "/docs",
+    redoc_url=None if _es_produccion else "/redoc",
+    openapi_url=None if _es_produccion else "/openapi.json",
 )
 register_error_handlers(app)
+
+
+@app.middleware("http")
+async def agregar_cabeceras_seguridad(request: Request, call_next):
+    """Añade cabeceras estándar de endurecimiento HTTP (OWASP Recommended)."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
@@ -75,6 +94,7 @@ def _registrar_routers() -> None:
     from importlib import import_module
 
     for nombre in (
+        "auth",
         "cuentas",
         "movimientos",
         "botes",
