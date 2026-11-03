@@ -9,6 +9,9 @@ venv/
 *.egg-info/
 dist/
 build/
+.env
+*.env
+.env.*
 
 # Base de datos local y backups
 *.sqlite3
