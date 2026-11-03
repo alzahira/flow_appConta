@@ -78,7 +78,7 @@ export async function abrirModalGasto() {
 
           <div class="modal-grid-fields">
             <div class="modal-field">
-              <label for="mg-cuenta" class="form-label">¿De qué cuenta sale el dinero?</label>
+              <label for="mg-cuenta" class="form-label">Cuenta de origen *</label>
               <select id="mg-cuenta" name="cuenta_id" required>
                 ${cuentas
                   .map(
@@ -93,10 +93,10 @@ export async function abrirModalGasto() {
             </div>
 
             <div class="modal-field">
-              <label for="mg-bote" class="form-label">¿A qué sobre o préstamo se descuenta?</label>
+              <label for="mg-bote" class="form-label">Sobre o préstamo</label>
               <select id="mg-bote" name="bote_id">
                 <optgroup label="General">
-                  <option value="">— Ninguno (Gasto general directo de cuenta) —</option>
+                  <option value="">— Ninguno (Gasto general de cuenta) —</option>
                 </optgroup>
                 ${
                   botes.length > 0
@@ -148,12 +148,12 @@ export async function abrirModalGasto() {
             </div>
 
             <div class="modal-field">
-              <label for="mg-fecha" class="form-label">Fecha del gasto</label>
+              <label for="mg-fecha" class="form-label">Fecha del gasto *</label>
               <input id="mg-fecha" name="fecha" type="date" value="${hoy}" required>
             </div>
 
             <div class="modal-field modal-span-2">
-              <label for="mg-desc" class="form-label">Concepto o Descripción</label>
+              <label for="mg-desc" class="form-label">Concepto o descripción *</label>
               <input id="mg-desc" name="descripcion" placeholder="Ej. Compra Mercadona, Cena viernes, Gasolina..." required>
             </div>
           </div>
@@ -347,7 +347,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
 
             <div class="modal-grid-fields">
               <div class="modal-field">
-                <label for="mi-cuenta" class="form-label">¿En qué cuenta entra el dinero? *</label>
+                <label for="mi-cuenta" class="form-label">Cuenta bancaria *</label>
                 <select id="mi-cuenta" name="cuenta_id" required>
                   ${cuentas
                     .map(
@@ -376,7 +376,7 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               </div>
 
               <div class="modal-field">
-                <label for="mi-destino" class="form-label">¿A qué destinar este ingreso? *</label>
+                <label for="mi-destino" class="form-label">Sobre o destino *</label>
                 <select id="mi-destino" name="destino">
                   <optgroup label="Cuenta Bancaria">
                     <option value="cuenta" selected>— Dejar libre en la cuenta corriente (Sin sobre) —</option>
@@ -417,12 +417,12 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               </div>
 
               <div class="modal-field">
-                <label for="mi-fecha" class="form-label">Fecha del ingreso *</label>
+                <label for="mi-fecha" class="form-label">Fecha de ingreso *</label>
                 <input id="mi-fecha" name="fecha" type="date" value="${hoy}" required>
               </div>
 
               <div class="modal-field modal-span-2">
-                <label for="mi-desc" class="form-label">Concepto o Descripción *</label>
+                <label for="mi-desc" class="form-label">Concepto o descripción *</label>
                 <input id="mi-desc" name="descripcion" placeholder="Ej. Nómina, Bizum recibido, Venta, Ingreso extra..." required>
               </div>
 
@@ -1691,19 +1691,19 @@ export async function abrirModalEditarMovimiento(movimientoId) {
             </div>
 
             <div class="modal-field">
-              <label for="edit-mov-cuenta" class="form-label">🏛️ Cuenta Bancaria / Tarjeta *</label>
+              <label for="edit-mov-cuenta" class="form-label">🏛️ Cuenta bancaria *</label>
               <select id="edit-mov-cuenta" required>
                 ${cuentas.map(c => `<option value="${c.id}" ${c.id === mov.cuenta_id ? 'selected' : ''}>🏛️ ${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`).join("")}
               </select>
             </div>
 
             <div class="modal-field">
-              <label for="edit-mov-fecha" class="form-label">📅 Fecha de Operación *</label>
+              <label for="edit-mov-fecha" class="form-label">📅 Fecha de operación *</label>
               <input type="date" id="edit-mov-fecha" value="${mov.fecha}" required>
             </div>
 
             <div class="modal-field">
-              <label for="edit-mov-bote" class="form-label">📦 Sobre / Bote de Ahorro</label>
+              <label for="edit-mov-bote" class="form-label">📦 Sobre o bote</label>
               <select id="edit-mov-bote">
                 <option value="">— Sin sobre asignado (Libre en cuenta) —</option>
                 ${botes.map(b => `<option value="${b.id}" ${b.id === mov.bote_id ? 'selected' : ''}>📦 ${esc(b.nombre)}</option>`).join("")}
@@ -1711,7 +1711,7 @@ export async function abrirModalEditarMovimiento(movimientoId) {
             </div>
 
             <div class="modal-field">
-              <label for="edit-mov-categoria" class="form-label">🏷️ Categoría Contable</label>
+              <label for="edit-mov-categoria" class="form-label">🏷️ Categoría contable</label>
               <select id="edit-mov-categoria">
                 <option value="">— Sin categoría —</option>
                 ${cats.map(c => `<option value="${c.id}" ${c.id === mov.categoria_id ? 'selected' : ''}>🏷️ ${esc(c.nombre)}</option>`).join("")}

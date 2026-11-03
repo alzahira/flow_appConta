@@ -1456,7 +1456,8 @@ body {
 .modal-grid-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.15rem 1rem;
+  align-items: start;
 }
 
 @media (max-width: 540px) {
@@ -1839,15 +1840,21 @@ textarea {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
   border-radius: var(--radius-md); /* 16px soft fintech */
-  padding: 0.85rem 1.15rem;
+  padding: 0.75rem 1.15rem;
+  height: 48px;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   color: var(--fg);
   box-shadow: 0 2px 10px rgba(80, 70, 140, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.85);
   transition: all var(--transition-fast);
   -webkit-appearance: none;
   appearance: none;
+}
+
+textarea {
+  height: auto;
+  min-height: 80px;
 }
 
 [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]),
@@ -1965,6 +1972,7 @@ select option {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  min-width: 0;
 }
 
 .campo label,
@@ -1972,11 +1980,18 @@ select option {
 .form-label,
 .form-group label,
 label {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--fg-2);
+  min-height: 1.25rem;
+  line-height: 1.25;
+  display: flex;
+  align-items: flex-end;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-actions {
