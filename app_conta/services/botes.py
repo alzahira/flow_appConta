@@ -59,8 +59,21 @@ def _checar_nombre_unico(db: Session, nombre: str, bote_id: int | None = None) -
     stmt = select(Bote).where(Bote.nombre == nombre)
     if bote_id is not None:
         stmt = stmt.where(Bote.id != bote_id)
-    if db.scalars(stmt).first() is not None:
-        raise ErrorConflicto(f"Ya existe un bote llamado {nombre!r}")
+    bote_existente = db.scalars(stmt).first()
+    if bote_existente is not None:
+        if bote_existente.archivado:
+            # Si existía un bote archivado con este nombre, limpiamos o liberamos el nombre
+            tiene_movs = db.scalars(
+                select(Movimiento).where(Movimiento.bote_id == bote_existente.id)
+            ).first() is not None
+            if not tiene_movs:
+                db.delete(bote_existente)
+                db.flush()
+            else:
+                bote_existente.nombre = f"{bote_existente.nombre} (archivado #{bote_existente.id})"
+                db.flush()
+        else:
+            raise ErrorConflicto(f"Ya existe un bote llamado {nombre!r}")
 
 
 def crear_bote(
@@ -214,5 +227,13 @@ def archivar_bote(db: Session, bote_id: int, confirmar: bool = False) -> None:
         mov.bote_id = None
         registrar_reasignacion_bote(db, mov.id, anterior, None)
 
-    bote.archivado = True
+    # Si ya no tiene movimientos vinculados, eliminamos físicamente para mantener la BD limpia
+    tiene_movs_historicos = db.scalars(
+        select(Movimiento).where(Movimiento.bote_id == bote.id)
+    ).first() is not None
+
+    if not tiene_movs_historicos:
+        db.delete(bote)
+    else:
+        bote.archivado = True
     db.flush()  # autoflush=False: consistencia en consultas posteriores

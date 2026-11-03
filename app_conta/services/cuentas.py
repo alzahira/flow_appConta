@@ -51,8 +51,20 @@ def _checar_nombre_unico(db: Session, nombre: str, cuenta_id: int | None = None)
     stmt = select(Cuenta).where(Cuenta.nombre == nombre)
     if cuenta_id is not None:
         stmt = stmt.where(Cuenta.id != cuenta_id)
-    if db.scalars(stmt).first() is not None:
-        raise ErrorConflicto(f"Ya existe una cuenta llamada {nombre!r}")
+    cuenta_existente = db.scalars(stmt).first()
+    if cuenta_existente is not None:
+        if cuenta_existente.archivada:
+            tiene_movs = db.scalars(
+                select(Movimiento).where(Movimiento.cuenta_id == cuenta_existente.id)
+            ).first() is not None
+            if not tiene_movs and cuenta_existente.saldo_inicial_centimos == 0:
+                db.delete(cuenta_existente)
+                db.flush()
+            else:
+                cuenta_existente.nombre = f"{cuenta_existente.nombre} (archivada #{cuenta_existente.id})"
+                db.flush()
+        else:
+            raise ErrorConflicto(f"Ya existe una cuenta llamada {nombre!r}")
 
 
 def crear_cuenta(
