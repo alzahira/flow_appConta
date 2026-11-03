@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import ErrorImporte, euros_a_centimos, euros_str
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.prestamos import (
@@ -107,10 +107,11 @@ def _formatear_prestamo(p: Any) -> dict[str, Any]:
 
 @router.get("", status_code=status.HTTP_200_OK)
 def get_prestamos(
-    incluir_inactivos: bool = False, db: Session = Depends(get_db)
+    incluir_inactivos: bool = False,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Lista todos los préstamos y pasivos del hogar con métricas consolidadas."""
-    hogar_id = obtener_hogar_unico(db)
     items = listar_prestamos(db, str(hogar_id), incluir_inactivos=incluir_inactivos)
     res = resumen_prestamos(db, str(hogar_id))
 
@@ -131,11 +132,11 @@ def get_prestamos(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def post_prestamo(
-    payload: PrestamoCreate, db: Session = Depends(get_db)
+    payload: PrestamoCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Crea un nuevo préstamo o deuda que debe devolver el hogar."""
-    hogar_id = obtener_hogar_unico(db)
-
     datos: dict[str, Any] = {
         "nombre": payload.nombre,
         "entidad": payload.entidad,
@@ -169,9 +170,12 @@ def post_prestamo(
 
 
 @router.get("/{prestamo_id}", status_code=status.HTTP_200_OK)
-def get_prestamo_por_id(prestamo_id: int, db: Session = Depends(get_db)) -> dict[str, Any]:
+def get_prestamo_por_id(
+    prestamo_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     """Detalle de un préstamo concreto."""
-    hogar_id = obtener_hogar_unico(db)
     try:
         prestamo = obtener_prestamo(db, str(hogar_id), prestamo_id)
     except ErrorNoEncontrado as exc:
@@ -181,10 +185,12 @@ def get_prestamo_por_id(prestamo_id: int, db: Session = Depends(get_db)) -> dict
 
 @router.patch("/{prestamo_id}", status_code=status.HTTP_200_OK)
 def patch_prestamo(
-    prestamo_id: int, payload: PrestamoUpdate, db: Session = Depends(get_db)
+    prestamo_id: int,
+    payload: PrestamoUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Modifica datos o saldo de un préstamo."""
-    hogar_id = obtener_hogar_unico(db)
     datos = payload.model_dump(exclude_unset=True)
 
     if "importe_pendiente" in datos and datos["importe_pendiente"] is not None:
@@ -210,10 +216,12 @@ def patch_prestamo(
 
 @router.post("/{prestamo_id}/pagar", status_code=status.HTTP_200_OK)
 def post_pago_prestamo(
-    prestamo_id: int, payload: PagoPrestamoRequest, db: Session = Depends(get_db)
+    prestamo_id: int,
+    payload: PagoPrestamoRequest,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Registra una cuota o amortización parcial del préstamo."""
-    hogar_id = obtener_hogar_unico(db)
     importe_cent = _parse_imp(payload.importe)
 
     fecha_obj: date | None = None
@@ -249,9 +257,12 @@ def post_pago_prestamo(
 
 
 @router.delete("/{prestamo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_prestamo(prestamo_id: int, db: Session = Depends(get_db)) -> None:
+def delete_prestamo(
+    prestamo_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
     """Elimina definitivamente un préstamo."""
-    hogar_id = obtener_hogar_unico(db)
     try:
         eliminar_prestamo(db, str(hogar_id), prestamo_id)
         db.commit()

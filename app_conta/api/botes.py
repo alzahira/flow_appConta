@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.services.botes import (
     archivar_bote,
@@ -24,7 +25,6 @@ from app_conta.services.botes import (
     obtener_bote,
     saldo_bote,
 )
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import euros_str
 
 router = APIRouter(prefix="/botes", tags=["botes"])
@@ -97,8 +97,11 @@ def _serializar_bote(db: Session, bote) -> dict:
 
 
 @router.post("", status_code=201)
-def post_bote(payload: BoteCreate, db: Session = Depends(get_db)) -> dict:
-    hogar_id = obtener_hogar_unico(db)
+def post_bote(
+    payload: BoteCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     bote = crear_bote(
         db,
         nombre=payload.nombre,
@@ -114,8 +117,11 @@ def post_bote(payload: BoteCreate, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("")
-def get_botes(db: Session = Depends(get_db)) -> dict:
-    pares, total = listar_botes_activos(db)
+def get_botes(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    pares, total = listar_botes_activos(db, hogar_id=hogar_id)
     return {
         "items": [_serializar_bote(db, b) for b, _s in pares],
         "total": euros_str(total),

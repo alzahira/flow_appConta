@@ -85,12 +85,8 @@ export function pintarNav(_rutas) {
       </div>
 
       <div class="glass-sheet-footer">
-        <a href="/static/manual_arquitectura_app_conta.pdf" target="_blank" download="Manual_Arquitectura_App_Conta.pdf" class="glass-sheet-pdf-btn">
-          <span class="pdf-icon">${icono("importar")}</span>
-          <span>Manual Técnico de Arquitectura (PDF)</span>
-        </a>
-        <button type="button" id="btn-logout-action" class="glass-sheet-logout-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <button type="button" id="btn-logout-action" class="glass-logout-pill-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           <span>Cerrar Sesión</span>
         </button>
       </div>
@@ -134,15 +130,15 @@ export function pintarNav(_rutas) {
   backdrop?.addEventListener("click", cerrarMenu);
   btnClose?.addEventListener("click", cerrarMenu);
 
-  const btnLogout = document.getElementById("btn-logout-action");
-  if (btnLogout) {
-    btnLogout.addEventListener("click", async () => {
-      try {
-        await fetch("/api/v1/auth/logout", { method: "POST" });
-      } catch (_e) {}
-      window.location.reload();
-    });
-  }
+  const ejecutarLogout = async () => {
+    try {
+      await fetch("/api/v1/auth/logout", { method: "POST" });
+    } catch (_e) {}
+    window.location.reload();
+  };
+
+  document.getElementById("btn-logout-action")?.addEventListener("click", ejecutarLogout);
+  document.getElementById("btn-header-logout")?.addEventListener("click", ejecutarLogout);
 
   // Selector de Tema (Oscuro / Claro)
   const btnDark = document.getElementById("btn-theme-dark");

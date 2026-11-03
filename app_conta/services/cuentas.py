@@ -105,9 +105,14 @@ def obtener_hogar_unico(db: Session) -> int:
     return int(hogar.id)
 
 
-def listar_cuentas_activas(db: Session) -> tuple[list[tuple[Cuenta, int]], int]:
+def listar_cuentas_activas(
+    db: Session, hogar_id: int | str | None = None
+) -> tuple[list[tuple[Cuenta, int]], int]:
     """Devuelve `[(cuenta, saldo_centimos), …]` de cuentas NO archivadas y el total."""
-    activas = list(db.scalars(select(Cuenta).order_by(Cuenta.nombre)).all())
+    stmt = select(Cuenta).order_by(Cuenta.nombre)
+    if hogar_id is not None:
+        stmt = stmt.where((Cuenta.hogar_id == str(hogar_id)) | (Cuenta.hogar_id == hogar_id))
+    activas = list(db.scalars(stmt).all())
     pares = [(c, saldo_cuenta(db, c)) for c in activas if not c.archivada]
     total = sum(s for _c, s in pares)
     return pares, total

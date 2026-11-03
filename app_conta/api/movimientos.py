@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app_conta.api.cuentas import _serializar_movimiento
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.services.botes import reasignar_bote
 from app_conta.services.errors import ErrorNoEncontrado
@@ -80,10 +81,12 @@ def get_movimientos(
     categoria: int | None = Query(default=None),
     limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     offset: int = Query(default=0, ge=0),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ) -> dict:
     filas, total = listar_movimientos(
         db,
+        hogar_id=hogar_id,
         desde=desde,
         hasta=hasta,
         cuenta=cuenta,

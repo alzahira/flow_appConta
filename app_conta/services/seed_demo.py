@@ -10,8 +10,11 @@ from sqlalchemy.orm import Session
 from app_conta.models.bote import Bote
 from app_conta.models.categoria import Categoria
 from app_conta.models.cuenta import Cuenta
+from app_conta.models.deuda import Deuda
 from app_conta.models.gasto_recurrente import GastoRecurrente, PrevisionGastosConfig
+from app_conta.models.inversion import Inversion
 from app_conta.models.movimiento import Movimiento
+from app_conta.models.prestamo import Prestamo
 
 
 def sembrar_hogar_demo_si_vacio(db: Session, hogar_demo_id: int) -> None:
@@ -187,5 +190,55 @@ def sembrar_hogar_demo_si_vacio(db: Session, hogar_demo_id: int) -> None:
         activo=True,
     )
     db.add_all([cfg_prev, g1, g2, g3])
+
+    # 6. Deudas ficticias a favor del usuario demo
+    d1 = Deuda(
+        hogar_id=hogar_demo_id,
+        deudor="Amigo Carlos",
+        concepto="Cena de cumpleaños compartida",
+        importe_inicial_centimos=4500,
+        importe_cobrado_centimos=0,
+        fecha=hoy,
+        estado="pendiente",
+        archivada=False,
+    )
+    d2 = Deuda(
+        hogar_id=hogar_demo_id,
+        deudor="Marta Compañera",
+        concepto="Entradas concierto",
+        importe_inicial_centimos=3500,
+        importe_cobrado_centimos=0,
+        fecha=hoy,
+        estado="pendiente",
+        archivada=False,
+    )
+    db.add_all([d1, d2])
+
+    # 7. Préstamo ficticio para demo
+    p1 = Prestamo(
+        hogar_id=str(hogar_demo_id),
+        nombre="Préstamo Reforma Cocina",
+        entidad="OpenBank Demo",
+        tipo="personal",
+        importe_inicial_centimos=600000,
+        importe_pendiente_centimos=420000,
+        cuota_mensual_centimos=15000,
+        fecha_inicio=hoy,
+        activo=True,
+    )
+    db.add(p1)
+
+    # 8. Inversión ficticia para demo
+    i1 = Inversion(
+        hogar_id=hogar_demo_id,
+        nombre="Cartera Fondos Indexados",
+        entidad="MyInvestor Demo",
+        tipo_activo="fondos",
+        capital_aportado_centimos=200000,
+        valor_actual_centimos=218000,
+        fecha_inicio=hoy,
+        activo=True,
+    )
+    db.add(i1)
 
     db.commit()

@@ -42,21 +42,21 @@ function tarjetaDeudaItem(d, cuentas) {
     .join("");
 
   return `
-    <article class="glass-loan-card">
-      <div class="loan-card-top">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="acc-card-icon-wrap" style="color: var(--accent); width: 38px; height: 38px;">
+    <article class="glass-account-card fintech-debt-card">
+      <div class="acc-card-top">
+        <div class="acc-card-brand-group">
+          <div class="acc-card-icon-wrap" style="color: ${perfil.color}; background: ${perfil.color}15;">
             ${icono(perfil.iconoKey)}
           </div>
-          <div class="loan-card-title-group">
-            <h3 class="loan-card-title">${esc(d.deudor)}</h3>
-            <span class="loan-card-entity">${esc(d.concepto)} · ${perfil.label}</span>
+          <div class="acc-card-name-group">
+            <h3 class="acc-card-name" title="${esc(d.deudor)}">${esc(d.deudor)}</h3>
+            <span class="acc-card-badge">${esc(d.concepto)} · ${perfil.label}</span>
           </div>
         </div>
 
         <div class="card-more-menu-wrapper">
           <button type="button" class="btn-card-more" aria-label="Opciones de deuda de ${esc(d.deudor)}" title="Opciones" onclick="this.nextElementSibling.classList.toggle('is-open')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="5" cy="12" r="2"/>
               <circle cx="12" cy="12" r="2"/>
               <circle cx="19" cy="12" r="2"/>
@@ -70,22 +70,22 @@ function tarjetaDeudaItem(d, cuentas) {
         </div>
       </div>
 
-      <div class="loan-pending-block">
-        <span class="loan-pending-label">Importe pendiente de cobro</span>
-        <div class="loan-pending-val" style="color: ${saldada ? 'var(--pos)' : 'var(--accent-2)'};">
+      <div class="acc-card-balance-block" style="margin-top: 1.1rem;">
+        <span class="acc-card-balance-label">Importe pendiente de cobro</span>
+        <div class="acc-card-balance-val ${saldada ? 'text-pos' : 'text-pos'}">
           ${saldada ? "0,00 € (Saldado)" : importe(d.importe_pendiente)}
         </div>
       </div>
 
-      <div class="loan-card-bottom-meta">
-        <span>Fecha: ${fechaCorta(d.fecha)}</span>
-        <span>${d.fecha_limite ? `Límite: ${fechaCorta(d.fecha_limite)}` : "Sin fecha límite"}</span>
+      <div class="debt-card-meta-row">
+        <span class="debt-meta-badge">${d.fecha_limite ? `Límite: ${fechaCorta(d.fecha_limite)}` : "Sin fecha límite"}</span>
+        <span class="debt-date-label">Fecha apunte: ${fechaCorta(d.fecha)}</span>
       </div>
 
       ${
         !saldada
           ? `
-        <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--divider);">
+        <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px solid var(--divider);">
           <details class="loan-pay-details">
             <summary style="font-size: 0.78rem; color: var(--accent-text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500;">
               ${icono("plus")} Registrar devolución o cobro

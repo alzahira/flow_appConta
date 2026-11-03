@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.plantillas_reparto import (
     actualizar_plantilla,
@@ -62,16 +62,19 @@ class EjecutarRepartoInput(BaseModel):
 
 
 @router.get("", response_model=list[dict[str, Any]])
-def get_plantillas(db: Session = Depends(get_db)) -> list[dict[str, Any]]:
-    hogar_id = obtener_hogar_unico(db)
+def get_plantillas(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
     return listar_plantillas(db, hogar_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=dict[str, Any])
 def post_plantilla(
-    payload: PlantillaRepartoCreate, db: Session = Depends(get_db)
+    payload: PlantillaRepartoCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
     try:
         plantilla = crear_plantilla(db, hogar_id, payload.model_dump())
         return serializar_plantilla(plantilla)

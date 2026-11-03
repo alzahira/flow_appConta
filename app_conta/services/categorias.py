@@ -82,9 +82,14 @@ def obtener_categoria(db: Session, categoria_id: int) -> Categoria:
     return categoria
 
 
-def listar_categorias_activas(db: Session) -> list[Categoria]:
+def listar_categorias_activas(
+    db: Session, hogar_id: int | str | None = None
+) -> list[Categoria]:
     """Categorías no archivadas, ordenadas por nombre."""
-    activas = list(db.scalars(select(Categoria).where(Categoria.archivada.is_(False))).all())
+    stmt = select(Categoria).where(Categoria.archivada.is_(False))
+    if hogar_id is not None:
+        stmt = stmt.where((Categoria.hogar_id == str(hogar_id)) | (Categoria.hogar_id == hogar_id))
+    activas = list(db.scalars(stmt).all())
     return sorted(activas, key=lambda c: c.nombre)
 
 
@@ -165,6 +170,7 @@ def total_categoria(
 def listar_categorias_con_totales(
     db: Session,
     *,
+    hogar_id: int | str | None = None,
     desde: str | date | None = None,
     hasta: str | date | None = None,
 ) -> tuple[list[tuple[Categoria, int]], int]:
@@ -172,7 +178,7 @@ def listar_categorias_con_totales(
 
     Categorías sin movimientos en el periodo → total 0 (nunca ausentes).
     """
-    categorias = listar_categorias_activas(db)
+    categorias = listar_categorias_activas(db, hogar_id=hogar_id)
     stmt = (
         select(
             Movimiento.categoria_id,

@@ -128,9 +128,14 @@ def estado_de_bote(bote: Bote, saldo: int) -> str:
     return ESTADO_EN_CURSO
 
 
-def listar_botes_activos(db: Session) -> tuple[list[tuple[Bote, int]], int]:
+def listar_botes_activos(
+    db: Session, hogar_id: int | str | None = None
+) -> tuple[list[tuple[Bote, int]], int]:
     """`[(bote, saldo), …]` de botes activos ordenados por nombre + total."""
-    activos = list(db.scalars(select(Bote).where(Bote.archivado.is_(False))).all())
+    stmt = select(Bote).where(Bote.archivado.is_(False))
+    if hogar_id is not None:
+        stmt = stmt.where((Bote.hogar_id == str(hogar_id)) | (Bote.hogar_id == hogar_id))
+    activos = list(db.scalars(stmt).all())
     pares = [(b, saldo_bote(db, b)) for b in sorted(activos, key=lambda x: x.nombre)]
     total = sum(s for _b, s in pares)
     return pares, total

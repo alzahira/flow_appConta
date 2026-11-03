@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.models.deuda import Deuda
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.deudas import (
     crear_deuda,
     editar_deuda,
@@ -69,8 +69,11 @@ def _serializar_deuda(deuda: Deuda) -> dict:
 
 
 @router.post("", status_code=201)
-def post_deuda(payload: DeudaCreate, db: Session = Depends(get_db)) -> dict:
-    hogar_id = obtener_hogar_unico(db)
+def post_deuda(
+    payload: DeudaCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     deuda = crear_deuda(
         db,
         deudor=payload.deudor,
@@ -87,8 +90,10 @@ def post_deuda(payload: DeudaCreate, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("")
-def get_deudas(db: Session = Depends(get_db)) -> dict:
-    hogar_id = obtener_hogar_unico(db)
+def get_deudas(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     deudas, total_pendiente, total_cobrado = listar_deudas_activas(db, hogar_id)
     total_inicial = total_pendiente + total_cobrado
     return {

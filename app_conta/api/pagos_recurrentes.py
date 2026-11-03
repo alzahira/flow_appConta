@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.pagos_recurrentes import (
     _serializar_pago,
@@ -62,16 +62,19 @@ class EjecutarPagosInput(BaseModel):
 
 
 @router.get("")
-def get_pagos_recurrentes(db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def get_pagos_recurrentes(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     return listar_pagos_recurrentes(db, hogar_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def post_pago_recurrente(
-    payload: PagoRecurrenteCreate, db: Session = Depends(get_db)
+    payload: PagoRecurrenteCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
     try:
         pago = crear_pago_recurrente(db, hogar_id, payload.model_dump())
         return _serializar_pago(pago)
@@ -113,9 +116,10 @@ def delete_pago_recurrente(pago_id: int, db: Session = Depends(get_db)) -> None:
 
 @router.post("/ejecutar")
 def post_ejecutar_pagos(
-    payload: EjecutarPagosInput, db: Session = Depends(get_db)
+    payload: EjecutarPagosInput,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
     try:
         pagos_raw = [p.model_dump() for p in payload.pagos] if payload.pagos is not None else None
         res = ejecutar_pagos_recurrentes(

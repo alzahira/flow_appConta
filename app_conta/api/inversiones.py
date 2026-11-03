@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import ErrorImporte, euros_a_centimos, euros_str
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.inversiones import (
@@ -98,8 +98,10 @@ def _formatear_inversion(inv: Any) -> dict[str, Any]:
 
 
 @router.get("", status_code=status.HTTP_200_OK)
-def get_inversiones(db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def get_inversiones(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     res = resumen_inversiones(db, str(hogar_id))
 
     invs_fmt = [_formatear_inversion(i) for i in res["inversiones"]]
@@ -129,8 +131,11 @@ def get_inversiones(db: Session = Depends(get_db)) -> dict[str, Any]:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create_inversion(payload: InversionCreate, db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def create_inversion(
+    payload: InversionCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     try:
         cap_cents = _parse_imp(payload.capital_aportado)
         val_cents = (

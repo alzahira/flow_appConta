@@ -324,6 +324,7 @@ def saldo_cuenta(db: Session, cuenta: Cuenta) -> int:
 def listar_movimientos(
     db: Session,
     *,
+    hogar_id: int | str | None = None,
     desde: str | None = None,
     hasta: str | None = None,
     cuenta: int | None = None,
@@ -337,6 +338,10 @@ def listar_movimientos(
     Devuelve `(movimientos, total)` donde `total` es el recuento del filtro.
     """
     stmt = select(Movimiento).where(Movimiento.eliminado.is_(False))
+    if hogar_id is not None:
+        stmt = stmt.where(
+            (Movimiento.hogar_id == str(hogar_id)) | (Movimiento.hogar_id == hogar_id)
+        )
     if desde is not None:
         stmt = stmt.where(Movimiento.fecha >= _parsear_fecha(desde))
     if hasta is not None:

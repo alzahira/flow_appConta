@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import ErrorImporte, euros_a_centimos, euros_str
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.prevision_gastos import (
@@ -113,15 +113,20 @@ def _formatear_resumen(resumen: dict[str, Any]) -> dict[str, Any]:
 
 
 @router.get("", status_code=status.HTTP_200_OK)
-def get_prevision(db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def get_prevision(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     resumen = obtener_resumen_prevision(db, str(hogar_id))
     return _formatear_resumen(resumen)
 
 
 @router.patch("/config", status_code=status.HTTP_200_OK)
-def update_config(payload: ConfigPrevisionUpdate, db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def update_config(
+    payload: ConfigPrevisionUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     try:
         actualizar_config_prevision(
             db, str(hogar_id), meses_pagados=payload.meses_pagados, anio=payload.anio
@@ -135,8 +140,11 @@ def update_config(payload: ConfigPrevisionUpdate, db: Session = Depends(get_db))
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create_gasto(payload: GastoRecurrenteCreate, db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def create_gasto(
+    payload: GastoRecurrenteCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     try:
         imp_anual = _parse_imp(payload.importe_anual)
         cuota_m = _parse_imp(payload.cuota_mensual) if payload.cuota_mensual is not None else None
@@ -227,8 +235,10 @@ def delete_gasto(gasto_id: int, db: Session = Depends(get_db)) -> None:
 
 
 @router.post("/restablecer-semilla", status_code=status.HTTP_200_OK)
-def reset_seed(db: Session = Depends(get_db)) -> dict[str, Any]:
-    hogar_id = obtener_hogar_unico(db)
+def reset_seed(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     restablecer_semilla(db, str(hogar_id))
     resumen = obtener_resumen_prevision(db, str(hogar_id))
     return _formatear_resumen(resumen)

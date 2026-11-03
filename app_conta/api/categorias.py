@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.services.categorias import (
     archivar_categoria,
@@ -20,7 +21,6 @@ from app_conta.services.categorias import (
     movimientos_asignados_activos,
     obtener_categoria,
 )
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import euros_str
 
 router = APIRouter(prefix="/categorias", tags=["categorias"])
@@ -54,8 +54,11 @@ def _serializar_categoria(db: Session, categoria, total_centimos: int = 0) -> di
 
 
 @router.post("", status_code=201)
-def post_categoria(payload: CategoriaCreate, db: Session = Depends(get_db)) -> dict:
-    hogar_id = obtener_hogar_unico(db)
+def post_categoria(
+    payload: CategoriaCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     categoria = crear_categoria(
         db,
         nombre=payload.nombre,
@@ -71,9 +74,10 @@ def post_categoria(payload: CategoriaCreate, db: Session = Depends(get_db)) -> d
 def get_categorias(
     desde: str | None = Query(default=None),
     hasta: str | None = Query(default=None),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ) -> dict:
-    pares, total = listar_categorias_con_totales(db, desde=desde, hasta=hasta)
+    pares, total = listar_categorias_con_totales(db, hogar_id=hogar_id, desde=desde, hasta=hasta)
     return {
         "items": [_serializar_categoria(db, c, t) for c, t in pares],
         "total": euros_str(total),

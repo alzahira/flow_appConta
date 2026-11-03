@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.models.cuenta import Cuenta
 from app_conta.models.movimiento import Movimiento
@@ -23,7 +24,6 @@ from app_conta.services.cuentas import (
     listar_cuentas_activas,
     movimientos_activos,
     obtener_cuenta,
-    obtener_hogar_unico,
 )
 from app_conta.services.dinero import euros_a_centimos, euros_str
 from app_conta.services.movimientos import saldo_cuenta
@@ -81,8 +81,11 @@ def _serializar_movimiento(mov) -> dict:
 
 
 @router.post("", status_code=201)
-def post_cuenta(payload: CuentaCreate, db: Session = Depends(get_db)) -> dict:
-    hogar_id = obtener_hogar_unico(db)
+def post_cuenta(
+    payload: CuentaCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     cuenta = crear_cuenta(
         db,
         nombre=payload.nombre,
@@ -98,8 +101,11 @@ def post_cuenta(payload: CuentaCreate, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("")
-def get_cuentas(db: Session = Depends(get_db)) -> dict:
-    pares, total = listar_cuentas_activas(db)
+def get_cuentas(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    pares, total = listar_cuentas_activas(db, hogar_id=hogar_id)
     return {
         "items": [_serializar_cuenta(db, c) for c, _s in pares],
         "total": euros_str(total),
