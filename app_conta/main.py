@@ -89,6 +89,16 @@ def index() -> FileResponse:
     )
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(
+        STATIC_DIR / "favicon.svg",
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+
 def _registrar_routers() -> None:
     """Registra los routers disponibles (se amplía en cada fase de tareas)."""
     from importlib import import_module

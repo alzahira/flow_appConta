@@ -11,8 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=72" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v=72" />
   <link rel="manifest" href="/static/manifest.webmanifest" />
-  <link rel="stylesheet" href="/static/styles.css?v=71" />
+  <link rel="stylesheet" href="/static/styles.css?v=72" />
   
   <!-- Inicialización inmediata de tema (Modo Claro como principal) -->
   <script>
@@ -40,19 +42,8 @@
   <header class="app-header glass-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="brand-logo flow-logo-glass" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="flowVioletCyan" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#7C5CFF"/>
-                <stop offset="100%" stop-color="#22D3EE"/>
-              </linearGradient>
-            </defs>
-            <path d="M6 19V6.5C6 5.12 7.12 4 8.5 4H18" stroke="url(#flowVioletCyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6 11.5H15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
-            <path d="M10 19C12 19 12.5 16 15 16H18.5" stroke="url(#flowVioletCyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="18.5" cy="16" r="1.5" fill="#22D3EE"/>
-          </svg>
+        <div class="brand-logo flow-logo-glass" aria-hidden="true" style="padding: 2px;">
+          <img src="/static/favicon.svg?v=72" width="28" height="28" alt="Flow Logo" style="border-radius: 8px; display: block;" />
         </div>
         <div class="brand-text">
           <span class="brand-name">Flow</span>
@@ -88,11 +79,11 @@
   <div id="nav-sheet-portal"></div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=71"></script>
-  <script type="module" src="/static/js/app.js?v=71"></script>
+  <script src="/static/js/api.js?v=72"></script>
+  <script type="module" src="/static/js/app.js?v=72"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/sw.js?v=71").then((reg) => {
+      navigator.serviceWorker.register("/static/sw.js?v=72").then((reg) => {
         reg.update();
       });
       let refreshing = false;
