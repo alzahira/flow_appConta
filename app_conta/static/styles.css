@@ -10,32 +10,51 @@
   /* ==========================================================================
      PALETA PRINCIPAL (Modo Claro por Defecto)
      ========================================================================== */
-  --bg: #EEF0FB;                         /* Fondo base lavanda muy claro */
-  --blob-1: #C4B5FD;                     /* Mancha lavanda, arriba izquierda */
-  --blob-2: #FDBA9B;                     /* Mancha melocotón, derecha-centro */
-  --blob-3: #A5D8FF;                     /* Mancha azul cielo, abajo izquierda */
+  --bg: #EEF0FB;
+  /* Fondo base lavanda muy claro */
+  --blob-1: #C4B5FD;
+  /* Mancha lavanda, arriba izquierda */
+  --blob-2: #FDBA9B;
+  /* Mancha melocotón, derecha-centro */
+  --blob-3: #A5D8FF;
+  /* Mancha azul cielo, abajo izquierda */
   --blob-opacity: 0.75;
   --blob-blur: 95px;
 
-  --glass: rgba(255, 255, 255, 0.62);        /* Tarjetas, chips, botones redondos */
-  --glass-strong: rgba(255, 255, 255, 0.74); /* Barra de navegación inferior */
-  --line: rgba(255, 255, 255, 0.90);        /* Borde de 1px del cristal */
+  --glass: rgba(255, 255, 255, 0.62);
+  /* Tarjetas, chips, botones redondos */
+  --glass-strong: rgba(255, 255, 255, 0.74);
+  /* Barra de navegación inferior */
+  --line: rgba(255, 255, 255, 0.90);
+  /* Borde de 1px del cristal */
   --shadow: 0 8px 28px rgba(80, 70, 140, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
-  --fg: #12141A;                         /* Texto principal */
-  --fg-2: rgba(18, 20, 26, 0.66);        /* Texto secundario y etiquetas */
+  --fg: #12141A;
+  /* Texto principal */
+  --fg-2: rgba(18, 20, 26, 0.66);
+  /* Texto secundario y etiquetas */
 
-  --accent: #6A4DF0;                     /* Violeta: anillos, avatar, elementos activos */
-  --accent-2: #0891B2;                   /* Turquesa: segundo anillo/serie */
-  --accent-text: #4B34C9;                /* Violeta oscuro para texto y enlaces */
-  --accent-soft: rgba(106, 77, 240, 0.12); /* Fondo del elemento activo de la barra */
+  --accent: #6A4DF0;
+  /* Violeta: anillos, avatar, elementos activos */
+  --accent-2: #0891B2;
+  /* Turquesa: segundo anillo/serie */
+  --accent-text: #4B34C9;
+  /* Violeta oscuro para texto y enlaces */
+  --accent-soft: rgba(106, 77, 240, 0.12);
+  /* Fondo del elemento activo de la barra */
 
-  --pos: #0A7A4C;                        /* Ingresos y positivos */
-  --neg: #C2364A;                        /* Deudas y negativos */
-  --pos-soft: rgba(10, 122, 76, 0.12);   /* Fondo del icono de ingreso */
-  --neutral-soft: rgba(18, 20, 26, 0.06); /* Fondo del icono de gasto */
-  --track: rgba(18, 20, 26, 0.08);       /* Pistas de anillos y barras de progreso */
-  --divider: rgba(18, 20, 26, 0.08);     /* Líneas entre filas de una lista */
+  --pos: #0A7A4C;
+  /* Ingresos y positivos */
+  --neg: #C2364A;
+  /* Deudas y negativos */
+  --pos-soft: rgba(10, 122, 76, 0.12);
+  /* Fondo del icono de ingreso */
+  --neutral-soft: rgba(18, 20, 26, 0.06);
+  /* Fondo del icono de gasto */
+  --track: rgba(18, 20, 26, 0.08);
+  /* Pistas de anillos y barras de progreso */
+  --divider: rgba(18, 20, 26, 0.08);
+  /* Líneas entre filas de una lista */
 
   /* Aliases para compatibilidad interna */
   --bg-app: var(--bg);
@@ -125,7 +144,9 @@
 /* --------------------------------------------------------------------------
    2. RESET & BASE
    -------------------------------------------------------------------------- */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -170,7 +191,13 @@ body {
 
 /* Fallback para navegadores sin backdrop-filter */
 @supports not (backdrop-filter: blur(20px)) {
-  .glass-card, .floating-glass-nav, .glass-status-pill, .glass-action-circle-btn, .glass-capsule-chip, .glass-sheet-menu {
+
+  .glass-card,
+  .floating-glass-nav,
+  .glass-status-pill,
+  .glass-action-circle-btn,
+  .glass-capsule-chip,
+  .glass-sheet-menu {
     background-color: var(--bg-fallback) !important;
   }
 }
@@ -198,21 +225,24 @@ body {
 }
 
 /* Mancha 1: Lavanda, arriba izquierda */
-.spot-lavender, .spot-violet {
+.spot-lavender,
+.spot-violet {
   top: -40px;
   left: -40px;
   background: var(--blob-1);
 }
 
 /* Mancha 2: Melocotón, derecha-centro */
-.spot-peach, .spot-blue {
+.spot-peach,
+.spot-blue {
   top: 35%;
   right: -50px;
   background: var(--blob-2);
 }
 
 /* Mancha 3: Azul cielo, abajo izquierda */
-.spot-sky, .spot-turquoise {
+.spot-sky,
+.spot-turquoise {
   bottom: -40px;
   left: 8%;
   background: var(--blob-3);
@@ -307,10 +337,21 @@ body {
   transform: scale(1.05);
 }
 
-[data-theme="dark"] .theme-icon-light { display: none; }
-[data-theme="dark"] .theme-icon-dark { display: block; }
-[data-theme="light"] .theme-icon-light { display: block; }
-[data-theme="light"] .theme-icon-dark { display: none; }
+[data-theme="dark"] .theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+  display: block;
+}
+
+[data-theme="light"] .theme-icon-light {
+  display: block;
+}
+
+[data-theme="light"] .theme-icon-dark {
+  display: none;
+}
 
 /* --------------------------------------------------------------------------
    5. CONTENEDOR PRINCIPAL
@@ -320,7 +361,8 @@ body {
   max-width: 1000px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 7rem 1.25rem; /* Margen inferior generoso para la barra flotante */
+  padding: 1.5rem 1.25rem 7rem 1.25rem;
+  /* Margen inferior generoso para la barra flotante */
   z-index: 10;
   position: relative;
 }
@@ -544,8 +586,8 @@ body {
 
 .ring-graphic-container {
   position: relative;
-  width: 210px;
-  height: 210px;
+  width: 220px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -555,7 +597,8 @@ body {
 .ring-svg {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg); /* Inicio arriba */
+  transform: rotate(-90deg);
+  /* Inicio arriba */
 }
 
 .ring-track {
@@ -582,25 +625,25 @@ body {
   justify-content: center;
   text-align: center;
   pointer-events: none;
-  padding: 1.25rem;
+  padding: 2rem;
 }
 
 .ring-center-caption {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: var(--fg-2);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.1rem;
 }
 
 .ring-center-val {
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--fg);
-  line-height: 1.1;
+  line-height: 1.0;
   letter-spacing: -0.02em;
-  margin: 0.1rem 0;
+  margin: 0.08rem 0;
 }
 
 .ring-center-val .centimos {
@@ -610,13 +653,13 @@ body {
 }
 
 .ring-center-badge {
-  font-size: 0.70rem;
+  font-size: 0.62rem;
   color: var(--accent-text);
   font-weight: 600;
   background: var(--accent-soft);
-  padding: 0.18rem 0.6rem;
+  padding: 0.14rem 0.5rem;
   border-radius: var(--radius-pill);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   border: 1px solid rgba(124, 58, 237, 0.16);
   white-space: nowrap;
 }
@@ -877,11 +920,13 @@ body {
 }
 
 .tx-amount-col .gasto {
-  color: var(--fg); /* Gastos en --fg (sin rojo) */
+  color: var(--fg);
+  /* Gastos en --fg (sin rojo) */
 }
 
 .tx-amount-col .negativo {
-  color: var(--neg); /* Reservado para deudas y saldos en descubierto */
+  color: var(--neg);
+  /* Reservado para deudas y saldos en descubierto */
 }
 
 .tx-amount-col .centimos {
@@ -1758,8 +1803,13 @@ body {
   font-weight: 600;
 }
 
-.bci-val.pos { color: var(--pos); }
-.bci-val.neg { color: var(--neg); }
+.bci-val.pos {
+  color: var(--pos);
+}
+
+.bci-val.neg {
+  color: var(--neg);
+}
 
 .nomina-balance-summary-strip {
   display: flex;
@@ -1793,9 +1843,17 @@ body {
   font-weight: 700;
 }
 
-.strip-val.pos { color: var(--pos); }
-.strip-val.neg { color: var(--neg); }
-.strip-val.neto { color: var(--accent); }
+.strip-val.pos {
+  color: var(--pos);
+}
+
+.strip-val.neg {
+  color: var(--neg);
+}
+
+.strip-val.neto {
+  color: var(--accent);
+}
 
 .strip-operator {
   font-size: 1.1rem;
@@ -1850,7 +1908,8 @@ textarea {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md); /* 16px soft fintech */
+  border-radius: var(--radius-md);
+  /* 16px soft fintech */
   padding: 0.75rem 1.15rem;
   height: 48px;
   font-family: var(--font-sans);
@@ -1894,7 +1953,8 @@ textarea:focus {
   box-shadow: 0 0 0 3.5px rgba(124, 92, 255, 0.3), 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--fg-2);
   opacity: 0.65;
 }
@@ -1904,6 +1964,7 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type="number"] {
   -moz-appearance: textfield;
 }
@@ -1914,9 +1975,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.2);
   transition: opacity var(--transition-fast);
 }
+
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.85);
 }
@@ -2014,7 +2077,10 @@ label {
 }
 
 /* Botones de Cristal Fintech */
-.btn, .btn-secondary, .btn-cancelar, .modal-btn-cancelar {
+.btn,
+.btn-secondary,
+.btn-cancelar,
+.modal-btn-cancelar {
   border-radius: var(--radius-pill);
   background: rgba(18, 20, 26, 0.06);
   border: 1px solid var(--line);
@@ -2039,12 +2105,19 @@ label {
   color: #FFFFFF;
 }
 
-.btn:hover, .btn-secondary:hover, .btn-cancelar:hover, .modal-btn-cancelar:hover {
+.btn:hover,
+.btn-secondary:hover,
+.btn-cancelar:hover,
+.modal-btn-cancelar:hover {
   background: rgba(18, 20, 26, 0.12);
   transform: translateY(-1px);
 }
 
-.btn-primary, .btn-fintech-primary, .btn-guardar, .modal-btn-primary, button[type="submit"] {
+.btn-primary,
+.btn-fintech-primary,
+.btn-guardar,
+.modal-btn-primary,
+button[type="submit"] {
   border-radius: var(--radius-pill);
   background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2061,7 +2134,11 @@ label {
   gap: 0.45rem;
 }
 
-.btn-primary:hover, .btn-fintech-primary:hover, .btn-guardar:hover, .modal-btn-primary:hover, button[type="submit"]:hover {
+.btn-primary:hover,
+.btn-fintech-primary:hover,
+.btn-guardar:hover,
+.modal-btn-primary:hover,
+button[type="submit"]:hover {
   background: #5a3cd9;
   transform: translateY(-1px);
   box-shadow: 0 6px 24px rgba(106, 77, 240, 0.45);
@@ -2283,18 +2360,22 @@ label {
   color: #0072CE;
   background: rgba(0, 114, 206, 0.08);
 }
+
 .acc-card-icon-wrap.deutsche {
   color: #0018A8;
   background: rgba(0, 24, 168, 0.08);
 }
+
 .acc-card-icon-wrap.bbva {
   color: #004481;
   background: rgba(0, 68, 129, 0.08);
 }
+
 .acc-card-icon-wrap.revolut {
   color: #12141A;
   background: rgba(18, 20, 26, 0.08);
 }
+
 [data-theme="dark"] .acc-card-icon-wrap.revolut {
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.12);
@@ -2647,6 +2728,7 @@ label {
 .botes-filter-scroll::-webkit-scrollbar {
   height: 4px;
 }
+
 .botes-filter-scroll::-webkit-scrollbar-thumb {
   background: var(--track);
   border-radius: var(--radius-pill);
@@ -2845,68 +2927,59 @@ label {
 /* --------------------------------------------------------------------------
    10.7 PANTALLA 4: PRÉSTAMOS (BARRA FINA 4PX, PENDIENTE EN GRANDE, % GRIS)
    -------------------------------------------------------------------------- */
-.loans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 1.25rem;
+.loans-grid,
+.loans-grid-fullwidth {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
-.fintech-debt-card {
-  flex: none !important;
-  min-height: 195px;
-}
-
-.debt-card-meta-row {
+.hero-loan-submetrics {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.85rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--divider);
-  font-size: 0.74rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
   color: var(--fg-2);
+  margin-top: 0.5rem;
 }
 
-.debt-meta-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-pill);
+.hero-global-progress-wrap {
+  margin-top: 1.15rem;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
-.debt-date-label {
-  font-size: 0.72rem;
-  color: var(--fg-2);
-}
-
-.glass-loan-card {
+.glass-loan-card.loan-card-fullwidth {
   background: var(--glass);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--line);
   border-radius: var(--glass-radius);
   box-shadow: var(--shadow);
-  padding: 1.5rem;
+  padding: 1.75rem 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 180px;
+  gap: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-.glass-loan-card:hover {
+.glass-loan-card.loan-card-fullwidth:hover {
   transform: translateY(-2px);
   box-shadow: var(--glass-shadow-hover);
 }
 
 .loan-card-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .loan-card-title-group {
@@ -2915,35 +2988,61 @@ label {
 }
 
 .loan-card-title {
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--fg);
+  margin: 0;
 }
 
 .loan-card-entity {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--fg-2);
   margin-top: 2px;
 }
 
-.loan-pending-block {
-  margin: 1.25rem 0 0.85rem 0;
+/* Layout Panorámico de 2 Columnas */
+.loan-card-body-fullwidth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .loan-card-body-fullwidth {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.loan-metrics-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loan-pending-highlight {
+  display: flex;
+  flex-direction: column;
 }
 
 .loan-pending-label {
   font-size: 0.74rem;
   color: var(--fg-2);
   font-weight: 500;
-  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .loan-pending-val {
-  font-size: 2rem;
+  font-size: 2.35rem;
   font-weight: 300;
   line-height: 1.15;
   color: var(--neg);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  margin-top: 0.2rem;
 }
 
 .loan-pending-val .centimos {
@@ -2951,37 +3050,193 @@ label {
   color: var(--fg-2);
 }
 
-/* Barra de progreso fina (4px) */
-.loan-progress-track {
+.loan-details-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.loan-detail-pill {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--line);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 90px;
+}
+
+.loan-detail-pill .pill-label {
+  font-size: 0.68rem;
+  color: var(--fg-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.loan-detail-pill .pill-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* Columna de Gráfico de Amortización */
+.loan-chart-col {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+}
+
+.loan-chart-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .loan-chart-wrap {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.loan-ring-chart {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loan-donut-svg {
   width: 100%;
-  height: 4px;
-  background: var(--track);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  margin-bottom: 0.65rem;
-}
-
-.loan-progress-fill {
   height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-pill);
-  transition: width 0.6s ease-out;
+  transform: rotate(-90deg);
 }
 
-.loan-card-bottom-meta {
+.donut-track {
+  fill: none;
+  stroke: rgba(148, 163, 184, 0.16);
+}
+
+.donut-fill {
+  fill: none;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loan-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-pct {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1;
+}
+
+.donut-label {
+  font-size: 0.62rem;
+  color: var(--fg-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.loan-bar-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.loan-bar-legend {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   font-size: 0.78rem;
   color: var(--fg-2);
+  flex-wrap: wrap;
 }
 
-.loan-monthly-fee {
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dot-legend {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-amortizado {
+  background: #7C3AED;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+}
+
+.dot-pendiente {
+  background: var(--neg);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.loan-segmented-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(148, 163, 184, 0.16);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  display: flex;
+}
+
+.loan-bar-segment-paid {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED, #3B82F6);
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  transition: width 0.8s ease-out;
+}
+
+.loan-bar-segment-remain {
+  height: 100%;
+  background: transparent;
+  transition: width 0.8s ease-out;
+}
+
+.loan-pay-accordion-wrap {
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--divider);
+}
+
+.loan-pay-summary {
+  font-size: 0.82rem;
+  color: var(--accent-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 500;
+  transition: opacity var(--transition-fast);
 }
 
-.loan-pct-amortized {
-  font-weight: 400;
+.loan-pay-summary:hover {
+  opacity: 0.85;
 }
 
 /* --------------------------------------------------------------------------
@@ -3419,7 +3674,10 @@ label {
    11. ACCESIBILIDAD & REDUCED MOTION
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -4067,6 +4325,7 @@ label {
   .fcr-table-header {
     display: none;
   }
+
   .fila-config-reparto {
     display: flex;
     flex-direction: column;
@@ -4074,6 +4333,7 @@ label {
     padding: 1rem;
     position: relative;
   }
+
   .fcr-mobile-label {
     display: block;
     font-size: 0.74rem;
@@ -4081,6 +4341,7 @@ label {
     color: var(--fg-2);
     margin-bottom: 0.25rem;
   }
+
   .fcr-btn-delete {
     position: absolute;
     top: 0.75rem;

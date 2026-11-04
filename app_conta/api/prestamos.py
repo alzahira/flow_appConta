@@ -120,6 +120,7 @@ def get_prestamos(
         "total_prestamos": res["total_prestamos"],
         "total_deuda_pendiente_centimos": res["total_deuda_pendiente_centimos"],
         "total_deuda_pendiente": euros_str(res["total_deuda_pendiente_centimos"]),
+        "total_pendiente": euros_str(res["total_deuda_pendiente_centimos"]),
         "total_financiado_centimos": res["total_financiado_centimos"],
         "total_financiado": euros_str(res["total_financiado_centimos"]),
         "total_amortizado_centimos": res["total_amortizado_centimos"],
@@ -127,6 +128,7 @@ def get_prestamos(
         "progreso_global_pct": res["progreso_global_pct"],
         "cuota_mensual_total_centimos": res["cuota_mensual_total_centimos"],
         "cuota_mensual_total": euros_str(res["cuota_mensual_total_centimos"]),
+        "total_cuotas_mensuales": euros_str(res["cuota_mensual_total_centimos"]),
     }
 
 

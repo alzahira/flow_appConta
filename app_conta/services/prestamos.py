@@ -261,8 +261,41 @@ def eliminar_prestamo(session: Session, hogar_id: str, prestamo_id: int) -> None
     session.delete(prestamo)
     session.flush()
 
-
 def resumen_prestamos(session: Session, hogar_id: str) -> dict[str, Any]:
+    """Calcula las métricas consolidadas del pasivo y deudas del hogar."""
+    prestamos_activos = listar_prestamos(session, hogar_id, incluir_inactivos=False)
+
+    # Protegemos con "or 0" por si la BD devuelve algún None
+    total_deuda_centimos = sum((p.importe_pendiente_centimos or 0) for p in prestamos_activos)
+    total_financiado_centimos = sum((p.importe_inicial_centimos or 0) for p in prestamos_activos)
+    
+    # Calculamos la amortización préstamo a préstamo (evita que intereses de un préstamo resten amortización a otro)
+    total_amortizado_centimos = sum(
+        max(0, (p.importe_inicial_centimos or 0) - (p.importe_pendiente_centimos or 0)) 
+        for p in prestamos_activos
+    )
+
+    # Limpiamos la redundancia: basta con filtrar los que tienen cuota
+    cuota_mensual_total_centimos = sum(
+        p.cuota_mensual_centimos for p in prestamos_activos if p.cuota_mensual_centimos
+    )
+
+    progreso_global = 0.0
+    if total_financiado_centimos > 0:
+        progreso_global = round((total_amortizado_centimos / total_financiado_centimos) * 100, 2)
+
+    return {
+        "total_prestamos": len(prestamos_activos),
+        "total_deuda_pendiente_centimos": total_deuda_centimos,
+        "total_financiado_centimos": total_financiado_centimos,
+        "total_amortizado_centimos": total_amortizado_centimos,
+        "progreso_global_pct": progreso_global,
+        "cuota_mensual_total_centimos": cuota_mensual_total_centimos,
+    }
+
+
+
+#def resumen_prestamos(session: Session, hogar_id: str) -> dict[str, Any]:
     """Calcula las métricas consolidadas del pasivo y deudas del hogar."""
     prestamos_activos = listar_prestamos(session, hogar_id, incluir_inactivos=False)
 
