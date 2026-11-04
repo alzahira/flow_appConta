@@ -544,8 +544,8 @@ body {
 
 .ring-graphic-container {
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 210px;
+  height: 210px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,7 +560,7 @@ body {
 
 .ring-track {
   fill: none;
-  stroke: rgba(100, 116, 139, 0.16);
+  stroke: rgba(148, 163, 184, 0.16);
 }
 
 .ring-bar {
@@ -570,7 +570,7 @@ body {
 
 .ring-track-inner {
   fill: none;
-  stroke: rgba(100, 116, 139, 0.14);
+  stroke: rgba(148, 163, 184, 0.14);
 }
 
 .ring-center-info {
@@ -582,37 +582,43 @@ body {
   justify-content: center;
   text-align: center;
   pointer-events: none;
+  padding: 1.25rem;
 }
 
 .ring-center-caption {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   color: var(--fg-2);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.15rem;
 }
 
 .ring-center-val {
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-size: 1.45rem;
+  font-weight: 700;
   color: var(--fg);
-  line-height: 1.15;
-  margin: 0.15rem 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0.1rem 0;
 }
 
 .ring-center-val .centimos {
   font-size: 0.65em;
   color: var(--fg-2);
+  font-weight: 500;
 }
 
 .ring-center-badge {
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   color: var(--accent-text);
   font-weight: 600;
   background: var(--accent-soft);
-  padding: 0.15rem 0.55rem;
+  padding: 0.18rem 0.6rem;
   border-radius: var(--radius-pill);
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  white-space: nowrap;
 }
 
 .ring-metrics-panel {

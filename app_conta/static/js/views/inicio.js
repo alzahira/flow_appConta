@@ -112,12 +112,12 @@ export default vista("inicio", async () => {
   // Cálculos para el anillo de progreso circular sobre el total presupuestado (Mes: 400 €, Ocio: 230 €)
   const metaMes = Number(boteMes?.objetivo_centimos ? boteMes.objetivo_centimos / 100 : 400) || 400;
   const pctMes = Math.min(100, Math.max(0, Math.round((dineroMesNum / metaMes) * 100)));
-  const circunferenciaMes = 2 * Math.PI * 72; // r=72 -> 452.39
+  const circunferenciaMes = 2 * Math.PI * 88; // r=88 -> 552.92
   const offsetMes = circunferenciaMes - (pctMes / 100) * circunferenciaMes;
 
   const metaOcio = Number(boteOcio?.objetivo_centimos ? boteOcio.objetivo_centimos / 100 : 230) || 230;
   const pctOcio = Math.min(100, Math.max(0, Math.round((dineroOcioNum / metaOcio) * 100)));
-  const circunferenciaOcio = 2 * Math.PI * 56; // r=56 -> 351.86
+  const circunferenciaOcio = 2 * Math.PI * 74; // r=74 -> 464.96
   const offsetOcio = circunferenciaOcio - (pctOcio / 100) * circunferenciaOcio;
 
   // Ejecución asíncrona tras inserción en el DOM
@@ -194,12 +194,12 @@ export default vista("inicio", async () => {
     <!-- 3. Anillo de Progreso Único (Mes en centro + Ocio secundario) -->
     <section class="glass-card ring-card-widget">
       <div class="ring-widget-layout">
-        <!-- SVG Dual Ring -->
+        <!-- SVG Dual Ring Ampliado y Espacioso -->
         <div class="ring-graphic-container">
-          <svg class="ring-svg" viewBox="0 0 180 180">
+          <svg class="ring-svg" viewBox="0 0 210 210">
             <defs>
               <linearGradient id="ringMonthGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#6A4DF0"/>
+                <stop offset="0%" stop-color="#7C3AED"/>
                 <stop offset="100%" stop-color="#3B82F6"/>
               </linearGradient>
               <linearGradient id="ringOcioGrad" x1="0" y1="0" x2="1" y2="1">
@@ -207,19 +207,19 @@ export default vista("inicio", async () => {
                 <stop offset="100%" stop-color="#22D3EE"/>
               </linearGradient>
             </defs>
-            <!-- Anillo Exterior: Mes (Presupuesto 400 €) -->
-            <circle class="ring-track" cx="90" cy="90" r="72" stroke-width="8"/>
-            <circle class="ring-bar ring-bar-mes" cx="90" cy="90" r="72" stroke-width="8"
+            <!-- Anillo Exterior: Mes (Presupuesto) -->
+            <circle class="ring-track" cx="105" cy="105" r="88" stroke-width="7"/>
+            <circle class="ring-bar ring-bar-mes" cx="105" cy="105" r="88" stroke-width="7"
                     stroke="url(#ringMonthGrad)"
-                    stroke-dasharray="452.39"
+                    stroke-dasharray="552.92"
                     stroke-dashoffset="${offsetMes}"
                     stroke-linecap="round"/>
             
-            <!-- Anillo Interior: Ocio (Presupuesto 230 €) -->
-            <circle class="ring-track-inner" cx="90" cy="90" r="56" stroke-width="7"/>
-            <circle class="ring-bar ring-bar-ocio" cx="90" cy="90" r="56" stroke-width="7"
+            <!-- Anillo Interior: Ocio (Presupuesto) -->
+            <circle class="ring-track-inner" cx="105" cy="105" r="74" stroke-width="6.5"/>
+            <circle class="ring-bar ring-bar-ocio" cx="105" cy="105" r="74" stroke-width="6.5"
                     stroke="url(#ringOcioGrad)"
-                    stroke-dasharray="351.86"
+                    stroke-dasharray="464.96"
                     stroke-dashoffset="${offsetOcio}"
                     stroke-linecap="round"/>
           </svg>
