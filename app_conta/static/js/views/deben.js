@@ -131,7 +131,7 @@ export default vista("deben", async () => {
 
   <!-- 2. Cuadrícula de Deudas a Favor -->
   <section class="section-block" style="margin-bottom: 1.5rem;">
-    <div class="loans-grid">
+    <div class="debts-grid">
       ${
         items.length > 0
           ? items.map((d) => tarjetaDeudaItem(d, cuentas)).join("\n")

@@ -2951,6 +2951,14 @@ button[type="submit"]:hover {
   margin-top: 2px;
 }
 
+/* Cuadrícula de Deudas (Me deben) - Tamaño estándar compacto como cuentas/botes */
+.debts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
 /* --------------------------------------------------------------------------
    10.7 PANTALLA 4: PRÉSTAMOS (BARRA FINA 4PX, PENDIENTE EN GRANDE, % GRIS)
    -------------------------------------------------------------------------- */
