@@ -86,10 +86,12 @@ def post_plantilla(
 
 @router.get("/{plantilla_id}", response_model=dict[str, Any])
 def get_plantilla_detalle(
-    plantilla_id: int, db: Session = Depends(get_db)
+    plantilla_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
-        plantilla = obtener_plantilla(db, plantilla_id)
+        plantilla = obtener_plantilla(db, plantilla_id, hogar_id)
         return serializar_plantilla(plantilla)
     except ErrorNoEncontrado as exc:
         raise HTTPException(
@@ -99,11 +101,14 @@ def get_plantilla_detalle(
 
 @router.put("/{plantilla_id}", response_model=dict[str, Any])
 def put_plantilla(
-    plantilla_id: int, payload: PlantillaRepartoUpdate, db: Session = Depends(get_db)
+    plantilla_id: int,
+    payload: PlantillaRepartoUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         datos = {k: v for k, v in payload.model_dump().items() if v is not None}
-        plantilla = actualizar_plantilla(db, plantilla_id, datos)
+        plantilla = actualizar_plantilla(db, plantilla_id, datos, hogar_id=hogar_id)
         return serializar_plantilla(plantilla)
     except ErrorNoEncontrado as exc:
         raise HTTPException(
@@ -116,9 +121,13 @@ def put_plantilla(
 
 
 @router.delete("/{plantilla_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_plantilla(plantilla_id: int, db: Session = Depends(get_db)) -> None:
+def delete_plantilla(
+    plantilla_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
     try:
-        eliminar_plantilla(db, plantilla_id)
+        eliminar_plantilla(db, plantilla_id, hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
@@ -127,7 +136,10 @@ def delete_plantilla(plantilla_id: int, db: Session = Depends(get_db)) -> None:
 
 @router.post("/{plantilla_id}/ejecutar", response_model=dict[str, Any])
 def post_ejecutar_reparto(
-    plantilla_id: int, payload: EjecutarRepartoInput, db: Session = Depends(get_db)
+    plantilla_id: int,
+    payload: EjecutarRepartoInput,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         lineas_dump = (
@@ -143,6 +155,7 @@ def post_ejecutar_reparto(
             lineas=lineas_dump,
             descripcion_general=payload.descripcion_general,
             confirmar_repetido=payload.confirmar_repetido,
+            hogar_id=hogar_id,
         )
         return res
     except ErrorNoEncontrado as exc:

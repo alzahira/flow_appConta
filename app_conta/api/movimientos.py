@@ -59,7 +59,11 @@ class BoteAsignar(BaseModel):
 
 
 @router.post("", status_code=201)
-def post_movimiento(payload: MovimientoCreate, db: Session = Depends(get_db)) -> dict:
+def post_movimiento(
+    payload: MovimientoCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     mov = crear_movimiento(
         db,
         fecha=payload.fecha,
@@ -68,6 +72,7 @@ def post_movimiento(payload: MovimientoCreate, db: Session = Depends(get_db)) ->
         cuenta_id=payload.cuenta_id,
         categoria_id=payload.categoria_id,
         bote_id=payload.bote_id,
+        hogar_id=hogar_id,
     )
     db.commit()
     db.refresh(mov)
@@ -121,18 +126,24 @@ def get_movimientos_eliminados(
 
 
 @router.get("/{movimiento_id}")
-def get_movimiento(movimiento_id: int, db: Session = Depends(get_db)) -> dict:
-    mov = obtener_movimiento(db, movimiento_id)
+def get_movimiento(
+    movimiento_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    mov = obtener_movimiento(db, movimiento_id, hogar_id)
     return _serializar_movimiento(mov)
 
 
 @router.patch("/{movimiento_id}")
 def patch_movimiento(
-    movimiento_id: int, payload: MovimientoPatch, db: Session = Depends(get_db)
+    movimiento_id: int,
+    payload: MovimientoPatch,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict:
-    mov = obtener_movimiento(db, movimiento_id)
     cambios = {k: v for k, v in payload.model_dump().items() if v is not None}
-    mov = editar_movimiento(db, mov.id, cambios)
+    mov = editar_movimiento(db, movimiento_id, cambios, hogar_id=hogar_id)
     db.commit()
     db.refresh(mov)
     return _serializar_movimiento(mov)
@@ -142,10 +153,11 @@ def patch_movimiento(
 def delete_movimiento(
     movimiento_id: int,
     forzar: bool = Query(default=False),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ):
     try:
-        eliminar_movimiento(db, movimiento_id, forzar=forzar)
+        eliminar_movimiento(db, movimiento_id, forzar=forzar, hogar_id=hogar_id)
     except ErrorNoEncontrado:
         db.rollback()
         raise
@@ -156,9 +168,13 @@ def delete_movimiento(
 
 
 @router.post("/{movimiento_id}/restaurar", status_code=200)
-def post_restaurar_movimiento(movimiento_id: int, db: Session = Depends(get_db)) -> dict:
+def post_restaurar_movimiento(
+    movimiento_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     try:
-        mov = restaurar_movimiento(db, movimiento_id)
+        mov = restaurar_movimiento(db, movimiento_id, hogar_id)
     except ErrorNoEncontrado:
         db.rollback()
         raise
@@ -169,10 +185,13 @@ def post_restaurar_movimiento(movimiento_id: int, db: Session = Depends(get_db))
 
 @router.patch("/{movimiento_id}/bote")
 def patch_movimiento_bote(
-    movimiento_id: int, payload: BoteAsignar, db: Session = Depends(get_db)
+    movimiento_id: int,
+    payload: BoteAsignar,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Reasigna el bote de un movimiento (FR-008, US3) con auditoría."""
-    mov = reasignar_bote(db, movimiento_id, payload.bote_id)
+    mov = reasignar_bote(db, movimiento_id, payload.bote_id, hogar_id=hogar_id)
     db.commit()
     db.refresh(mov)
     return _serializar_movimiento(mov)

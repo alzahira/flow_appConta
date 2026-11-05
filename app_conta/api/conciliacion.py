@@ -6,30 +6,22 @@ conversión: el servicio trabaja en céntimos enteros).
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.services.conciliacion import calcular_conciliacion
 from app_conta.services.dinero import euros_str
-from app_conta.services.usuarios import obtener_usuario_por_token
 
 router = APIRouter(prefix="/conciliacion", tags=["conciliacion"])
 
 
 @router.get("")
-def get_conciliacion(request: Request, db: Session = Depends(get_db)) -> dict:
-    hogar_id = None
-    token = request.cookies.get("flow_session")
-    if not token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header[7:].strip()
-    if token:
-        u = obtener_usuario_por_token(db, token)
-        if u:
-            hogar_id = u.hogar_id
-
+def get_conciliacion(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     r = calcular_conciliacion(db, hogar_id)
 
     return {

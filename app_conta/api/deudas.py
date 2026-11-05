@@ -105,13 +105,22 @@ def get_deudas(
 
 
 @router.get("/{deuda_id}")
-def get_deuda(deuda_id: int, db: Session = Depends(get_db)) -> dict:
-    deuda = obtener_deuda(db, deuda_id)
+def get_deuda(
+    deuda_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    deuda = obtener_deuda(db, deuda_id, hogar_id)
     return _serializar_deuda(deuda)
 
 
 @router.post("/{deuda_id}/cobro")
-def post_cobro(deuda_id: int, payload: CobroCreate, db: Session = Depends(get_db)) -> dict:
+def post_cobro(
+    deuda_id: int,
+    payload: CobroCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     deuda = registrar_cobro(
         db,
         deuda_id,
@@ -119,6 +128,7 @@ def post_cobro(deuda_id: int, payload: CobroCreate, db: Session = Depends(get_db
         cuenta_id=payload.cuenta_id,
         fecha=payload.fecha,
         descripcion=payload.descripcion,
+        hogar_id=hogar_id,
     )
     db.commit()
     db.refresh(deuda)
@@ -126,16 +136,25 @@ def post_cobro(deuda_id: int, payload: CobroCreate, db: Session = Depends(get_db
 
 
 @router.patch("/{deuda_id}")
-def patch_deuda(deuda_id: int, payload: DeudaPatch, db: Session = Depends(get_db)) -> dict:
+def patch_deuda(
+    deuda_id: int,
+    payload: DeudaPatch,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     dumps = payload.model_dump()
     cambios = {k: v for k, v in dumps.items() if v is not None or k in ("fecha_limite", "notas")}
-    deuda = editar_deuda(db, deuda_id, cambios)
+    deuda = editar_deuda(db, deuda_id, cambios, hogar_id=hogar_id)
     db.commit()
     db.refresh(deuda)
     return _serializar_deuda(deuda)
 
 
 @router.delete("/{deuda_id}", status_code=204)
-def delete_deuda(deuda_id: int, db: Session = Depends(get_db)) -> None:
-    eliminar_deuda(db, deuda_id)
+def delete_deuda(
+    deuda_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
+    eliminar_deuda(db, deuda_id, hogar_id)
     db.commit()

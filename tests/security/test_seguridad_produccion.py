@@ -32,6 +32,7 @@ def test_seguridad_backup_tamano_maximo(admin_client: TestClient) -> None:
                 "application/json",
             )
         },
+        data={"password": "flow2026"},
     )
     assert resp.status_code == 400
     assert "supera el tamaño máximo" in resp.json()["error"]["mensaje"]
@@ -42,6 +43,7 @@ def test_seguridad_backup_extension_invalida(admin_client: TestClient) -> None:
     resp = admin_client.post(
         "/api/v1/backup/restaurar",
         files={"archivo": ("script.py", io.BytesIO(b"print('hack')"), "text/x-python")},
+        data={"password": "flow2026"},
     )
     assert resp.status_code == 400
     assert "extensión .json" in resp.json()["error"]["mensaje"]
@@ -67,6 +69,7 @@ def test_seguridad_backup_sql_injection_en_columnas(admin_client: TestClient) ->
     resp = admin_client.post(
         "/api/v1/backup/restaurar",
         files={"archivo": ("backup_inyeccion.json", io.BytesIO(archivo_json), "application/json")},
+        data={"password": "flow2026"},
     )
     assert resp.status_code in (400, 422)
 

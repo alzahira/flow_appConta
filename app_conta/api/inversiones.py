@@ -157,6 +157,8 @@ def create_inversion(
                 "notas": payload.notas,
             },
         )
+    except ErrorNoEncontrado as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ErrorValidacion as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
@@ -165,9 +167,13 @@ def create_inversion(
 
 
 @router.get("/{inversion_id}", status_code=status.HTTP_200_OK)
-def get_inversion_detalle(inversion_id: int, db: Session = Depends(get_db)) -> dict[str, Any]:
+def get_inversion_detalle(
+    inversion_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     try:
-        inv = obtener_inversion(db, inversion_id)
+        inv = obtener_inversion(db, inversion_id, hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return _formatear_inversion(inv)
@@ -175,11 +181,14 @@ def get_inversion_detalle(inversion_id: int, db: Session = Depends(get_db)) -> d
 
 @router.patch("/{inversion_id}", status_code=status.HTTP_200_OK)
 def update_inversion_datos(
-    inversion_id: int, payload: InversionUpdate, db: Session = Depends(get_db)
+    inversion_id: int,
+    payload: InversionUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     datos = payload.model_dump(exclude_unset=True)
     try:
-        inv = actualizar_inversion(db, inversion_id, datos)
+        inv = actualizar_inversion(db, inversion_id, datos, hogar_id=hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ErrorValidacion as exc:
@@ -191,11 +200,14 @@ def update_inversion_datos(
 
 @router.post("/{inversion_id}/valoracion", status_code=status.HTTP_200_OK)
 def update_valoracion(
-    inversion_id: int, payload: ValoracionUpdate, db: Session = Depends(get_db)
+    inversion_id: int,
+    payload: ValoracionUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         nuevo_valor_cents = _parse_imp(payload.valor_actual)
-        inv = actualizar_valoracion(db, inversion_id, nuevo_valor_cents)
+        inv = actualizar_valoracion(db, inversion_id, nuevo_valor_cents, hogar_id=hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ErrorValidacion as exc:
@@ -207,7 +219,10 @@ def update_valoracion(
 
 @router.post("/{inversion_id}/aportar", status_code=status.HTTP_200_OK)
 def record_aportacion(
-    inversion_id: int, payload: AportacionRequest, db: Session = Depends(get_db)
+    inversion_id: int,
+    payload: AportacionRequest,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         imp_cents = _parse_imp(payload.importe)
@@ -217,6 +232,7 @@ def record_aportacion(
             imp_cents,
             cuenta_origen_id=payload.cuenta_origen_id,
             fecha=payload.fecha,
+            hogar_id=hogar_id,
         )
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
@@ -229,7 +245,10 @@ def record_aportacion(
 
 @router.post("/{inversion_id}/reembolsar", status_code=status.HTTP_200_OK)
 def record_reembolso(
-    inversion_id: int, payload: ReembolsoRequest, db: Session = Depends(get_db)
+    inversion_id: int,
+    payload: ReembolsoRequest,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         imp_cents = _parse_imp(payload.importe)
@@ -239,6 +258,7 @@ def record_reembolso(
             imp_cents,
             cuenta_destino_id=payload.cuenta_destino_id,
             fecha=payload.fecha,
+            hogar_id=hogar_id,
         )
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
@@ -250,8 +270,12 @@ def record_reembolso(
 
 
 @router.delete("/{inversion_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_inversion(inversion_id: int, db: Session = Depends(get_db)) -> None:
+def delete_inversion(
+    inversion_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
     try:
-        eliminar_inversion(db, inversion_id)
+        eliminar_inversion(db, inversion_id, hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

@@ -17,6 +17,7 @@ from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.models.cuenta import Cuenta
 from app_conta.models.movimiento import Movimiento
+from app_conta.services.botes import obtener_bote
 from app_conta.services.cuentas import (
     crear_cuenta,
     editar_cuenta,
@@ -113,19 +114,27 @@ def get_cuentas(
 
 
 @router.get("/{cuenta_id}")
-def get_cuenta(cuenta_id: int, db: Session = Depends(get_db)) -> dict:
-    cuenta = obtener_cuenta(db, cuenta_id)
+def get_cuenta(
+    cuenta_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    cuenta = obtener_cuenta(db, cuenta_id, hogar_id)
     data = _serializar_cuenta(db, cuenta)
     data["movimientos"] = [_serializar_movimiento(m) for m in movimientos_activos(db, cuenta)]
     return data
 
 
 @router.patch("/{cuenta_id}")
-def patch_cuenta(cuenta_id: int, payload: CuentaPatch, db: Session = Depends(get_db)) -> dict:
-    cuenta = obtener_cuenta(db, cuenta_id)
+def patch_cuenta(
+    cuenta_id: int,
+    payload: CuentaPatch,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     cambios = payload.model_dump(exclude_none=False, exclude={"saldo"})
     cambios = {k: v for k, v in cambios.items() if k in CuentaPatch.model_fields and v is not None}
-    cuenta = editar_cuenta(db, cuenta_id, cambios)
+    cuenta = editar_cuenta(db, cuenta_id, cambios, hogar_id=hogar_id)
     db.commit()
     db.refresh(cuenta)
     return _serializar_cuenta(db, cuenta)
@@ -135,9 +144,10 @@ def patch_cuenta(cuenta_id: int, payload: CuentaPatch, db: Session = Depends(get
 def delete_cuenta(
     cuenta_id: int,
     confirmar_destino: str | None = Query(default=None),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ):
-    eliminar_cuenta(db, cuenta_id, confirmar_destino)
+    eliminar_cuenta(db, cuenta_id, confirmar_destino, hogar_id=hogar_id)
     db.commit()
 
 
@@ -152,11 +162,20 @@ class LiquidarTarjetaRequest(BaseModel):
 
 @router.post("/{cuenta_id}/liquidar", status_code=201)
 def post_liquidar_tarjeta(
-    cuenta_id: int, payload: LiquidarTarjetaRequest, db: Session = Depends(get_db)
+    cuenta_id: int,
+    payload: LiquidarTarjetaRequest,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Liquida total o parcialmente el recibo de una tarjeta cargándolo en el banco."""
-    tarjeta = obtener_cuenta(db, cuenta_id)
-    banco = obtener_cuenta(db, payload.cuenta_origen_id)
+    tarjeta = obtener_cuenta(db, cuenta_id, hogar_id)
+    if tarjeta.tipo != "tarjeta":
+        raise HTTPException(status_code=400, detail="La cuenta indicada no es una tarjeta.")
+    banco = obtener_cuenta(db, payload.cuenta_origen_id, hogar_id)
+    if banco.id == tarjeta.id:
+        raise HTTPException(
+            status_code=400, detail="La cuenta de origen y la tarjeta no pueden ser la misma."
+        )
 
     try:
         importe_cent = euros_a_centimos(str(payload.importe))
@@ -215,19 +234,20 @@ class TraspasoCreate(BaseModel):
 
 
 @router.post("/traspaso", status_code=200)
-def post_traspaso(payload: TraspasoCreate, db: Session = Depends(get_db)) -> dict:
+def post_traspaso(
+    payload: TraspasoCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     if payload.cuenta_origen_id == payload.cuenta_destino_id:
         raise HTTPException(
             status_code=400, detail="La cuenta de origen y de destino no pueden ser la misma."
         )
 
-    origen = db.get(Cuenta, payload.cuenta_origen_id)
-    if not origen:
-        raise HTTPException(status_code=404, detail="Cuenta de origen no encontrada.")
-
-    destino = db.get(Cuenta, payload.cuenta_destino_id)
-    if not destino:
-        raise HTTPException(status_code=404, detail="Cuenta de destino no encontrada.")
+    origen = obtener_cuenta(db, payload.cuenta_origen_id, hogar_id)
+    destino = obtener_cuenta(db, payload.cuenta_destino_id, hogar_id)
+    if payload.bote_id is not None:
+        obtener_bote(db, payload.bote_id, hogar_id)
 
     try:
         importe_cent = euros_a_centimos(str(payload.importe))

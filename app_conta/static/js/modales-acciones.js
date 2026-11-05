@@ -1,10 +1,86 @@
 // Modales de Acciones Rápidas (+ Ingreso, − Gasto y Reparto de Nómina)
 import { esc, importe, hoy } from "./vistas.js";
+import { CATEGORIAS_BOTES } from "./views/botes.js";
 
 let modalesInstalados = false;
 
 function formatearMoneda(val) {
   return importe(String(val || "0.00").replace(",", "."));
+}
+
+function renderOpcionesBotesAgrupados(botes, prefijoValor = "") {
+  if (!botes || botes.length === 0) return "";
+
+  // 1. Clasificar botes
+  const frecuentesKeywords = ["mes", "ocio", "diario", "semanal", "comida", "super"];
+  const botesFrecuentes = [];
+  const botesPorCategoria = {};
+
+  botes.forEach((b) => {
+    const nombreLower = (b.nombre || "").toLowerCase();
+    const esFrecuente = frecuentesKeywords.some((kw) => nombreLower.includes(kw));
+
+    if (esFrecuente) {
+      botesFrecuentes.push(b);
+    } else {
+      const catKey = b.categoria && CATEGORIAS_BOTES[b.categoria] ? b.categoria : "otros";
+      if (!botesPorCategoria[catKey]) {
+        botesPorCategoria[catKey] = [];
+      }
+      botesPorCategoria[catKey].push(b);
+    }
+  });
+
+  let html = "";
+
+  if (botesFrecuentes.length > 0) {
+    html += `
+      <optgroup label="⭐ Frecuentes / Del Mes">
+        ${botesFrecuentes
+          .map((b) => {
+            const cat = CATEGORIAS_BOTES[b.categoria] || CATEGORIAS_BOTES.otros;
+            const emoji = cat.icono || "🐷";
+            const val = prefijoValor ? `${prefijoValor}:${b.id}` : b.id;
+            return `<option value="${val}">${emoji} ${esc(b.nombre)} (${b.saldo} €)</option>`;
+          })
+          .join("")}
+      </optgroup>
+    `;
+  }
+
+  const ordenCategorias = [
+    "gastos",
+    "viajes",
+    "mantenimiento",
+    "ropa",
+    "dentista",
+    "fianzas",
+    "inversion",
+    "gasolina",
+    "ocio",
+    "reserva",
+    "personal",
+    "otros",
+  ];
+
+  for (const catKey of ordenCategorias) {
+    const lista = botesPorCategoria[catKey];
+    if (lista && lista.length > 0) {
+      const metaCat = CATEGORIAS_BOTES[catKey] || { nombre: "Otros", icono: "📦" };
+      html += `
+        <optgroup label="${metaCat.icono} ${metaCat.nombre}">
+          ${lista
+            .map((b) => {
+              const val = prefijoValor ? `${prefijoValor}:${b.id}` : b.id;
+              return `<option value="${val}">${metaCat.icono} ${esc(b.nombre)} (${b.saldo} €)</option>`;
+            })
+            .join("")}
+        </optgroup>
+      `;
+    }
+  }
+
+  return html;
 }
 
 export function cerrarModalActivo() {
@@ -93,31 +169,17 @@ export async function abrirModalGasto() {
             </div>
 
             <div class="modal-field">
-              <label for="mg-bote" class="form-label">Sobre o préstamo</label>
+              <label for="mg-bote" class="form-label">Sobre o destino</label>
               <select id="mg-bote" name="bote_id">
                 <optgroup label="General">
-                  <option value="">— Ninguno (Gasto general de cuenta) —</option>
+                  <option value="">— Gasto general de cuenta —</option>
+                  <option value="es_adelanto">🤝 Es un adelanto / Me lo deben (Anotar en Me Deben)</option>
                 </optgroup>
-                ${
-                  botes.length > 0
-                    ? `
-                <optgroup label="Sobres y Botes">
-                  ${botes
-                    .map(
-                      (b) => `
-                    <option value="${b.id}">
-                      🐷 ${esc(b.nombre)} (${b.saldo} € disponible)
-                    </option>
-                  `
-                    )
-                    .join("")}
-                </optgroup>`
-                    : ""
-                }
+                ${renderOpcionesBotesAgrupados(botes)}
                 ${
                   prestamos.length > 0
                     ? `
-                <optgroup label="Préstamos que debo (Amortizar / Pago de cuota)">
+                <optgroup label="💳 Préstamos que debo (Amortizar / Pago de cuota)">
                   ${prestamos
                     .map(
                       (p) => `
@@ -131,6 +193,22 @@ export async function abrirModalGasto() {
                     : ""
                 }
               </select>
+            </div>
+
+            <div id="mg-adelanto-fields" class="modal-span-2" style="display: none; background: rgba(124, 58, 237, 0.06); border: 1px dashed var(--accent); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: var(--accent-text); display: block; margin-bottom: 0.45rem;">
+                🤝 Datos del apunte que te deben:
+              </span>
+              <div class="form-grid-2">
+                <div class="modal-field" style="margin-bottom: 0;">
+                  <label for="mg-deudor" class="form-label" style="font-size: 0.75rem;">¿Quién te lo debe? *</label>
+                  <input id="mg-deudor" name="deudor_adelanto" placeholder="Ej. Pedro, Compis, Mamá...">
+                </div>
+                <div class="modal-field" style="margin-bottom: 0;">
+                  <label for="mg-deuda-limite" class="form-label" style="font-size: 0.75rem;">Fecha límite (Opcional)</label>
+                  <input id="mg-deuda-limite" name="fecha_limite_adelanto" type="date">
+                </div>
+              </div>
             </div>
 
             <div class="modal-field">
@@ -173,6 +251,20 @@ export async function abrirModalGasto() {
     overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
     overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
 
+    const selectBote = overlay.querySelector("#mg-bote");
+    const wrapAdelanto = overlay.querySelector("#mg-adelanto-fields");
+    const inputDeudor = overlay.querySelector("#mg-deudor");
+
+    selectBote.addEventListener("change", () => {
+      const esAdelanto = selectBote.value === "es_adelanto";
+      wrapAdelanto.style.display = esAdelanto ? "block" : "none";
+      if (esAdelanto) {
+        inputDeudor.setAttribute("required", "required");
+      } else {
+        inputDeudor.removeAttribute("required");
+      }
+    });
+
     const form = overlay.querySelector("#form-modal-gasto");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -189,9 +281,30 @@ export async function abrirModalGasto() {
       const categoriaId = fData.get("categoria_id");
       const desc = fData.get("descripcion");
       const fecha = fData.get("fecha");
+      const deudor = (fData.get("deudor_adelanto") || "").toString().trim();
+      const fechaLimite = fData.get("fecha_limite_adelanto") || null;
 
       try {
-        if (boteId.startsWith("prestamo:")) {
+        if (boteId === "es_adelanto") {
+          // 1. Crear apunte formal en Me Deben
+          await API.post("/deudas", {
+            deudor: deudor,
+            concepto: desc || "Adelanto / Compra compartida",
+            importe: valor,
+            fecha: fecha,
+            fecha_limite: fechaLimite || null,
+          });
+
+          // 2. Registrar la salida de dinero en la cuenta
+          await API.post("/movimientos", {
+            fecha: fecha,
+            importe: `-${valor}`,
+            descripcion: `Adelanto deuda: ${deudor} — ${desc}`,
+            cuenta_id: Number(cuentaId),
+            bote_id: null,
+            categoria_id: categoriaId ? Number(categoriaId) : null,
+          });
+        } else if (boteId.startsWith("prestamo:")) {
           const prestamoId = Number(boteId.split(":")[1]);
           await API.post(`/prestamos/${prestamoId}/pagar`, {
             importe: valor,
@@ -378,29 +491,14 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
               <div class="modal-field">
                 <label for="mi-destino" class="form-label">Sobre o destino *</label>
                 <select id="mi-destino" name="destino">
-                  <optgroup label="Cuenta Bancaria">
+                  <optgroup label="General">
                     <option value="cuenta" selected>— Dejar libre en la cuenta corriente (Sin sobre) —</option>
                   </optgroup>
-                  ${
-                    botes.length > 0
-                      ? `
-                  <optgroup label="Sobres y Botes de Ahorro">
-                    ${botes
-                      .map(
-                        (b) => `
-                      <option value="bote:${b.id}">
-                        🐷 ${esc(b.nombre)} (${b.saldo} € actual)
-                      </option>
-                    `
-                      )
-                      .join("")}
-                  </optgroup>`
-                      : ""
-                  }
+                  ${renderOpcionesBotesAgrupados(botes, "bote")}
                   ${
                     prestamos.length > 0
                       ? `
-                  <optgroup label="Préstamos y Financiaciones (Amortizar / Ingresar)">
+                  <optgroup label="💳 Préstamos y Financiaciones (Amortizar / Ingresar)">
                     ${prestamos
                       .map(
                         (p) => `

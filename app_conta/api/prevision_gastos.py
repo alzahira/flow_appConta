@@ -172,7 +172,10 @@ def create_gasto(
 
 @router.patch("/{gasto_id}", status_code=status.HTTP_200_OK)
 def update_gasto(
-    gasto_id: int, payload: GastoRecurrenteUpdate, db: Session = Depends(get_db)
+    gasto_id: int,
+    payload: GastoRecurrenteUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     datos: dict[str, Any] = {}
     try:
@@ -193,7 +196,7 @@ def update_gasto(
         if payload.activo is not None:
             datos["activo"] = payload.activo
 
-        actualizar_gasto_recurrente(db, gasto_id, datos)
+        actualizar_gasto_recurrente(db, gasto_id, datos, hogar_id=hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ErrorValidacion as exc:
@@ -205,13 +208,18 @@ def update_gasto(
 
 @router.post("/{gasto_id}/pagar", status_code=status.HTTP_200_OK)
 def record_pago(
-    gasto_id: int, payload: PagoFacturaRequest, db: Session = Depends(get_db)
+    gasto_id: int,
+    payload: PagoFacturaRequest,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         imp_cents = _parse_imp(payload.importe)
         if imp_cents is None:
             raise ErrorValidacion("El importe es obligatorio")
-        gasto = registrar_pago_factura(db, gasto_id, imp_cents, sumar=payload.sumar)
+        gasto = registrar_pago_factura(
+            db, gasto_id, imp_cents, sumar=payload.sumar, hogar_id=hogar_id
+        )
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ErrorValidacion as exc:
@@ -227,9 +235,13 @@ def record_pago(
 
 
 @router.delete("/{gasto_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_gasto(gasto_id: int, db: Session = Depends(get_db)) -> None:
+def delete_gasto(
+    gasto_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
     try:
-        eliminar_gasto_recurrente(db, gasto_id)
+        eliminar_gasto_recurrente(db, gasto_id, hogar_id)
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 

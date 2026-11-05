@@ -972,3 +972,18 @@ if (document.readyState === "loading") {
 } else {
   iniciarApp();
 }
+
+// Service worker (registro externo para cumplir la CSP sin scripts inline).
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/static/sw.js?v=86")
+    .then((reg) => reg.update())
+    .catch(() => {});
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+}

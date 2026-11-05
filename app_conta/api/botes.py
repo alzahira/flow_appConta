@@ -129,22 +129,31 @@ def get_botes(
 
 
 @router.get("/{bote_id}")
-def get_bote(bote_id: int, db: Session = Depends(get_db)) -> dict:
-    bote = obtener_bote(db, bote_id)
+def get_bote(
+    bote_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    bote = obtener_bote(db, bote_id, hogar_id)
     data = _serializar_bote(db, bote)
     data["movimientos_asignados"] = len(movimientos_asignados_activos(db, bote))
     return data
 
 
 @router.patch("/{bote_id}")
-def patch_bote(bote_id: int, payload: BotePatch, db: Session = Depends(get_db)) -> dict:
+def patch_bote(
+    bote_id: int,
+    payload: BotePatch,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
     dumps = payload.model_dump()
     dumps.pop("saldo", None)  # derivado: nunca editable
     # objetivo/objetivo_fecha sí pueden vaciarse de forma explícita (null → None)
     cambios = {
         k: v for k, v in dumps.items() if v is not None or k in ("objetivo", "objetivo_fecha")
     }
-    bote = editar_bote(db, bote_id, cambios)
+    bote = editar_bote(db, bote_id, cambios, hogar_id=hogar_id)
     db.commit()
     db.refresh(bote)
     return _serializar_bote(db, bote)
@@ -154,7 +163,8 @@ def patch_bote(bote_id: int, payload: BotePatch, db: Session = Depends(get_db)) 
 def delete_bote(
     bote_id: int,
     confirmar: bool = Query(default=False),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ):
-    archivar_bote(db, bote_id, confirmar=confirmar)
+    archivar_bote(db, bote_id, confirmar=confirmar, hogar_id=hogar_id)
     db.commit()

@@ -20,7 +20,6 @@ from app_conta.models.cuenta import Cuenta
 from app_conta.models.hogar import Hogar  # noqa: F401  (FK carga)
 from app_conta.models.importacion import Importacion
 from app_conta.models.movimiento import Movimiento
-from app_conta.services.cuentas import obtener_hogar_unico
 from app_conta.services.dinero import euros_str
 from app_conta.services.errors import ErrorConflicto
 from app_conta.services.importador import lector, mapeo
@@ -221,18 +220,27 @@ def _resumen(plan: dict) -> dict:
     }
 
 
-def _es_repetido(db: Session, huella: str) -> bool:
-    return db.scalar(select(Importacion).where(Importacion.huella == huella)) is not None
+def _es_repetido(db: Session, huella: str, hogar_id: int) -> bool:
+    return (
+        db.scalar(
+            select(Importacion).where(
+                Importacion.huella == huella,
+                (Importacion.hogar_id == int(hogar_id))
+                | (Importacion.hogar_id == str(hogar_id)),
+            )
+        )
+        is not None
+    )
 
 
-def previsualizar(db: Session, nombre_fichero: str, datos: bytes) -> dict:
+def previsualizar(db: Session, nombre_fichero: str, datos: bytes, hogar_id: int) -> dict:
     plan = _construir_plan(nombre_fichero, datos)
     huella = lector.calcular_huella(datos)
     return {
         "fichero": {
             "nombre": nombre_fichero,
             "huella": huella,
-            "repetido": _es_repetido(db, huella),
+            "repetido": _es_repetido(db, huella, hogar_id),
         },
         "resumen": _resumen(plan),
         "avisos": plan["avisos"],
@@ -242,7 +250,10 @@ def previsualizar(db: Session, nombre_fichero: str, datos: bytes) -> dict:
 
 def _categorizar(db: Session, hogar_id: int, nombre: str) -> Categoria:
     row = db.scalar(
-        select(Categoria).where(Categoria.hogar_id == hogar_id, Categoria.nombre == nombre)
+        select(Categoria).where(
+            (Categoria.hogar_id == str(hogar_id)) | (Categoria.hogar_id == hogar_id),
+            Categoria.nombre == nombre,
+        )
     )
     if row is None:
         row = Categoria(hogar_id=hogar_id, nombre=nombre)
@@ -256,6 +267,7 @@ def aplicar(
     nombre_fichero: str,
     datos: bytes,
     confirmar_repetido: bool = False,
+    hogar_id: int | None = None,
 ) -> dict:
     """Persiste cuentas/botes/categorías/movimientos + registro de importación.
 
@@ -263,19 +275,27 @@ def aplicar(
     se reutilizan y los movimientos se añaden otra vez: es la duplicación
     explícita que pide FR-010.
     """
+    if hogar_id is None:
+        raise ErrorConflicto("No se ha indicado el hogar de destino de la importación.")
+    hogar_id = int(hogar_id)
+
     huella = lector.calcular_huella(datos)
-    if _es_repetido(db, huella) and not confirmar_repetido:
+    if _es_repetido(db, huella, hogar_id) and not confirmar_repetido:
         raise ErrorConflicto(
             "El fichero ya se ha importado (misma huella sha256). "
             "Repite con ?confirmar_repetido=true para duplicarlo igualmente."
         )
 
     plan = _construir_plan(nombre_fichero, datos)
-    hogar_id = obtener_hogar_unico(db)
 
     mapas: dict[str, Cuenta] = {}
     for cuenta in plan["cuentas"]:
-        existente = db.scalar(select(Cuenta).where(Cuenta.nombre == cuenta["nombre"]))
+        existente = db.scalar(
+            select(Cuenta).where(
+                Cuenta.nombre == cuenta["nombre"],
+                (Cuenta.hogar_id == str(hogar_id)) | (Cuenta.hogar_id == hogar_id),
+            )
+        )
         if existente is None:
             existente = Cuenta(
                 hogar_id=hogar_id,
@@ -290,7 +310,12 @@ def aplicar(
 
     botes_bd: dict[str, Bote] = {}
     for bote in plan["botes"]:
-        existente = db.scalar(select(Bote).where(Bote.nombre == bote["nombre"]))
+        existente = db.scalar(
+            select(Bote).where(
+                Bote.nombre == bote["nombre"],
+                (Bote.hogar_id == str(hogar_id)) | (Bote.hogar_id == hogar_id),
+            )
+        )
         if existente is None:
             existente = Bote(
                 hogar_id=hogar_id,

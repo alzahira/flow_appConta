@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app_conta.models.gasto_recurrente import GastoRecurrente, PrevisionGastosConfig
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 
 GASTOS_SEMILLA_DEFECTO = [
     {
@@ -354,11 +355,15 @@ def crear_gasto_recurrente(
 
 
 def actualizar_gasto_recurrente(
-    session: Session, gasto_id: int, datos: dict[str, Any]
+    session: Session,
+    gasto_id: int,
+    datos: dict[str, Any],
+    hogar_id: int | str | None = None,
 ) -> GastoRecurrente:
     gasto = session.get(GastoRecurrente, gasto_id)
     if not gasto:
         raise ErrorNoEncontrado("Gasto recurrente no encontrado")
+    exigir_hogar(gasto, hogar_id, "Gasto recurrente")
 
     if "concepto" in datos:
         concepto = (datos["concepto"] or "").strip()
@@ -402,13 +407,18 @@ def actualizar_gasto_recurrente(
 
 
 def registrar_pago_factura(
-    session: Session, gasto_id: int, importe_centimos: int, sumar: bool = True
+    session: Session,
+    gasto_id: int,
+    importe_centimos: int,
+    sumar: bool = True,
+    hogar_id: int | str | None = None,
 ) -> GastoRecurrente:
     if importe_centimos < 0:
         raise ErrorValidacion("El importe pagado no puede ser negativo")
     gasto = session.get(GastoRecurrente, gasto_id)
     if not gasto:
         raise ErrorNoEncontrado("Gasto recurrente no encontrado")
+    exigir_hogar(gasto, hogar_id, "Gasto recurrente")
 
     if sumar:
         gasto.pagado_real_centimos += importe_centimos
@@ -420,10 +430,13 @@ def registrar_pago_factura(
     return gasto
 
 
-def eliminar_gasto_recurrente(session: Session, gasto_id: int) -> None:
+def eliminar_gasto_recurrente(
+    session: Session, gasto_id: int, hogar_id: int | str | None = None
+) -> None:
     gasto = session.get(GastoRecurrente, gasto_id)
     if not gasto:
         raise ErrorNoEncontrado("Gasto recurrente no encontrado")
+    exigir_hogar(gasto, hogar_id, "Gasto recurrente")
     session.delete(gasto)
     session.commit()
 

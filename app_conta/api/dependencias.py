@@ -10,18 +10,35 @@ from app_conta.models.usuario import Usuario
 from app_conta.services.usuarios import obtener_usuario_por_token
 
 
+def _token_de_request(request: Request) -> str | None:
+    """Lee el token de la cookie HttpOnly o, para scripts, de Authorization: Bearer."""
+    token = request.cookies.get("flow_session")
+    if token:
+        return token
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header[7:].strip()
+    return None
+
+
 def obtener_usuario_actual(
     request: Request,
     db: Session = Depends(get_db),
 ) -> Usuario:
-    """Extrae y valida la cookie de sesión del usuario. Lanza 401 si no está autenticado."""
-    token = request.cookies.get("flow_session")
-    if not token:
-        # También comprobamos cabecera Authorization: Bearer <token> para llamadas programáticas
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header[7:].strip()
+    """Valida la sesión y devuelve el usuario. Nunca cae a un hogar por defecto."""
+    # El middleware de main.py ya validó el token y dejó el id en request.state.
+    usuario_id = getattr(request.state, "usuario_id", None)
+    if usuario_id is not None:
+        usuario = db.get(Usuario, usuario_id)
+        if usuario is not None and usuario.activo:
+            return usuario
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sesión inválida o expirada.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
+    token = _token_de_request(request)
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,26 +58,10 @@ def obtener_usuario_actual(
 
 
 def obtener_hogar_activo(
-    request: Request,
-    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(obtener_usuario_actual),
 ) -> int:
-    """Extrae el hogar_id del usuario autenticado (cookie flow_session o Bearer).
-    Si no hay sesión (ej. tests unitarios de contrato), devuelve el hogar por defecto (1).
-    """
-    token = request.cookies.get("flow_session")
-    if not token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header[7:].strip()
-
-    if token:
-        usuario = obtener_usuario_por_token(db, token)
-        if usuario:
-            return int(usuario.hogar_id)
-
-    from app_conta.services.cuentas import obtener_hogar_unico
-
-    return obtener_hogar_unico(db)
+    """Hogar del usuario autenticado. Sin sesión válida → 401 (sin fallback)."""
+    return int(usuario.hogar_id)
 
 
 def requerir_admin(

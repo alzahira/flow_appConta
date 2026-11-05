@@ -22,6 +22,7 @@ from app_conta.services.errors import (
     ErrorNoEncontrado,
     ErrorValidacion,
 )
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import (
     _convertir_importe,  # noqa: PLC2701  (uso interno deliberado, misma regla de importes)
     _parsear_fecha,
@@ -46,9 +47,20 @@ def _validar_nombre(nombre: str) -> str:
     return str(nombre).strip()
 
 
-def _checar_nombre_unico(db: Session, nombre: str, cuenta_id: int | None = None) -> None:
-    """Restricción DB uq_cuenta_nombre: se avisa con 409 ANTES del insert."""
+def _checar_nombre_unico(
+    db: Session,
+    nombre: str,
+    cuenta_id: int | None = None,
+    hogar_id: int | str | None = None,
+) -> None:
+    """Restricción DB uq_cuenta_nombre: se avisa con 409 ANTES del insert.
+
+    La unicidad es POR HOGAR; sin este filtro un usuario podía inferir nombres
+    de cuentas de otro hogar por el 409.
+    """
     stmt = select(Cuenta).where(Cuenta.nombre == nombre)
+    if hogar_id is not None:
+        stmt = stmt.where((Cuenta.hogar_id == str(hogar_id)) | (Cuenta.hogar_id == hogar_id))
     if cuenta_id is not None:
         stmt = stmt.where(Cuenta.id != cuenta_id)
     cuenta_existente = db.scalars(stmt).first()
@@ -80,7 +92,7 @@ def crear_cuenta(
     """Alta validada. `saldo_inicial` es string de euros; puede ser negativo."""
     nombre = _validar_nombre(nombre)
     _validar_tipo(tipo)
-    _checar_nombre_unico(db, nombre)
+    _checar_nombre_unico(db, nombre, hogar_id=hogar_id)
 
     try:
         centimos = euros_a_centimos(saldo_inicial)
@@ -100,10 +112,13 @@ def crear_cuenta(
     return cuenta
 
 
-def obtener_cuenta(db: Session, cuenta_id: int) -> Cuenta:
+def obtener_cuenta(
+    db: Session, cuenta_id: int, hogar_id: int | str | None = None
+) -> Cuenta:
     cuenta = db.get(Cuenta, cuenta_id)
     if cuenta is None:
         raise ErrorNoEncontrado(f"Cuenta {cuenta_id} no encontrada")
+    exigir_hogar(cuenta, hogar_id, f"Cuenta {cuenta_id}")
     return cuenta
 
 
@@ -141,14 +156,19 @@ def movimientos_activos(db: Session, cuenta: Cuenta) -> list[Movimiento]:
     )
 
 
-def editar_cuenta(db: Session, cuenta_id: int, cambios_peticion: dict) -> Cuenta:
+def editar_cuenta(
+    db: Session,
+    cuenta_id: int,
+    cambios_peticion: dict,
+    hogar_id: int | str | None = None,
+) -> Cuenta:
     """Edita campos no derivados. `saldo` (derivado) se ignora si llega."""
-    cuenta = obtener_cuenta(db, cuenta_id)
+    cuenta = obtener_cuenta(db, cuenta_id, hogar_id)
 
     if "nombre" in cambios_peticion:
         nombre = _validar_nombre(cambios_peticion["nombre"])
         if nombre != cuenta.nombre:
-            _checar_nombre_unico(db, nombre, cuenta_id)
+            _checar_nombre_unico(db, nombre, cuenta_id, cuenta.hogar_id)
             cuenta.nombre = nombre
     if "tipo" in cambios_peticion:
         cuenta.tipo = _validar_tipo(cambios_peticion["tipo"])
@@ -162,7 +182,12 @@ def editar_cuenta(db: Session, cuenta_id: int, cambios_peticion: dict) -> Cuenta
     return cuenta
 
 
-def eliminar_cuenta(db: Session, cuenta_id: int, confirmar_destino: str | None = None) -> None:
+def eliminar_cuenta(
+    db: Session,
+    cuenta_id: int,
+    confirmar_destino: str | None = None,
+    hogar_id: int | str | None = None,
+) -> None:
     """Borrado según US2-4: 409 con movimientos salvo destino confirmado.
 
     - Sin movimientos activos → se elimina la fila.
@@ -170,7 +195,7 @@ def eliminar_cuenta(db: Session, cuenta_id: int, confirmar_destino: str | None =
     - `eliminar_movimientos` → borrado lógico de cada movimiento (con auditoría)
       y la cuenta se archiva (mantiene integridad FK del borrado lógico).
     """
-    cuenta = obtener_cuenta(db, cuenta_id)
+    cuenta = obtener_cuenta(db, cuenta_id, hogar_id)
     activos = movimientos_activos(db, cuenta)
 
     if not activos:
@@ -190,7 +215,7 @@ def eliminar_cuenta(db: Session, cuenta_id: int, confirmar_destino: str | None =
 
     if confirmar_destino == "eliminar_movimientos":
         for mov in activos:
-            eliminar_movimiento(db, mov.id)
+            eliminar_movimiento(db, mov.id, hogar_id=cuenta.hogar_id)
         cuenta.archivada = True
         return
 

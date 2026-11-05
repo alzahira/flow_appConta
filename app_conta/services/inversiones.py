@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 
 from app_conta.models.inversion import Inversion
 from app_conta.models.movimiento import Movimiento
+from app_conta.services.cuentas import obtener_cuenta
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 
 TIPOS_ACTIVOS_VALIDOS = {
     "fondos",
@@ -59,6 +61,8 @@ def crear_inversion(session: Session, hogar_id: str, datos: dict[str, Any]) -> I
         raise ErrorValidacion("El valor actual no puede ser negativo.")
 
     cuenta_id = datos.get("cuenta_id")
+    if cuenta_id is not None:
+        obtener_cuenta(session, int(cuenta_id), hogar_id)
     notas = (datos.get("notas") or "").strip() or None
 
     inversion = Inversion(
@@ -102,15 +106,23 @@ def listar_inversiones(
     return list(session.scalars(stmt))
 
 
-def obtener_inversion(session: Session, inversion_id: int) -> Inversion:
+def obtener_inversion(
+    session: Session, inversion_id: int, hogar_id: int | str | None = None
+) -> Inversion:
     inv = session.get(Inversion, inversion_id)
     if not inv or not inv.activo:
         raise ErrorNoEncontrado(f"Inversión con id {inversion_id} no encontrada.")
+    exigir_hogar(inv, hogar_id, f"Inversión {inversion_id}")
     return inv
 
 
-def actualizar_inversion(session: Session, inversion_id: int, datos: dict[str, Any]) -> Inversion:
-    inv = obtener_inversion(session, inversion_id)
+def actualizar_inversion(
+    session: Session,
+    inversion_id: int,
+    datos: dict[str, Any],
+    hogar_id: int | str | None = None,
+) -> Inversion:
+    inv = obtener_inversion(session, inversion_id, hogar_id)
 
     if "nombre" in datos:
         nombre = (datos["nombre"] or "").strip()
@@ -136,6 +148,8 @@ def actualizar_inversion(session: Session, inversion_id: int, datos: dict[str, A
         inv.notas = (datos["notas"] or "").strip() or None
 
     if "cuenta_id" in datos:
+        if datos["cuenta_id"] is not None:
+            obtener_cuenta(session, int(datos["cuenta_id"]), inv.hogar_id)
         inv.cuenta_id = datos["cuenta_id"]
 
     session.commit()
@@ -144,12 +158,15 @@ def actualizar_inversion(session: Session, inversion_id: int, datos: dict[str, A
 
 
 def actualizar_valoracion(
-    session: Session, inversion_id: int, nuevo_valor_centimos: int
+    session: Session,
+    inversion_id: int,
+    nuevo_valor_centimos: int,
+    hogar_id: int | str | None = None,
 ) -> Inversion:
     if nuevo_valor_centimos < 0:
         raise ErrorValidacion("El nuevo valor de mercado no puede ser negativo.")
 
-    inv = obtener_inversion(session, inversion_id)
+    inv = obtener_inversion(session, inversion_id, hogar_id)
     inv.valor_actual_centimos = nuevo_valor_centimos
     session.commit()
     session.refresh(inv)
@@ -162,15 +179,17 @@ def registrar_aportacion(
     importe_centimos: int,
     cuenta_origen_id: int | None = None,
     fecha: Any = None,
+    hogar_id: int | str | None = None,
 ) -> Inversion:
     if importe_centimos <= 0:
         raise ErrorValidacion("El importe de la aportación debe ser estrictamente positivo.")
 
-    inv = obtener_inversion(session, inversion_id)
+    inv = obtener_inversion(session, inversion_id, hogar_id)
     inv.capital_aportado_centimos += importe_centimos
     inv.valor_actual_centimos += importe_centimos
 
     if cuenta_origen_id:
+        obtener_cuenta(session, int(cuenta_origen_id), inv.hogar_id)
         f_obj = _parsear_fecha(fecha) if fecha else date.today()
         mov = Movimiento(
             hogar_id=inv.hogar_id,
@@ -193,11 +212,12 @@ def registrar_reembolso(
     importe_centimos: int,
     cuenta_destino_id: int | None = None,
     fecha: Any = None,
+    hogar_id: int | str | None = None,
 ) -> Inversion:
     if importe_centimos <= 0:
         raise ErrorValidacion("El importe del reembolso debe ser estrictamente positivo.")
 
-    inv = obtener_inversion(session, inversion_id)
+    inv = obtener_inversion(session, inversion_id, hogar_id)
     if importe_centimos > inv.valor_actual_centimos:
         raise ErrorValidacion(
             f"El importe a reembolsar supera el valor actual de la inversión "
@@ -210,6 +230,7 @@ def registrar_reembolso(
         inv.capital_aportado_centimos = max(0, inv.capital_aportado_centimos - importe_centimos)
 
     if cuenta_destino_id:
+        obtener_cuenta(session, int(cuenta_destino_id), inv.hogar_id)
         f_obj = _parsear_fecha(fecha) if fecha else date.today()
         mov = Movimiento(
             hogar_id=inv.hogar_id,
@@ -226,8 +247,10 @@ def registrar_reembolso(
     return inv
 
 
-def eliminar_inversion(session: Session, inversion_id: int) -> None:
-    inv = obtener_inversion(session, inversion_id)
+def eliminar_inversion(
+    session: Session, inversion_id: int, hogar_id: int | str | None = None
+) -> None:
+    inv = obtener_inversion(session, inversion_id, hogar_id)
     inv.activo = False
     session.commit()
 

@@ -83,9 +83,13 @@ def post_pago_recurrente(
 
 
 @router.get("/{pago_id}")
-def get_pago_recurrente(pago_id: int, db: Session = Depends(get_db)) -> dict[str, Any]:
+def get_pago_recurrente(
+    pago_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     try:
-        pago = obtener_pago_recurrente(db, pago_id)
+        pago = obtener_pago_recurrente(db, pago_id, hogar_id)
         return _serializar_pago(pago)
     except ErrorNoEncontrado as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
@@ -93,11 +97,14 @@ def get_pago_recurrente(pago_id: int, db: Session = Depends(get_db)) -> dict[str
 
 @router.put("/{pago_id}")
 def put_pago_recurrente(
-    pago_id: int, payload: PagoRecurrenteUpdate, db: Session = Depends(get_db)
+    pago_id: int,
+    payload: PagoRecurrenteUpdate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     try:
         pago = actualizar_pago_recurrente(
-            db, pago_id, payload.model_dump(exclude_unset=True)
+            db, pago_id, payload.model_dump(exclude_unset=True), hogar_id=hogar_id
         )
         return _serializar_pago(pago)
     except ErrorNoEncontrado as e:
@@ -107,9 +114,13 @@ def put_pago_recurrente(
 
 
 @router.delete("/{pago_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_pago_recurrente(pago_id: int, db: Session = Depends(get_db)) -> None:
+def delete_pago_recurrente(
+    pago_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> None:
     try:
-        eliminar_pago_recurrente(db, pago_id)
+        eliminar_pago_recurrente(db, pago_id, hogar_id)
     except ErrorNoEncontrado as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 

@@ -174,15 +174,28 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
 
     # Movimientos sin asignar: filtramos líneas de nómina que amortizan préstamos,
-    # cobran deudas (DAZN) o aportan a previsión para evitar doble cómputo con
-    # tot_prevision_formula, tot_prestamos_formula y tot_me_deben_formula
+    # cobran deudas (DAZN), compras/adelantos para terceros que están en Me Deben,
+    # o aportan a previsión para evitar doble cómputo con tot_prevision_formula,
+    # tot_prestamos_formula y tot_me_deben_formula.
     movs_sin_bote = [m for m in movimientos if m.bote_id is None]
+
+    # Colección de conceptos o deudores registrados en deudas activas para matcheo automático
+    palabras_clave_deudas = {"deuda", "cobro", "dazn", "me deben", "adelanto"}
+    for d in deudas:
+        if d.deudor:
+            for palabra in d.deudor.lower().split():
+                if len(palabra) >= 3:
+                    palabras_clave_deudas.add(palabra)
+        if d.concepto:
+            for palabra in d.concepto.lower().split():
+                if len(palabra) >= 3:
+                    palabras_clave_deudas.add(palabra)
 
     def _es_prev_prestamo_o_deuda(m: Movimiento) -> bool:
         desc = (m.descripcion or "").lower()
         es_prev = "previsi" in desc or "seguros e ibi" in desc or "gastos anuales" in desc
         es_prestamo = "coche" in desc or "prstamo" in desc or "prestamo" in desc or "amortizaci" in desc
-        es_deuda = "deuda" in desc or "cobro" in desc or "dazn" in desc
+        es_deuda = any(kw in desc for kw in palabras_clave_deudas)
         return es_prev or es_prestamo or es_deuda
 
     sin_asignar_formula = sum(

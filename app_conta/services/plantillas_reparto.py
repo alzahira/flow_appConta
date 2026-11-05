@@ -16,8 +16,10 @@ from app_conta.models.movimiento import Movimiento
 from app_conta.models.plantilla_reparto import PlantillaReparto, PlantillaRepartoLinea
 from app_conta.models.prestamo import Prestamo
 from app_conta.services.botes import saldo_bote
+from app_conta.services.cuentas import obtener_cuenta
 from app_conta.services.dinero import centimos_a_euros, euros_a_centimos
 from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import crear_movimiento
 
 
@@ -315,10 +317,13 @@ def listar_plantillas(db: Session, hogar_id: int) -> list[dict[str, Any]]:
     return [serializar_plantilla(p) for p in plantillas]
 
 
-def obtener_plantilla(db: Session, plantilla_id: int) -> PlantillaReparto:
+def obtener_plantilla(
+    db: Session, plantilla_id: int, hogar_id: int | str | None = None
+) -> PlantillaReparto:
     plantilla = db.get(PlantillaReparto, plantilla_id)
     if plantilla is None:
         raise ErrorNoEncontrado(f"Plantilla {plantilla_id} no encontrada")
+    exigir_hogar(plantilla, hogar_id, f"Plantilla {plantilla_id}")
     return plantilla
 
 
@@ -328,8 +333,9 @@ def crear_plantilla(db: Session, hogar_id: int, datos: dict[str, Any]) -> Planti
         raise ErrorValidacion("El nombre de la plantilla es obligatorio")
 
     cuenta_id = datos.get("cuenta_id")
-    if not cuenta_id or db.get(Cuenta, int(cuenta_id)) is None:
+    if not cuenta_id:
         raise ErrorValidacion("Debe indicar una cuenta bancaria válida")
+    obtener_cuenta(db, int(cuenta_id), hogar_id)
 
     importe_estimado = datos.get("importe_estimado", "0.00")
     centimos_estimados = euros_a_centimos(importe_estimado)
@@ -361,13 +367,18 @@ def crear_plantilla(db: Session, hogar_id: int, datos: dict[str, Any]) -> Planti
         bote_id = ld.get("bote_id")
         if bote_id:
             bote_id = int(bote_id)
-            if db.get(Bote, bote_id) is None:
+            bote = db.get(Bote, bote_id)
+            if bote is None:
                 bote_id = None
+            else:
+                exigir_hogar(bote, hogar_id, f"Bote {bote_id}")
 
         cuenta_linea_id = ld.get("cuenta_id")
         if cuenta_linea_id:
             cuenta_linea_id = int(cuenta_linea_id)
-            if db.get(Cuenta, cuenta_linea_id) is None:
+            try:
+                obtener_cuenta(db, cuenta_linea_id, hogar_id)
+            except ErrorNoEncontrado:
                 cuenta_linea_id = None
         else:
             cuenta_linea_id = None
@@ -387,8 +398,13 @@ def crear_plantilla(db: Session, hogar_id: int, datos: dict[str, Any]) -> Planti
     return plantilla
 
 
-def actualizar_plantilla(db: Session, plantilla_id: int, datos: dict[str, Any]) -> PlantillaReparto:
-    plantilla = obtener_plantilla(db, plantilla_id)
+def actualizar_plantilla(
+    db: Session,
+    plantilla_id: int,
+    datos: dict[str, Any],
+    hogar_id: int | str | None = None,
+) -> PlantillaReparto:
+    plantilla = obtener_plantilla(db, plantilla_id, hogar_id)
 
     if "nombre" in datos:
         nombre = str(datos["nombre"]).strip()
@@ -398,8 +414,7 @@ def actualizar_plantilla(db: Session, plantilla_id: int, datos: dict[str, Any]) 
 
     if "cuenta_id" in datos:
         cuenta_id = int(datos["cuenta_id"])
-        if db.get(Cuenta, cuenta_id) is None:
-            raise ErrorValidacion("Cuenta bancaria no encontrada")
+        obtener_cuenta(db, cuenta_id, plantilla.hogar_id)
         plantilla.cuenta_id = cuenta_id
 
     if "importe_estimado" in datos:
@@ -429,13 +444,18 @@ def actualizar_plantilla(db: Session, plantilla_id: int, datos: dict[str, Any]) 
             bote_id = ld.get("bote_id")
             if bote_id:
                 bote_id = int(bote_id)
-                if db.get(Bote, bote_id) is None:
+                bote = db.get(Bote, bote_id)
+                if bote is None:
                     bote_id = None
+                else:
+                    exigir_hogar(bote, plantilla.hogar_id, f"Bote {bote_id}")
 
             cuenta_linea_id = ld.get("cuenta_id")
             if cuenta_linea_id:
                 cuenta_linea_id = int(cuenta_linea_id)
-                if db.get(Cuenta, cuenta_linea_id) is None:
+                try:
+                    obtener_cuenta(db, cuenta_linea_id, plantilla.hogar_id)
+                except ErrorNoEncontrado:
                     cuenta_linea_id = None
             else:
                 cuenta_linea_id = None
@@ -455,8 +475,10 @@ def actualizar_plantilla(db: Session, plantilla_id: int, datos: dict[str, Any]) 
     return plantilla
 
 
-def eliminar_plantilla(db: Session, plantilla_id: int) -> None:
-    plantilla = obtener_plantilla(db, plantilla_id)
+def eliminar_plantilla(
+    db: Session, plantilla_id: int, hogar_id: int | str | None = None
+) -> None:
+    plantilla = obtener_plantilla(db, plantilla_id, hogar_id)
     db.delete(plantilla)
     db.commit()
 
@@ -470,6 +492,7 @@ def ejecutar_reparto(
     lineas: list[dict[str, Any]] | None = None,
     descripcion_general: str | None = None,
     confirmar_repetido: bool = False,
+    hogar_id: int | str | None = None,
 ) -> dict[str, Any]:
     """Ejecuta el reparto generando los movimientos de ingreso correspondientes.
 
@@ -478,12 +501,10 @@ def ejecutar_reparto(
     - Devuelve `avisos` (sin bloquear) cuando alguna línea negativa deja un bote
       con saldo negativo, para que el cliente pueda avisar al usuario.
     """
-    plantilla = obtener_plantilla(db, plantilla_id)
+    plantilla = obtener_plantilla(db, plantilla_id, hogar_id)
     target_cuenta_id = cuenta_id if cuenta_id is not None else plantilla.cuenta_id
 
-    cuenta = db.get(Cuenta, target_cuenta_id)
-    if cuenta is None:
-        raise ErrorNoEncontrado(f"Cuenta {target_cuenta_id} no encontrada")
+    cuenta = obtener_cuenta(db, target_cuenta_id, plantilla.hogar_id)
 
     try:
         fecha_obj = fecha if isinstance(fecha, date) else date.fromisoformat(str(fecha))
@@ -501,6 +522,7 @@ def ejecutar_reparto(
     ya_ejecutado = db.scalars(
         select(Movimiento).where(
             Movimiento.eliminado.is_(False),
+            Movimiento.hogar_id == int(plantilla.hogar_id),
             Movimiento.descripcion.like(f"{prefijo}: %"),
             Movimiento.fecha >= inicio_mes,
             Movimiento.fecha < inicio_mes_siguiente,
@@ -544,9 +566,13 @@ def ejecutar_reparto(
         linea_cuenta_id = ld.get("cuenta_id")
         destino_cuenta_id = target_cuenta_id
         if linea_cuenta_id:
-            cta_test = db.get(Cuenta, int(linea_cuenta_id))
-            if cta_test is not None:
-                destino_cuenta_id = cta_test.id
+            cta_test = obtener_cuenta(db, int(linea_cuenta_id), plantilla.hogar_id)
+            destino_cuenta_id = cta_test.id
+        if bote_id is not None:
+            bote = db.get(Bote, bote_id)
+            if bote is None:
+                raise ErrorNoEncontrado(f"Bote {bote_id} no encontrado")
+            exigir_hogar(bote, plantilla.hogar_id, f"Bote {bote_id}")
 
         lineas_normalizadas.append(
             {
@@ -601,6 +627,7 @@ def ejecutar_reparto(
             descripcion=desc,
             cuenta_id=item["cuenta_id"],
             bote_id=item["bote_id"],
+            hogar_id=plantilla.hogar_id,
         )
         movimientos_creados.append(mov)
         total_centimos += item["centimos"]

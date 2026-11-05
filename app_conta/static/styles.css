@@ -2526,6 +2526,33 @@ button[type="submit"]:hover {
   font-weight: 400;
 }
 
+/* Deudas - Tarjetas Me Deben */
+.fintech-debt-card {
+  flex: none !important;
+  min-height: 195px;
+}
+
+.debt-card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--divider);
+  font-size: 0.74rem;
+  color: var(--fg-2);
+}
+
+.debt-meta-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+}
+
 /* Mini Gráfica Sparkline SVG */
 .acc-card-sparkline-wrap {
   width: 100%;
@@ -2954,6 +2981,7 @@ button[type="submit"]:hover {
   width: 100%;
 }
 
+.glass-loan-card,
 .glass-loan-card.loan-card-fullwidth {
   background: var(--glass);
   backdrop-filter: var(--glass-blur);
@@ -2970,6 +2998,7 @@ button[type="submit"]:hover {
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
+.glass-loan-card:hover,
 .glass-loan-card.loan-card-fullwidth:hover {
   transform: translateY(-2px);
   box-shadow: var(--glass-shadow-hover);

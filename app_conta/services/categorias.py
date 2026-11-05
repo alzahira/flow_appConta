@@ -23,6 +23,7 @@ from app_conta.services.errors import (
     ErrorNoEncontrado,
     ErrorValidacion,
 )
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import _parsear_fecha
 
 _LONGITUD_MAXIMA_COLOR = 20
@@ -45,8 +46,17 @@ def _validar_color(color: str | None) -> str | None:
     return color_limpio
 
 
-def _checar_nombre_unico(db: Session, nombre: str, categoria_id: int | None = None) -> None:
+def _checar_nombre_unico(
+    db: Session,
+    nombre: str,
+    categoria_id: int | None = None,
+    hogar_id: int | str | None = None,
+) -> None:
     stmt = select(Categoria).where(Categoria.nombre == nombre)
+    if hogar_id is not None:
+        stmt = stmt.where(
+            (Categoria.hogar_id == str(hogar_id)) | (Categoria.hogar_id == hogar_id)
+        )
     if categoria_id is not None:
         stmt = stmt.where(Categoria.id != categoria_id)
     if db.scalars(stmt).first() is not None:
@@ -62,7 +72,7 @@ def crear_categoria(
 ) -> Categoria:
     """Alta validada: nombre obligatorio y único por hogar, color opcional."""
     nombre = _validar_nombre(nombre)
-    _checar_nombre_unico(db, nombre)
+    _checar_nombre_unico(db, nombre, hogar_id=hogar_id)
 
     categoria = Categoria(
         hogar_id=hogar_id,
@@ -74,11 +84,14 @@ def crear_categoria(
     return categoria
 
 
-def obtener_categoria(db: Session, categoria_id: int) -> Categoria:
+def obtener_categoria(
+    db: Session, categoria_id: int, hogar_id: int | str | None = None
+) -> Categoria:
     """Devuelve la categoría activa o lanza 404 (las archivadas no cuentan)."""
     categoria = db.get(Categoria, categoria_id)
     if categoria is None or categoria.archivada:
         raise ErrorNoEncontrado(f"Categoría {categoria_id} no encontrada")
+    exigir_hogar(categoria, hogar_id, f"Categoría {categoria_id}")
     return categoria
 
 
@@ -93,14 +106,19 @@ def listar_categorias_activas(
     return sorted(activas, key=lambda c: c.nombre)
 
 
-def editar_categoria(db: Session, categoria_id: int, cambios_peticion: dict) -> Categoria:
+def editar_categoria(
+    db: Session,
+    categoria_id: int,
+    cambios_peticion: dict,
+    hogar_id: int | str | None = None,
+) -> Categoria:
     """Edita nombre y/o color; ignora campos derivados como `total`."""
-    categoria = obtener_categoria(db, categoria_id)
+    categoria = obtener_categoria(db, categoria_id, hogar_id)
 
     if "nombre" in cambios_peticion:
         nombre = _validar_nombre(cambios_peticion["nombre"])
         if nombre != categoria.nombre:
-            _checar_nombre_unico(db, nombre, categoria_id)
+            _checar_nombre_unico(db, nombre, categoria_id, categoria.hogar_id)
             categoria.nombre = nombre
     if "color" in cambios_peticion:
         categoria.color = _validar_color(cambios_peticion["color"])
@@ -120,14 +138,20 @@ def movimientos_asignados_activos(db: Session, categoria: Categoria) -> list[Mov
     )
 
 
-def archivar_categoria(db: Session, categoria_id: int, *, confirmar: bool = False) -> None:
+def archivar_categoria(
+    db: Session,
+    categoria_id: int,
+    *,
+    confirmar: bool = False,
+    hogar_id: int | str | None = None,
+) -> None:
     """Borrado protegido (FR-005).
 
     En uso y sin `confirmar` → ErrorConflicto con el recuento de movimientos.
     Con confirmación → archivado lógico + liberación de movimientos (quedan
     sin categoría).
     """
-    categoria = obtener_categoria(db, categoria_id)
+    categoria = obtener_categoria(db, categoria_id, hogar_id)
 
     movimientos = movimientos_asignados_activos(db, categoria)
     if movimientos and not confirmar:

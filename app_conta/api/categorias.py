@@ -85,8 +85,12 @@ def get_categorias(
 
 
 @router.get("/{categoria_id}")
-def get_categoria(categoria_id: int, db: Session = Depends(get_db)) -> dict:
-    categoria = obtener_categoria(db, categoria_id)
+def get_categoria(
+    categoria_id: int,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    categoria = obtener_categoria(db, categoria_id, hogar_id)
     data = _serializar_categoria(db, categoria)
     return data
 
@@ -95,13 +99,14 @@ def get_categoria(categoria_id: int, db: Session = Depends(get_db)) -> dict:
 def patch_categoria(
     categoria_id: int,
     payload: CategoriaPatch,
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ) -> dict:
     dumps = payload.model_dump()
     dumps.pop("total", None)  # derivado: nunca editable
     # nombre no puede vaciarse (null), color sí (null → sin color)
     cambios = {k: v for k, v in dumps.items() if v is not None or k == "color"}
-    categoria = editar_categoria(db, categoria_id, cambios)
+    categoria = editar_categoria(db, categoria_id, cambios, hogar_id=hogar_id)
     db.commit()
     db.refresh(categoria)
     return _serializar_categoria(db, categoria)
@@ -111,7 +116,8 @@ def patch_categoria(
 def delete_categoria(
     categoria_id: int,
     confirmar: bool = Query(default=False),
+    hogar_id: int = Depends(obtener_hogar_activo),
     db: Session = Depends(get_db),
 ):
-    archivar_categoria(db, categoria_id, confirmar=confirmar)
+    archivar_categoria(db, categoria_id, confirmar=confirmar, hogar_id=hogar_id)
     db.commit()

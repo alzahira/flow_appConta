@@ -31,6 +31,7 @@ from app_conta.services.errors import (
     ErrorNoEncontrado,
     ErrorValidacion,
 )
+from app_conta.services.hogar import exigir_hogar
 
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 500
@@ -137,6 +138,7 @@ def auto_detectar_categoria_id(
     if not nombre_cat_match and bote_id:
         bote = db.get(Bote, bote_id)
         if bote:
+            exigir_hogar(bote, hogar_id, f"Bote {bote_id}")
             bote_nom = bote.nombre.lower()
             if "ocio" in bote_nom:
                 nombre_cat_match = "Ocio"
@@ -193,11 +195,14 @@ def _parsear_fecha(valor: str | date) -> date:
         raise ErrorValidacion(f"Fecha no válida: {valor!r}") from exc
 
 
-def obtener_movimiento(db: Session, movimiento_id: int) -> Movimiento:
+def obtener_movimiento(
+    db: Session, movimiento_id: int, hogar_id: int | str | None = None
+) -> Movimiento:
     """Devuelve el movimiento activo o lanza 404 (los borrados lógicos no cuentan)."""
     mov = db.get(Movimiento, movimiento_id)
     if mov is None or mov.eliminado:
         raise ErrorNoEncontrado(f"Movimiento {movimiento_id} no encontrado")
+    exigir_hogar(mov, hogar_id, f"Movimiento {movimiento_id}")
     return mov
 
 
@@ -213,6 +218,7 @@ def crear_movimiento(
     origen: str = "manual",
     marcar_revisar: bool = False,
     motivo_revision: str | None = None,
+    hogar_id: int | str | None = None,
 ) -> Movimiento:
     """Alta validada: cuenta existente, importe ≠ 0 y referencias correctas."""
     if not descripcion or not str(descripcion).strip():
@@ -221,6 +227,7 @@ def crear_movimiento(
     cuenta = db.get(Cuenta, cuenta_id)
     if cuenta is None:
         raise ErrorNoEncontrado(f"Cuenta {cuenta_id} no encontrada")
+    exigir_hogar(cuenta, hogar_id, f"Cuenta {cuenta_id}")
 
     centimos = _convertir_importe(importe)
 
@@ -229,10 +236,16 @@ def crear_movimiento(
             db, descripcion, cuenta.hogar_id, bote_id=bote_id
         )
 
-    if categoria_id is not None and db.get(Categoria, categoria_id) is None:
-        raise ErrorNoEncontrado(f"Categoría {categoria_id} no encontrada")
-    if bote_id is not None and db.get(Bote, bote_id) is None:
-        raise ErrorNoEncontrado(f"Bote {bote_id} no encontrado")
+    if categoria_id is not None:
+        categoria = db.get(Categoria, categoria_id)
+        if categoria is None:
+            raise ErrorNoEncontrado(f"Categoría {categoria_id} no encontrada")
+        exigir_hogar(categoria, cuenta.hogar_id, f"Categoría {categoria_id}")
+    if bote_id is not None:
+        bote = db.get(Bote, bote_id)
+        if bote is None:
+            raise ErrorNoEncontrado(f"Bote {bote_id} no encontrado")
+        exigir_hogar(bote, cuenta.hogar_id, f"Bote {bote_id}")
 
     mov = Movimiento(
         hogar_id=cuenta.hogar_id,
@@ -255,13 +268,18 @@ def crear_movimiento(
 _CAMPOS_EDITABLES = ("fecha", "importe", "descripcion", "categoria_id", "bote_id")
 
 
-def editar_movimiento(db: Session, movimiento_id: int, cambios_peticion: dict) -> Movimiento:
+def editar_movimiento(
+    db: Session,
+    movimiento_id: int,
+    cambios_peticion: dict,
+    hogar_id: int | str | None = None,
+) -> Movimiento:
     """Edita campos no derivados y registra auditoría con anterior/nuevo.
 
     `cambios` de la auditoría: `{ "importe": { "anterior": -3050, "nuevo": -4000 } }`
     (céntimos enteros). Solo se registran los campos realmente modificados.
     """
-    mov = obtener_movimiento(db, movimiento_id)
+    mov = obtener_movimiento(db, movimiento_id, hogar_id)
 
     cambios: dict = {}
     for campo in _CAMPOS_EDITABLES:
@@ -286,16 +304,22 @@ def editar_movimiento(db: Session, movimiento_id: int, cambios_peticion: dict) -
                 mov.descripcion = str(nuevo)
         elif campo == "categoria_id":
             if nuevo != mov.categoria_id:
-                if nuevo is not None and db.get(Categoria, nuevo) is None:
-                    raise ErrorNoEncontrado(f"Categoría {nuevo} no encontrada")
+                if nuevo is not None:
+                    categoria = db.get(Categoria, nuevo)
+                    if categoria is None:
+                        raise ErrorNoEncontrado(f"Categoría {nuevo} no encontrada")
+                    exigir_hogar(categoria, mov.hogar_id, f"Categoría {nuevo}")
                 cambios[campo] = {"anterior": mov.categoria_id, "nuevo": nuevo}
                 mov.categoria_id = nuevo
         elif campo == "bote_id":
             if nuevo != mov.bote_id:
                 # La reasignación de bote es la tarea FR-008 (PATCH /movimientos/{id}/bote,
                 # US3): por PATCH genérico se registra como editado.
-                if nuevo is not None and db.get(Bote, nuevo) is None:
-                    raise ErrorNoEncontrado(f"Bote {nuevo} no encontrado")
+                if nuevo is not None:
+                    bote = db.get(Bote, nuevo)
+                    if bote is None:
+                        raise ErrorNoEncontrado(f"Bote {nuevo} no encontrado")
+                    exigir_hogar(bote, mov.hogar_id, f"Bote {nuevo}")
                 cambios[campo] = {"anterior": mov.bote_id, "nuevo": nuevo}
                 mov.bote_id = nuevo
 
@@ -304,13 +328,18 @@ def editar_movimiento(db: Session, movimiento_id: int, cambios_peticion: dict) -
     return mov
 
 
-def eliminar_movimiento(db: Session, movimiento_id: int, forzar: bool = False) -> None:
+def eliminar_movimiento(
+    db: Session,
+    movimiento_id: int,
+    forzar: bool = False,
+    hogar_id: int | str | None = None,
+) -> None:
     """Borrado lógico + auditoría `eliminado` (data-model).
 
     Protección activa: los movimientos de saldo consolidado o base de botes
     requieren confirmación forzada explícita para evitar descuadres en el hogar.
     """
-    mov = obtener_movimiento(db, movimiento_id)
+    mov = obtener_movimiento(db, movimiento_id, hogar_id)
     desc_baja = (mov.descripcion or "").lower().strip()
     if not forzar and ("saldo consolidado" in desc_baja or "saldo base" in desc_baja):
         raise ErrorValidacion(
@@ -339,11 +368,14 @@ def listar_movimientos_eliminados(
     )
 
 
-def restaurar_movimiento(db: Session, movimiento_id: int) -> Movimiento:
+def restaurar_movimiento(
+    db: Session, movimiento_id: int, hogar_id: int | str | None = None
+) -> Movimiento:
     """Restaura un movimiento eliminado (soft-delete rollback) con auditoría."""
     mov = db.get(Movimiento, movimiento_id)
     if mov is None:
         raise ErrorNoEncontrado(f"Movimiento {movimiento_id} no encontrado")
+    exigir_hogar(mov, hogar_id, f"Movimiento {movimiento_id}")
     mov.eliminado = False
     db.add(AuditoriaMovimiento(movimiento_id=mov.id, accion="restaurado", cambios={}))
     db.flush()

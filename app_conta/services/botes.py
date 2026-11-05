@@ -22,6 +22,7 @@ from app_conta.models.bote import Bote
 from app_conta.models.movimiento import Movimiento
 from app_conta.services.dinero import ErrorImporte, euros_a_centimos
 from app_conta.services.errors import ErrorConflicto, ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import (
     _parsear_fecha,
     registrar_reasignacion_bote,
@@ -55,8 +56,15 @@ def _validar_objetivo(objetivo: str | int | None) -> int | None:
         raise ErrorValidacion(str(exc)) from exc
 
 
-def _checar_nombre_unico(db: Session, nombre: str, bote_id: int | None = None) -> None:
+def _checar_nombre_unico(
+    db: Session,
+    nombre: str,
+    bote_id: int | None = None,
+    hogar_id: int | str | None = None,
+) -> None:
     stmt = select(Bote).where(Bote.nombre == nombre)
+    if hogar_id is not None:
+        stmt = stmt.where((Bote.hogar_id == str(hogar_id)) | (Bote.hogar_id == hogar_id))
     if bote_id is not None:
         stmt = stmt.where(Bote.id != bote_id)
     bote_existente = db.scalars(stmt).first()
@@ -88,7 +96,7 @@ def crear_bote(
 ) -> Bote:
     nombre = _validar_nombre(nombre)
     _validar_tipo(tipo)
-    _checar_nombre_unico(db, nombre)
+    _checar_nombre_unico(db, nombre, hogar_id=hogar_id)
 
     fecha = None
     if objetivo_fecha not in (None, ""):
@@ -107,10 +115,13 @@ def crear_bote(
     return bote
 
 
-def obtener_bote(db: Session, bote_id: int) -> Bote:
+def obtener_bote(
+    db: Session, bote_id: int, hogar_id: int | str | None = None
+) -> Bote:
     bote = db.get(Bote, bote_id)
     if bote is None or bote.archivado:
         raise ErrorNoEncontrado(f"Bote {bote_id} no encontrado")
+    exigir_hogar(bote, hogar_id, f"Bote {bote_id}")
     return bote
 
 
@@ -154,13 +165,18 @@ def listar_botes_activos(
     return pares, total
 
 
-def editar_bote(db: Session, bote_id: int, cambios_peticion: dict) -> Bote:
-    bote = obtener_bote(db, bote_id)
+def editar_bote(
+    db: Session,
+    bote_id: int,
+    cambios_peticion: dict,
+    hogar_id: int | str | None = None,
+) -> Bote:
+    bote = obtener_bote(db, bote_id, hogar_id)
 
     if "nombre" in cambios_peticion:
         nombre = _validar_nombre(cambios_peticion["nombre"])
         if nombre != bote.nombre:
-            _checar_nombre_unico(db, nombre, bote_id)
+            _checar_nombre_unico(db, nombre, bote_id, bote.hogar_id)
             bote.nombre = nombre
     if "tipo" in cambios_peticion:
         bote.tipo = _validar_tipo(cambios_peticion["tipo"])
@@ -187,17 +203,22 @@ def movimientos_asignados_activos(db: Session, bote: Bote) -> list[Movimiento]:
     )
 
 
-def reasignar_bote(db: Session, movimiento_id: int, bote_id: int | None) -> Movimiento:
+def reasignar_bote(
+    db: Session,
+    movimiento_id: int,
+    bote_id: int | None,
+    hogar_id: int | str | None = None,
+) -> Movimiento:
     """Cambia el bote de un movimiento (FR-008) con auditoría `reasignado`."""
     from app_conta.services.movimientos import obtener_movimiento
 
-    mov = obtener_movimiento(db, movimiento_id)
+    mov = obtener_movimiento(db, movimiento_id, hogar_id)
 
     if mov.bote_id == bote_id:
         return mov  # no-op: mismo bote
 
     if bote_id is not None:
-        obtener_bote(db, bote_id)  # valida existencia (404 si no)
+        obtener_bote(db, bote_id, hogar_id)  # valida existencia y hogar (404 si no)
 
     anterior = mov.bote_id
     mov.bote_id = bote_id
@@ -207,13 +228,15 @@ def reasignar_bote(db: Session, movimiento_id: int, bote_id: int | None) -> Movi
     return mov
 
 
-def archivar_bote(db: Session, bote_id: int, confirmar: bool = False) -> None:
+def archivar_bote(
+    db: Session, bote_id: int, confirmar: bool = False, hogar_id: int | str | None = None
+) -> None:
     """DELETE del contrato: archiva; los movimientos pasan a "sin asignar".
 
     Si hay movimientos asignados y no llega confirmación → ErrorConflicto (409).
     Cada liberación registra auditoría `reasignado` (anterior bote → None).
     """
-    bote = obtener_bote(db, bote_id)
+    bote = obtener_bote(db, bote_id, hogar_id)
     asignados = movimientos_asignados_activos(db, bote)
 
     if asignados and not confirmar:

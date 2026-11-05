@@ -28,8 +28,10 @@ def test_login_exitoso_y_obtener_me(client: TestClient, db_module) -> None:
     data = resp.json()
     assert data["usuario"]["username"] == "javier"
     assert data["usuario"]["rol"] == "admin"
-    assert "token" in data
+    # El token no se expone en el JSON; solo viaja en la cookie HttpOnly.
+    assert "token" not in data
     assert "flow_session" in resp.cookies
+    token_cookie = resp.cookies["flow_session"]
 
     # 2. Consultar /me con la cookie establecida
     me_resp = client.get("/api/v1/auth/me")
@@ -42,7 +44,7 @@ def test_login_exitoso_y_obtener_me(client: TestClient, db_module) -> None:
     client_sin_cookies = TestClient(client.app)
     bearer_resp = client_sin_cookies.get(
         "/api/v1/auth/me",
-        headers={"Authorization": f"Bearer {data['token']}"},
+        headers={"Authorization": f"Bearer {token_cookie}"},
     )
     assert bearer_resp.status_code == 200
     assert bearer_resp.json()["username"] == "javier"

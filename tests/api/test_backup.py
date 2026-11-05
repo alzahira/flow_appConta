@@ -72,8 +72,11 @@ def test_flujo_backup_vaciar_y_restaurar(admin_client):
     r_vaciar_fail = client.post("/api/v1/backup/vaciar", json={"confirmar": False})
     assert r_vaciar_fail.status_code == 400
 
-    # 4. Vaciar base de datos confirmando
-    r_vaciar = client.post("/api/v1/backup/vaciar", json={"confirmar": True})
+    # 4. Vaciar base de datos confirmando (con contraseña obligatoria)
+    r_vaciar = client.post(
+        "/api/v1/backup/vaciar",
+        json={"confirmar": True, "password_admin": "flow2026"},
+    )
     assert r_vaciar.status_code == 200
     assert r_vaciar.json()["ok"] is True
 
@@ -96,6 +99,7 @@ def test_flujo_backup_vaciar_y_restaurar(admin_client):
     r_restaurar = client.post(
         "/api/v1/backup/restaurar",
         files={"archivo": ("backup.json", io.BytesIO(fichero_bytes), "application/json")},
+        data={"password": "flow2026"},
     )
     assert r_restaurar.status_code == 200, r_restaurar.text
     assert r_restaurar.json()["ok"] is True
@@ -156,8 +160,11 @@ def test_poner_a_cero_conserva_botes_y_cuentas(admin_client):
     r_fail = client.post("/api/v1/backup/poner-a-cero", json={"confirmar": False})
     assert r_fail.status_code == 400
 
-    # 6. Ejecutar poner a cero con confirmación
-    r_reset = client.post("/api/v1/backup/poner-a-cero", json={"confirmar": True})
+    # 6. Ejecutar poner a cero con confirmación y contraseña
+    r_reset = client.post(
+        "/api/v1/backup/poner-a-cero",
+        json={"confirmar": True, "password_admin": "flow2026"},
+    )
     assert r_reset.status_code == 200
     assert r_reset.json()["ok"] is True
 

@@ -11,8 +11,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app_conta.models.deuda import Deuda
+from app_conta.services.cuentas import obtener_cuenta
 from app_conta.services.dinero import euros_a_centimos
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import crear_movimiento
 
 
@@ -84,12 +86,15 @@ def listar_deudas_activas(db: Session, hogar_id: str | int) -> tuple[list[Deuda]
     return deudas, total_pendiente, total_cobrado
 
 
-def obtener_deuda(db: Session, deuda_id: int) -> Deuda:
+def obtener_deuda(
+    db: Session, deuda_id: int, hogar_id: int | str | None = None
+) -> Deuda:
     """Obtiene una deuda viva por id o eleva ErrorNoEncontrado."""
     stmt = select(Deuda).where(Deuda.id == deuda_id, Deuda.archivada == False)  # noqa: E712
     deuda = db.scalar(stmt)
     if not deuda:
         raise ErrorNoEncontrado(f"No existe ninguna deuda activa con id {deuda_id}.")
+    exigir_hogar(deuda, hogar_id, f"Deuda {deuda_id}")
     return deuda
 
 
@@ -101,13 +106,14 @@ def registrar_cobro(
     cuenta_id: int | None = None,
     fecha: str | date | None = None,
     descripcion: str | None = None,
+    hogar_id: int | str | None = None,
 ) -> Deuda:
     """Registra la devolución total o parcial de una deuda.
 
     Si se proporciona `cuenta_id`, crea automáticamente el movimiento de ingreso
     en la cuenta correspondiente del hogar.
     """
-    deuda = obtener_deuda(db, deuda_id)
+    deuda = obtener_deuda(db, deuda_id, hogar_id)
     centimos_cobro = euros_a_centimos(importe)
     if centimos_cobro <= 0:
         raise ErrorValidacion("El importe cobrado debe ser estrictamente positivo.")
@@ -127,6 +133,8 @@ def registrar_cobro(
         deuda.estado = "parcial"
 
     if cuenta_id is not None:
+        # Valida que la cuenta de ingreso pertenece al mismo hogar (anti-IDOR).
+        obtener_cuenta(db, cuenta_id, deuda.hogar_id)
         fecha_str = (
             fecha.isoformat() if isinstance(fecha, date) else (fecha or date.today().isoformat())
         )
@@ -137,22 +145,27 @@ def registrar_cobro(
             importe=f"+{centimos_cobro / 100:.2f}",
             descripcion=desc,
             cuenta_id=cuenta_id,
+            hogar_id=deuda.hogar_id,
         )
 
     db.flush()
     return deuda
 
 
-def eliminar_deuda(db: Session, deuda_id: int) -> None:
+def eliminar_deuda(
+    db: Session, deuda_id: int, hogar_id: int | str | None = None
+) -> None:
     """Archiva lógicamente una deuda."""
-    deuda = obtener_deuda(db, deuda_id)
+    deuda = obtener_deuda(db, deuda_id, hogar_id)
     deuda.archivada = True
     db.flush()
 
 
-def editar_deuda(db: Session, deuda_id: int, cambios: dict) -> Deuda:
+def editar_deuda(
+    db: Session, deuda_id: int, cambios: dict, hogar_id: int | str | None = None
+) -> Deuda:
     """Edita campos informativos de una deuda."""
-    deuda = obtener_deuda(db, deuda_id)
+    deuda = obtener_deuda(db, deuda_id, hogar_id)
     if "deudor" in cambios and cambios["deudor"]:
         deuda.deudor = cambios["deudor"].strip()
     if "concepto" in cambios and cambios["concepto"]:

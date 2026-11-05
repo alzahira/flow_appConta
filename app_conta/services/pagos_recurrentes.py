@@ -11,8 +11,11 @@ from sqlalchemy.orm import Session
 from app_conta.models.cuenta import Cuenta
 from app_conta.models.movimiento import Movimiento
 from app_conta.models.pago_recurrente import PagoRecurrente
+from app_conta.services.categorias import obtener_categoria
+from app_conta.services.cuentas import obtener_cuenta
 from app_conta.services.dinero import centimos_a_euros, euros_a_centimos, euros_str
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
+from app_conta.services.hogar import exigir_hogar
 from app_conta.services.movimientos import crear_movimiento
 
 PAGOS_SEMILLA_DEFECTO = [
@@ -154,10 +157,13 @@ def listar_pagos_recurrentes(db: Session, hogar_id: int) -> dict[str, Any]:
     }
 
 
-def obtener_pago_recurrente(db: Session, pago_id: int) -> PagoRecurrente:
+def obtener_pago_recurrente(
+    db: Session, pago_id: int, hogar_id: int | str | None = None
+) -> PagoRecurrente:
     pago = db.get(PagoRecurrente, pago_id)
     if pago is None:
         raise ErrorNoEncontrado(f"Pago recurrente {pago_id} no encontrado")
+    exigir_hogar(pago, hogar_id, f"Pago recurrente {pago_id}")
     return pago
 
 
@@ -167,8 +173,11 @@ def crear_pago_recurrente(db: Session, hogar_id: int, datos: dict[str, Any]) -> 
         raise ErrorValidacion("El concepto del pago recurrente es obligatorio")
 
     cuenta_id = int(datos["cuenta_id"])
-    if db.get(Cuenta, cuenta_id) is None:
-        raise ErrorValidacion("Cuenta bancaria no encontrada")
+    obtener_cuenta(db, cuenta_id, hogar_id)
+
+    categoria_id = int(datos["categoria_id"]) if datos.get("categoria_id") else None
+    if categoria_id is not None:
+        obtener_categoria(db, categoria_id, hogar_id)
 
     importe_str = str(datos.get("importe", "0.00")).replace(",", ".").strip()
     importe_centimos = euros_a_centimos(importe_str)
@@ -180,7 +189,7 @@ def crear_pago_recurrente(db: Session, hogar_id: int, datos: dict[str, Any]) -> 
         cuenta_id=cuenta_id,
         concepto=concepto,
         importe_centimos=importe_centimos,
-        categoria_id=int(datos["categoria_id"]) if datos.get("categoria_id") else None,
+        categoria_id=categoria_id,
         dia_mes=int(datos["dia_mes"]) if datos.get("dia_mes") else None,
         notas=str(datos["notas"]).strip() if datos.get("notas") else None,
         orden=int(datos.get("orden", 0)),
@@ -193,9 +202,12 @@ def crear_pago_recurrente(db: Session, hogar_id: int, datos: dict[str, Any]) -> 
 
 
 def actualizar_pago_recurrente(
-    db: Session, pago_id: int, datos: dict[str, Any]
+    db: Session,
+    pago_id: int,
+    datos: dict[str, Any],
+    hogar_id: int | str | None = None,
 ) -> PagoRecurrente:
-    pago = obtener_pago_recurrente(db, pago_id)
+    pago = obtener_pago_recurrente(db, pago_id, hogar_id)
 
     if "concepto" in datos:
         concepto = str(datos["concepto"]).strip()
@@ -205,8 +217,7 @@ def actualizar_pago_recurrente(
 
     if "cuenta_id" in datos:
         cuenta_id = int(datos["cuenta_id"])
-        if db.get(Cuenta, cuenta_id) is None:
-            raise ErrorValidacion("Cuenta bancaria no encontrada")
+        obtener_cuenta(db, cuenta_id, pago.hogar_id)
         pago.cuenta_id = cuenta_id
 
     if "importe" in datos:
@@ -215,6 +226,8 @@ def actualizar_pago_recurrente(
 
     if "categoria_id" in datos:
         cat_id = datos["categoria_id"]
+        if cat_id:
+            obtener_categoria(db, int(cat_id), pago.hogar_id)
         pago.categoria_id = int(cat_id) if cat_id else None
 
     if "dia_mes" in datos:
@@ -235,8 +248,10 @@ def actualizar_pago_recurrente(
     return pago
 
 
-def eliminar_pago_recurrente(db: Session, pago_id: int) -> None:
-    pago = obtener_pago_recurrente(db, pago_id)
+def eliminar_pago_recurrente(
+    db: Session, pago_id: int, hogar_id: int | str | None = None
+) -> None:
+    pago = obtener_pago_recurrente(db, pago_id, hogar_id)
     db.delete(pago)
     db.commit()
 
@@ -251,9 +266,12 @@ def ejecutar_pagos_recurrentes(
 ) -> dict[str, Any]:
     """Aplica los recibos mensuales recurrentes generando movimientos de gasto negativos."""
     stmt = select(PagoRecurrente).where(
-        PagoRecurrente.hogar_id == hogar_id, PagoRecurrente.activo.is_(True)
+        (PagoRecurrente.hogar_id == str(hogar_id))
+        | (PagoRecurrente.hogar_id == hogar_id),
+        PagoRecurrente.activo.is_(True),
     )
     if cuenta_id is not None:
+        obtener_cuenta(db, cuenta_id, hogar_id)
         stmt = stmt.where(PagoRecurrente.cuenta_id == cuenta_id)
 
     todos_activos = {p.id: p for p in db.scalars(stmt).all()}
@@ -289,6 +307,7 @@ def ejecutar_pagos_recurrentes(
             categoria_id=pago_obj.categoria_id,
             bote_id=None,
             origen="manual",
+            hogar_id=hogar_id,
         )
         pago_obj.ultimo_pago = fecha_obj
         movimientos_creados.append(mov)

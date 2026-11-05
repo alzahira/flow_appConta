@@ -93,9 +93,29 @@ def _aislar_bd(_migrado, db_module) -> Iterator[None]:
         s.commit()
 
 
+def _autenticar_testclient(c, db_module, username: str, password: str) -> None:
+    """Crea una sesión real y la instala como cookie en el TestClient."""
+    from app_conta.services.hogar import asegurar_hogar_unico
+    from app_conta.services.usuarios import (
+        asegurar_usuarios_iniciales,
+        autenticar_usuario,
+        crear_sesion,
+    )
+
+    with db_module.SessionLocal() as session:
+        asegurar_hogar_unico(session)
+        asegurar_usuarios_iniciales(session)
+        user = autenticar_usuario(session, username, password)
+        assert user is not None, f"No se pudo autenticar el usuario de test {username!r}"
+        token, _sesion = crear_sesion(session, user.id)
+        session.commit()
+
+    c.cookies.set("flow_session", token)
+
+
 @pytest.fixture()
 def client(_migrado, db_module):
-    """TestClient con get_db apuntando a la BD temporal."""
+    """TestClient autenticado como admin por defecto (la API exige sesión)."""
     from fastapi.testclient import TestClient
 
     import app_conta.main as main
@@ -113,29 +133,23 @@ def client(_migrado, db_module):
 
     main.app.dependency_overrides[db_module.get_db] = _override_get_db
     with TestClient(main.app) as c:
+        _autenticar_testclient(c, db_module, "javier", "flow2026")
         yield c
 
 
 @pytest.fixture()
 def admin_client(client, db_module):
-    """TestClient autenticado con rol admin (javier)."""
-    from app_conta.services.hogar import asegurar_hogar_unico
-    from app_conta.services.usuarios import (
-        asegurar_usuarios_iniciales,
-        autenticar_usuario,
-        crear_sesion,
-    )
-
-    with db_module.SessionLocal() as session:
-        asegurar_hogar_unico(session)
-        asegurar_usuarios_iniciales(session)
-        user = autenticar_usuario(session, "javier", "flow2026")
-        assert user is not None
-        token, _sesion = crear_sesion(session, user.id)
-        session.commit()
-
-    client.cookies.set("flow_session", token)
+    """Alias de `client`: ya viene autenticado con rol admin (javier)."""
     return client
+
+
+@pytest.fixture()
+def anon_client(client):
+    """TestClient sin cookies para probar rutas no autenticadas."""
+    from fastapi.testclient import TestClient
+
+    with TestClient(client.app) as c:
+        yield c
 
 
 @pytest.fixture()
