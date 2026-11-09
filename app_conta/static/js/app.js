@@ -409,20 +409,20 @@ document.addEventListener("click", async (e) => {
   if (btnBorrarBote) {
     const id = Number(btnBorrarBote.dataset.id);
     const nombre = btnBorrarBote.dataset.nombre || "este bote";
-    if (!confirm(`¿Deseas eliminar el sobre "${nombre}"?`)) return;
+    if (!confirm(`¿Deseas archivar/eliminar el sobre "${nombre}"?`)) return;
     try {
       await API.del(`/botes/${id}`);
       await navegar();
     } catch (err) {
       const ok = confirm(
-        `${err.message}\n¿Confirmas archivar este sobre? Sus movimientos asignados quedarán sin asignar.`
+        `${err.message}\n¿Deseas archivar este sobre? Sus movimientos asignados se conservarán archivados de forma segura sin descuadrar las cuentas.`
       );
       if (!ok) return;
       try {
         await API.del(`/botes/${id}?confirmar=true`);
         await navegar();
       } catch (err2) {
-        alert(`No se pudo eliminar el sobre: ${err2.message}`);
+        alert(`No se pudo archivar el sobre: ${err2.message}`);
       }
     }
     return;

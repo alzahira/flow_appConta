@@ -231,32 +231,25 @@ def reasignar_bote(
 def archivar_bote(
     db: Session, bote_id: int, confirmar: bool = False, hogar_id: int | str | None = None
 ) -> None:
-    """DELETE del contrato: archiva; los movimientos pasan a "sin asignar".
+    """Archiva o elimina un bote de forma segura sin romper la contabilidad.
 
-    Si hay movimientos asignados y no llega confirmación → ErrorConflicto (409).
-    Cada liberación registra auditoría `reasignado` (anterior bote → None).
+    - Si no tiene movimientos vinculados: se elimina físicamente de la base de datos.
+    - Si tiene movimientos y saldo != 0 sin confirmar: lanza ErrorConflicto con aviso.
+    - Si tiene movimientos: se marca `archivado = True` conservando sus movimientos asignados,
+      para preservar el histórico contable y evitar falsos descuadres en 'sin asignar'.
     """
     bote = obtener_bote(db, bote_id, hogar_id)
     asignados = movimientos_asignados_activos(db, bote)
+    saldo = saldo_bote(db, bote)
 
-    if asignados and not confirmar:
-        raise ErrorConflicto(
-            f"El bote {bote.nombre!r} tiene {len(asignados)} movimientos asignados. "
-            "Confirma con ?confirmar=true: quedarán sin asignar."
-        )
-
-    for mov in asignados:
-        anterior = mov.bote_id
-        mov.bote_id = None
-        registrar_reasignacion_bote(db, mov.id, anterior, None)
-
-    # Si ya no tiene movimientos vinculados, eliminamos físicamente para mantener la BD limpia
-    tiene_movs_historicos = db.scalars(
-        select(Movimiento).where(Movimiento.bote_id == bote.id)
-    ).first() is not None
-
-    if not tiene_movs_historicos:
+    if not asignados:
         db.delete(bote)
     else:
+        if saldo != 0 and not confirmar:
+            raise ErrorConflicto(
+                f"El sobre {bote.nombre!r} tiene un saldo de {saldo / 100:.2f} €. "
+                "Te recomendamos traspasar el saldo antes de archivarlo."
+            )
         bote.archivado = True
-    db.flush()  # autoflush=False: consistencia en consultas posteriores
+
+    db.flush()
