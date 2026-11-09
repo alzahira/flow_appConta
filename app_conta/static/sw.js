@@ -1,5 +1,5 @@
 // Service worker: app shell offline (Principio V). Network-first para desarrollo local.
-const CACHE = "app-conta-shell-v97";
+const CACHE = "app-conta-shell-v98";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
@@ -20,9 +20,9 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(fetch(e.request));
     return;
   }
-  // Network-first: siempre solicita la versión fresca del servidor; solo si offline usa caché
+  // Network-first con recarga directa de red para evitar almacenamiento estancado
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "reload" })
       .then((resp) => {
         if (resp && resp.status === 200) {
           const copia = resp.clone();

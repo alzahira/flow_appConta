@@ -7,14 +7,18 @@ objetivos negativos = presupuesto de gasto).
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
+from app_conta.models.cuenta import Cuenta
+from app_conta.models.movimiento import Movimiento
 from app_conta.services.botes import (
     archivar_bote,
     crear_bote,
@@ -25,7 +29,8 @@ from app_conta.services.botes import (
     obtener_bote,
     saldo_bote,
 )
-from app_conta.services.dinero import euros_str
+from app_conta.services.cuentas import obtener_cuenta
+from app_conta.services.dinero import euros_a_centimos, euros_str
 
 router = APIRouter(prefix="/botes", tags=["botes"])
 
@@ -125,6 +130,96 @@ def get_botes(
     return {
         "items": [_serializar_bote(db, b) for b, _s in pares],
         "total": euros_str(total),
+    }
+
+
+class TraspasoBotesCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    bote_origen_id: int
+    bote_destino_id: int
+    importe: str | int | float
+    fecha: str | None = None
+    concepto: str | None = None
+    cuenta_id: int | None = None
+
+
+@router.post("/traspaso", status_code=200)
+def post_traspaso_botes(
+    payload: TraspasoBotesCreate,
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    if payload.bote_origen_id == payload.bote_destino_id:
+        raise HTTPException(
+            status_code=400,
+            detail="El sobre de origen y de destino no pueden ser el mismo.",
+        )
+
+    origen = obtener_bote(db, payload.bote_origen_id, hogar_id)
+    destino = obtener_bote(db, payload.bote_destino_id, hogar_id)
+
+    try:
+        importe_cent = euros_a_centimos(str(payload.importe))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Importe de traspaso no válido.") from exc
+
+    if importe_cent <= 0:
+        raise HTTPException(
+            status_code=400, detail="El importe a mover entre botes debe ser mayor que 0."
+        )
+
+    if payload.cuenta_id is not None:
+        cuenta = obtener_cuenta(db, payload.cuenta_id, hogar_id)
+    else:
+        # Cuenta bancaria activa para asentar la anotación de partida doble sin impacto neto
+        cuenta = db.scalar(
+            select(Cuenta)
+            .where(Cuenta.hogar_id == hogar_id, Cuenta.archivada.is_(False), Cuenta.tipo == "banco")
+            .order_by(Cuenta.id)
+        )
+        if not cuenta:
+            cuenta = db.scalar(
+                select(Cuenta)
+                .where(Cuenta.hogar_id == hogar_id, Cuenta.archivada.is_(False))
+                .order_by(Cuenta.id)
+            )
+        if not cuenta:
+            raise HTTPException(
+                status_code=400,
+                detail="Se requiere al menos una cuenta activa en el sistema para asentar la anotación.",
+            )
+
+    fecha_traspaso = date.fromisoformat(payload.fecha) if payload.fecha else date.today()
+    concepto_salida = payload.concepto or f"Traspaso a sobre {destino.nombre}"
+    concepto_entrada = payload.concepto or f"Traspaso desde sobre {origen.nombre}"
+
+    mov_salida = Movimiento(
+        hogar_id=hogar_id,
+        cuenta_id=cuenta.id,
+        fecha=fecha_traspaso,
+        descripcion=concepto_salida,
+        importe_centimos=-importe_cent,
+        bote_id=origen.id,
+    )
+    mov_entrada = Movimiento(
+        hogar_id=hogar_id,
+        cuenta_id=cuenta.id,
+        fecha=fecha_traspaso,
+        descripcion=concepto_entrada,
+        importe_centimos=importe_cent,
+        bote_id=destino.id,
+    )
+
+    db.add(mov_salida)
+    db.add(mov_entrada)
+    db.commit()
+
+    return {
+        "mensaje": f"Traspaso de {euros_str(importe_cent)} € realizado de {origen.nombre} a {destino.nombre}.",
+        "importe": euros_str(importe_cent),
+        "saldo_origen": euros_str(saldo_bote(db, origen)),
+        "saldo_destino": euros_str(saldo_bote(db, destino)),
     }
 
 

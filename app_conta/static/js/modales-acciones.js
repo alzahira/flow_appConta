@@ -2197,11 +2197,21 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null, cuentaDesti
       <div class="modal-card modal-traspaso">
         <div class="modal-header">
           <div class="modal-title-group">
-            <span class="modal-badge-action neutral">⇄ TRASPASO ENTRE CUENTAS</span>
-            <h3 class="modal-title">Recargas y Traspasos</h3>
-            <p class="modal-subtitle">Pasa fondos fácilmente entre tus cuentas y tarjetas (ej. Recargar Revolut desde Carrefour Pass o Tarjeta DB, traspaso de efectivo, etc.)</p>
+            <span class="modal-badge-action neutral">⇄ TRASPASOS & RECARGAS</span>
+            <h3 class="modal-title">Traspaso / Recarga</h3>
+            <p class="modal-subtitle">Pasa fondos fácilmente entre tus cuentas, tarjetas o sobres de ahorro</p>
           </div>
           <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <!-- Conmutador de modo de traspaso -->
+        <div class="modal-tabs" style="margin-bottom: 1.25rem;">
+          <button type="button" class="modal-tab-btn activo" id="tab-traspaso-cuentas">
+            🏛️/💳 Cuentas y Tarjetas
+          </button>
+          <button type="button" class="modal-tab-btn" id="tab-traspaso-botes">
+            📦 Entre Botes y Sobres
+          </button>
         </div>
 
         <form id="form-modal-traspaso" class="modal-form">
@@ -2295,6 +2305,11 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null, cuentaDesti
     overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
     overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
 
+    overlay.querySelector("#tab-traspaso-botes")?.addEventListener("click", () => {
+      cerrarModalActivo();
+      abrirModalTraspasoBotes();
+    });
+
     // Eventos de atajos de 1 clic
     overlay.querySelectorAll(".btn-chip-traspaso").forEach((chip) => {
       chip.addEventListener("click", () => {
@@ -2357,6 +2372,215 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null, cuentaDesti
         btnSubmit.disabled = false;
         btnSubmit.textContent = "⇄ Realizar Traspaso";
         errBox.textContent = err.message || "Error al realizar el traspaso";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Error</h3>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+        </div>
+        <div class="modal-body"><p>${esc(err.message)}</p></div>
+      </div>
+    `;
+    overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// --------------------------------------------------------------------------
+// 11b. MODAL TRASPASO ENTRE BOTES / SOBRES (Mover dinero de un sobre a otro)
+// --------------------------------------------------------------------------
+export async function abrirModalTraspasoBotes(boteOrigenDefecto = null, boteDestinoDefecto = null) {
+  const overlay = crearOverlay();
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-loading">Cargando sobres para traspaso...</div>
+    </div>
+  `;
+
+  try {
+    const [resBotes, resCuentas] = await Promise.all([
+      API.get("/botes"),
+      API.get("/cuentas"),
+    ]);
+
+    const botes = resBotes.items || [];
+    const cuentas = resCuentas.items || [];
+
+    if (botes.length < 2) {
+      overlay.innerHTML = `
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Traspaso entre botes no disponible</h3>
+            <button type="button" class="modal-btn-close" id="btn-cerrar-modal">&times;</button>
+          </div>
+          <div class="modal-body"><p>Necesitas al menos 2 botes creados para realizar traspasos entre ellos.</p></div>
+        </div>
+      `;
+      overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+      return;
+    }
+
+    let bOrigenId = Number(boteOrigenDefecto) || botes[0].id;
+    let bDestinoId = Number(boteDestinoDefecto) || (botes.find((b) => b.id !== bOrigenId)?.id || botes[1].id);
+
+    function renderOpcionesBotesSelect(idSeleccionada) {
+      return botes
+        .map(
+          (b) => `
+        <option value="${b.id}" ${b.id === idSeleccionada ? "selected" : ""}>
+          📦 ${esc(b.nombre)} — Saldo actual: ${b.saldo} €
+        </option>`
+        )
+        .join("");
+    }
+
+    const cuentasBancos = cuentas.filter((c) => c.tipo === "banco" || c.tipo === "efectivo");
+    const cuentaPorDefecto = cuentasBancos.length > 0 ? cuentasBancos[0].id : (cuentas[0]?.id || "");
+
+    overlay.innerHTML = `
+      <div class="modal-card modal-traspaso-botes">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge-action neutral">⇄ TRASPASOS & RECARGAS</span>
+            <h3 class="modal-title">Mover Dinero entre Botes</h3>
+            <p class="modal-subtitle">Pasa saldo de un sobre de ahorro a otro sin alterar tus bancos ni generar descuadre</p>
+          </div>
+          <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <!-- Conmutador de modo de traspaso -->
+        <div class="modal-tabs" style="margin-bottom: 1.25rem;">
+          <button type="button" class="modal-tab-btn" id="tab-traspaso-cuentas">
+            🏛️/💳 Cuentas y Tarjetas
+          </button>
+          <button type="button" class="modal-tab-btn activo" id="tab-traspaso-botes">
+            📦 Entre Botes y Sobres
+          </button>
+        </div>
+
+        <form id="form-modal-traspaso-botes" class="modal-form">
+          <div class="modal-importe-hero neutral">
+            <label for="mtb-importe" class="modal-importe-label">Importe a mover entre sobres</label>
+            <div class="modal-input-amount-wrap">
+              <span class="modal-amount-symbol">€</span>
+              <input id="mtb-importe" name="importe" type="number" step="0.01" min="0.01" placeholder="0.00" required autofocus>
+            </div>
+          </div>
+
+          <div class="modal-grid-fields">
+            <div class="modal-field">
+              <label for="mtb-origen" class="form-label">Sobre de origen (Sale) *</label>
+              <select id="mtb-origen" name="bote_origen_id" required>
+                ${renderOpcionesBotesSelect(bOrigenId)}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="mtb-destino" class="form-label">Sobre de destino (Entra) *</label>
+              <select id="mtb-destino" name="bote_destino_id" required>
+                ${renderOpcionesBotesSelect(bDestinoId)}
+              </select>
+            </div>
+
+            <div class="modal-field">
+              <label for="mtb-fecha" class="form-label">Fecha de operación *</label>
+              <input id="mtb-fecha" name="fecha" type="date" value="${hoy}" required>
+            </div>
+
+            <div class="modal-field">
+              <label for="mtb-cuenta" class="form-label">Banco de respaldo del apunte</label>
+              <select id="mtb-cuenta" name="cuenta_id">
+                ${cuentas
+                  .map(
+                    (c) => `
+                  <option value="${c.id}" ${c.id === cuentaPorDefecto ? "selected" : ""}>
+                    ${c.tipo === "efectivo" ? "💵" : "🏛️"} ${esc(c.nombre)}
+                  </option>`
+                  )
+                  .join("")}
+              </select>
+            </div>
+
+            <div class="modal-field modal-span-2">
+              <label for="mtb-concepto" class="form-label">Concepto o motivo (Opcional)</label>
+              <input id="mtb-concepto" name="concepto" placeholder="Ej. Traspaso de ahorro a ocio, ajuste de presupuesto...">
+            </div>
+          </div>
+
+          <div style="background: rgba(99, 102, 241, 0.08); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--fg-2); line-height: 1.45;">
+            💡 <strong>100% Cuadrado:</strong> Esta operación solo redistribuye el saldo entre tus sobres. La suma total de tus botes y el saldo de tus bancos reales no se alteran, por lo que el cuadre general se mantiene a 0,00 €.
+          </div>
+
+          <div id="modal-traspaso-botes-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
+            <button type="submit" class="btn-primary" id="btn-ejecutar-traspaso-botes">
+              ⇄ Mover Dinero entre Botes
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
+    overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    overlay.querySelector("#tab-traspaso-cuentas")?.addEventListener("click", () => {
+      cerrarModalActivo();
+      abrirModalTraspaso();
+    });
+
+    const form = overlay.querySelector("#form-modal-traspaso-botes");
+    const errBox = overlay.querySelector("#modal-traspaso-botes-err");
+    const btnSubmit = overlay.querySelector("#btn-ejecutar-traspaso-botes");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+
+      const origenId = Number(overlay.querySelector("#mtb-origen").value);
+      const destinoId = Number(overlay.querySelector("#mtb-destino").value);
+      const rawImp = parseFloat(overlay.querySelector("#mtb-importe").value || "0");
+      const fecha = overlay.querySelector("#mtb-fecha").value;
+      const cuentaVal = overlay.querySelector("#mtb-cuenta").value;
+      const cuentaId = cuentaVal ? Number(cuentaVal) : null;
+      const concepto = overlay.querySelector("#mtb-concepto").value.trim() || null;
+
+      if (origenId === destinoId) {
+        errBox.textContent = "El sobre de origen y de destino no pueden ser el mismo.";
+        errBox.style.display = "block";
+        return;
+      }
+      if (isNaN(rawImp) || rawImp <= 0) {
+        errBox.textContent = "El importe debe ser estrictamente mayor a 0 €.";
+        errBox.style.display = "block";
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Moviendo saldo...";
+
+      try {
+        await API.post("/botes/traspaso", {
+          bote_origen_id: origenId,
+          bote_destino_id: destinoId,
+          importe: rawImp.toFixed(2),
+          fecha: fecha,
+          cuenta_id: cuentaId,
+          concepto: concepto,
+        });
+
+        cerrarModalActivo();
+        if (window.navegar) await window.navegar();
+        else location.reload();
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "⇄ Mover Dinero entre Botes";
+        errBox.textContent = err.message || "Error al mover dinero entre botes";
         errBox.style.display = "block";
       }
     });
@@ -2738,6 +2962,9 @@ export function iniciarModalesAcciones() {
       const cuentaOrigenId = btnAccion.dataset.cuentaOrigenId || btnAccion.dataset.cuentaId || null;
       const cuentaDestinoId = btnAccion.dataset.cuentaDestinoId || null;
       abrirModalTraspaso(cuentaOrigenId, cuentaDestinoId);
+    } else if (accion === "abrir-traspaso-botes") {
+      const boteId = btnAccion.dataset.boteId ? Number(btnAccion.dataset.boteId) : null;
+      abrirModalTraspasoBotes(boteId);
     }
   });
 }

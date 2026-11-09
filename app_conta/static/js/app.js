@@ -975,8 +975,18 @@ if (document.readyState === "loading") {
 
 // Service worker (registro externo para cumplir la CSP sin scripts inline).
 if ("serviceWorker" in navigator) {
+  if ("caches" in window) {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => {
+        if (key !== "app-conta-shell-v98") {
+          caches.delete(key);
+        }
+      });
+    });
+  }
+
   navigator.serviceWorker
-    .register("/static/sw.js?v=97")
+    .register("/static/sw.js?v=98")
     .then((reg) => reg.update())
     .catch(() => {});
   let refreshing = false;

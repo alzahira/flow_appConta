@@ -76,6 +76,9 @@ function tarjetaBoteCompacta(b) {
             </svg>
           </button>
           <div class="card-more-dropdown">
+            <button type="button" class="dropdown-item" data-accion-fintech="abrir-traspaso-botes" data-bote-id="${b.id}">
+              ⇄ Mover dinero de este sobre
+            </button>
             <button type="button" class="dropdown-item" data-accion="editar-bote" data-id="${b.id}">
               ${icono("editar")} Editar sobre
             </button>
@@ -150,6 +153,11 @@ async function renderDetalleBote(boteId, cuentas) {
           ? `<span class="hero-total-sub">${pct.toFixed(0)}% del objetivo (${bote.objetivo} €)</span>`
           : `<span class="hero-total-sub">Sobre sin límite prefijado</span>`
       }
+      <div style="margin-top: 0.85rem; display: flex; justify-content: center; gap: 0.5rem;">
+        <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso-botes" data-bote-id="${bote.id}" style="font-size: 0.82rem; padding: 0.45rem 1.15rem; border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);">
+          ⇄ Mover Saldo a Otro Bote
+        </button>
+      </div>
     </div>
 
     <!-- Chips resumen aportaciones y gastos -->
@@ -319,6 +327,11 @@ export default vista("botes", async () => {
     <span class="hero-total-label">Total en Botes y Sobres</span>
     <div class="hero-total-amount">${importe(totalBotes.toFixed(2))}</div>
     <span class="hero-total-sub">${sobresBotes.length} sobres y botes activos</span>
+    <div style="margin-top: 0.95rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso-botes" style="gap: 0.45rem; padding: 0.5rem 1.25rem; border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); font-size: 0.85rem;">
+        ⇄ Mover Dinero entre Botes
+      </button>
+    </div>
   </div>
 
   <!-- 2. Filtros por Categoría como Chips Horizontales con Scroll -->
