@@ -9,6 +9,7 @@ const ITEMS_PRINCIPALES = [
 ];
 
 const ITEMS_MAS = [
+  { nombre: "traspasos", desc: "Recargar Revolut desde tarjeta DB o Carrefour, mover fondos", label: "⇄ Traspasos y Recargas", iconoKey: "banco", esAccion: true },
   { nombre: "pagos-diarios", desc: "Supermercado, gasoil y compras cotidianas", label: "Pagos Diarios", iconoKey: "carrito" },
   { nombre: "prestamos", desc: "Amortizaciones, cuotas e hipotecas", label: "Préstamos & Deudas", iconoKey: "coche" },
   { nombre: "prevision-gastos", desc: "Provisión mensual de gastos anuales (IBI, seguros...)", label: "Previsión Anual", iconoKey: "prevision" },
@@ -72,7 +73,15 @@ export function pintarNav(_rutas) {
 
       <div class="glass-sheet-links-list">
         ${ITEMS_MAS.map(
-          (item) => `
+          (item) => item.esAccion ? `
+          <button type="button" class="glass-sheet-item" data-accion-fintech="abrir-traspaso" style="width: 100%; border: none; background: transparent; text-align: left; cursor: pointer; font-family: inherit;">
+            <span class="glass-sheet-item-icon">${icono(item.iconoKey)}</span>
+            <div class="glass-sheet-item-info">
+              <span class="glass-sheet-item-title">${item.label}</span>
+              <span class="glass-sheet-item-desc">${item.desc}</span>
+            </div>
+            <span class="glass-sheet-arrow">&rarr;</span>
+          </button>` : `
           <a data-vista="${item.nombre}" href="/${item.nombre}" class="glass-sheet-item">
             <span class="glass-sheet-item-icon">${icono(item.iconoKey)}</span>
             <div class="glass-sheet-item-info">

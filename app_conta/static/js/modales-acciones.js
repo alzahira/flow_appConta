@@ -1,6 +1,7 @@
 // Modales de Acciones Rápidas (+ Ingreso, − Gasto y Reparto de Nómina)
 import { esc, importe, hoy } from "./vistas.js";
 import { CATEGORIAS_BOTES } from "./views/botes.js";
+import { esTarjetaRegalo } from "./views/tarjetas-regalo.js";
 
 let modalesInstalados = false;
 
@@ -447,6 +448,17 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
           </button>
         </div>
 
+        <!-- Banner directo para recargas desde tarjetas -->
+        <div class="modal-traspaso-tip-banner" style="background: rgba(99, 102, 241, 0.09); border: 1px solid rgba(99, 102, 241, 0.28); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin: 0 1rem 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+          <div style="font-size: 0.8rem; color: var(--fg-1); line-height: 1.35;">
+            <strong>💡 ¿Quieres recargar Revolut o Caixa desde tus tarjetas?</strong>
+            <span style="display: block; color: var(--fg-2); font-size: 0.74rem;">Meter dinero desde Carrefour Pass o Tarjeta DB se hace mediante Traspaso.</span>
+          </div>
+          <button type="button" class="btn-primary mini" id="btn-switch-modal-traspaso" style="white-space: nowrap; font-size: 0.78rem; padding: 0.35rem 0.75rem;">
+            ⇄ Ir a Traspaso / Recarga
+          </button>
+        </div>
+
         <!-- CONTENIDO PESTAÑA 1: INGRESO LIBRE -->
         <div id="tab-content-libre" class="modal-tab-content ${pestañaInicial === "libre" ? "activo" : ""}">
           <form id="form-modal-ingreso-libre" class="modal-form">
@@ -641,6 +653,11 @@ export async function abrirModalIngreso(pestañaInicial = "libre") {
     if (btnCancelLibre) btnCancelLibre.addEventListener("click", cerrarModalActivo);
     const btnCancelNomina = overlay.querySelector("#btn-cancelar-nomina");
     if (btnCancelNomina) btnCancelNomina.addEventListener("click", cerrarModalActivo);
+
+    overlay.querySelector("#btn-switch-modal-traspaso")?.addEventListener("click", () => {
+      cerrarModalActivo();
+      abrirModalTraspaso();
+    });
 
     // Conmutador de pestañas
     overlay.querySelectorAll(".modal-tab-btn").forEach((btn) => {
@@ -2056,7 +2073,7 @@ export async function abrirModalPapelera() {
 // --------------------------------------------------------------------------
 // 11. MODAL TRASPASO ENTRE CUENTAS (Mover dinero de efectivo a banco o entre cuentas)
 // --------------------------------------------------------------------------
-export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
+export async function abrirModalTraspaso(cuentaOrigenDefecto = null, cuentaDestinoDefecto = null) {
   const overlay = crearOverlay();
   overlay.innerHTML = `
     <div class="modal-card">
@@ -2089,34 +2106,73 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
       return;
     }
 
-    const cOrigenId = Number(cuentaOrigenDefecto) || cuentas[0].id;
-    const cDestinoId = cuentas.find((c) => c.id !== cOrigenId)?.id || cuentas[1].id;
+    let cOrigenId = Number(cuentaOrigenDefecto);
+    let cDestinoId = Number(cuentaDestinoDefecto);
+
+    // Búsqueda inteligente de cuentas clave para recargas frecuentes
+    const passCard = cuentas.find((c) => (c.nombre || "").toLowerCase().includes("pass"));
+    const dbCard = cuentas.find((c) => (c.nombre || "").toLowerCase().includes("tarjeta") && ((c.nombre || "").toLowerCase().includes("deustche") || (c.nombre || "").toLowerCase().includes("deutsche") || (c.entidad || "").toLowerCase().includes("deutsche")));
+    const revBank = cuentas.find((c) => (c.nombre || "").toLowerCase().includes("revolut"));
+    const caiBank = cuentas.find((c) => (c.nombre || "").toLowerCase().includes("caixa") && c.tipo === "banco");
+
+    if (!cOrigenId && !cDestinoId) {
+      cOrigenId = passCard?.id || dbCard?.id || cuentas[0].id;
+      cDestinoId = revBank?.id || caiBank?.id || (cuentas.find((c) => c.id !== cOrigenId)?.id || cuentas[1].id);
+    } else if (cOrigenId && !cDestinoId) {
+      cDestinoId = (revBank && revBank.id !== cOrigenId) ? revBank.id : ((caiBank && caiBank.id !== cOrigenId) ? caiBank.id : (cuentas.find((c) => c.id !== cOrigenId)?.id || cuentas[0].id));
+    } else if (!cOrigenId && cDestinoId) {
+      cOrigenId = (passCard && passCard.id !== cDestinoId) ? passCard.id : ((dbCard && dbCard.id !== cDestinoId) ? dbCard.id : (cuentas.find((c) => c.id !== cDestinoId)?.id || cuentas[0].id));
+    }
 
     function renderOpcionesCuentas(idSeleccionada) {
-      const cuentasBancarias = cuentas.filter((c) => c.tipo === "banco" || c.tipo === "efectivo");
-      const tarjetas = cuentas.filter((c) => c.tipo === "tarjeta");
-      const otras = cuentas.filter((c) => c.tipo !== "banco" && c.tipo !== "efectivo" && c.tipo !== "tarjeta");
+      // 1. Tarjetas bancarias crédito / débito (las que usa habitualmente para recargar o pagar compras)
+      const tarjetasCredito = cuentas.filter(
+        (c) => c.tipo === "tarjeta" && !esTarjetaRegalo(c)
+      );
+      // 2. Cuentas bancarias y efectivo
+      const cuentasBancarias = cuentas.filter(
+        (c) => c.tipo === "banco" || c.tipo === "efectivo"
+      );
+      // 3. Tarjetas regalo y otros monederos
+      const tarjetasRegalo = cuentas.filter(
+        (c) => c.tipo === "tarjeta" && esTarjetaRegalo(c)
+      );
+      const otras = cuentas.filter(
+        (c) => c.tipo !== "banco" && c.tipo !== "efectivo" && c.tipo !== "tarjeta"
+      );
 
       let html = "";
+      if (tarjetasCredito.length > 0) {
+        html += `<optgroup label="💳 Tarjetas de Crédito / Débito (Carrefour Pass, DB...)">`;
+        html += tarjetasCredito
+          .map(
+            (c) => `
+          <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
+            💳 ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — Saldo: ${c.saldo} €
+          </option>`
+          )
+          .join("");
+        html += `</optgroup>`;
+      }
       if (cuentasBancarias.length > 0) {
         html += `<optgroup label="🏛️ Cuentas Bancarias y Efectivo">`;
         html += cuentasBancarias
           .map(
             (c) => `
           <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
-            ${c.tipo === "efectivo" ? "💵" : "🏛️"} ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
+            ${c.tipo === "efectivo" ? "💵" : "🏛️"} ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — Saldo: ${c.saldo} €
           </option>`
           )
           .join("");
         html += `</optgroup>`;
       }
-      if (tarjetas.length > 0) {
-        html += `<optgroup label="💳 Tarjetas (Crédito, Débito y Recargas)">`;
-        html += tarjetas
+      if (tarjetasRegalo.length > 0) {
+        html += `<optgroup label="🎁 Tarjetas Regalo y Prepago">`;
+        html += tarjetasRegalo
           .map(
             (c) => `
           <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
-            💳 ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — Saldo: ${c.saldo} €
+            🎁 ${esc(c.nombre)} — Saldo: ${c.saldo} €
           </option>`
           )
           .join("");
@@ -2128,7 +2184,7 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
           .map(
             (c) => `
           <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
-            📦 ${esc(c.nombre)} — ${c.saldo} €
+            📦 ${esc(c.nombre)} — Saldo: ${c.saldo} €
           </option>`
           )
           .join("");
@@ -2142,15 +2198,36 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
         <div class="modal-header">
           <div class="modal-title-group">
             <span class="modal-badge-action neutral">⇄ TRASPASO ENTRE CUENTAS</span>
-            <h3 class="modal-title">Mover Dinero / Recargas</h3>
-            <p class="modal-subtitle">Pasa fondos de una cuenta o tarjeta a otra (ej. Recargar Revolut desde tarjeta DB o Carrefour Pass, mover efectivo, etc.)</p>
+            <h3 class="modal-title">Recargas y Traspasos</h3>
+            <p class="modal-subtitle">Pasa fondos fácilmente entre tus cuentas y tarjetas (ej. Recargar Revolut desde Carrefour Pass o Tarjeta DB, traspaso de efectivo, etc.)</p>
           </div>
           <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
         </div>
 
         <form id="form-modal-traspaso" class="modal-form">
+          <!-- Atajos Rápidos de 1 Clic -->
+          <div class="traspaso-chips-container" style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin-bottom: 0.85rem;">
+            <span style="display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-muted); margin-bottom: 0.45rem;">
+              ⚡ Atajos frecuentes de recarga:
+            </span>
+            <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+              <button type="button" class="btn-chip-traspaso" data-origen="pass" data-destino="revolut" style="background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 20px; font-size: 0.77rem; font-weight: 600; padding: 0.3rem 0.75rem; color: var(--fg-1); cursor: pointer;">
+                💳 Carrefour Pass ➔ 🏛️ Revolut
+              </button>
+              <button type="button" class="btn-chip-traspaso" data-origen="deutsche" data-destino="revolut" style="background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 20px; font-size: 0.77rem; font-weight: 600; padding: 0.3rem 0.75rem; color: var(--fg-1); cursor: pointer;">
+                💳 Tarjeta DB ➔ 🏛️ Revolut
+              </button>
+              <button type="button" class="btn-chip-traspaso" data-origen="pass" data-destino="caixa" style="background: rgba(99, 102, 241, 0.08); border: 1px solid var(--border-glass); border-radius: 20px; font-size: 0.77rem; font-weight: 500; padding: 0.3rem 0.75rem; color: var(--fg-1); cursor: pointer;">
+                💳 Carrefour Pass ➔ 🏛️ Caixa
+              </button>
+              <button type="button" class="btn-chip-traspaso" data-origen="deutsche" data-destino="caixa" style="background: rgba(99, 102, 241, 0.08); border: 1px solid var(--border-glass); border-radius: 20px; font-size: 0.77rem; font-weight: 500; padding: 0.3rem 0.75rem; color: var(--fg-1); cursor: pointer;">
+                💳 Tarjeta DB ➔ 🏛️ Caixa
+              </button>
+            </div>
+          </div>
+
           <div class="modal-importe-hero neutral">
-            <label for="mt-importe" class="modal-importe-label">Importe a traspasar</label>
+            <label for="mt-importe" class="modal-importe-label">Importe a traspasar / recargar</label>
             <div class="modal-input-amount-wrap">
               <span class="modal-amount-symbol">€</span>
               <input id="mt-importe" name="importe" type="number" step="0.01" min="0.01" placeholder="0.00" required autofocus>
@@ -2195,12 +2272,12 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
 
             <div class="modal-field modal-span-2">
               <label for="mt-concepto" class="form-label">Concepto o nota (Opcional)</label>
-              <input id="mt-concepto" name="concepto" placeholder="Ej. Ingreso de efectivo en cajero, Traspaso a Revolut...">
+              <input id="mt-concepto" name="concepto" placeholder="Ej. Recarga Revolut con Carrefour Pass...">
             </div>
           </div>
 
           <div style="background: rgba(99, 102, 241, 0.08); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--fg-2); line-height: 1.45;">
-            💡 <strong>Sin descuadres:</strong> El dinero se traslada de una cuenta a otra en una sola operación atómica. Tu patrimonio neto total y la conciliación del hogar permanecen cuadrados al 100%.
+            💡 <strong>Sin descuadres:</strong> El dinero se traslada de una tarjeta/cuenta a otra en una sola operación atómica. Tu contabilidad y la conciliación del hogar permanecen siempre cuadradas al 100%.
           </div>
 
           <div id="modal-traspaso-err" class="modal-error-box" style="display: none;"></div>
@@ -2208,7 +2285,7 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
           <div class="modal-footer">
             <button type="button" class="btn-secondary" id="btn-cancelar-modal">Cancelar</button>
             <button type="submit" class="btn-primary" id="btn-ejecutar-traspaso">
-              ⇄ Realizar Traspaso
+              ⇄ Realizar Traspaso / Recarga
             </button>
           </div>
         </form>
@@ -2217,6 +2294,21 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
 
     overlay.querySelector("#btn-cerrar-modal").addEventListener("click", cerrarModalActivo);
     overlay.querySelector("#btn-cancelar-modal").addEventListener("click", cerrarModalActivo);
+
+    // Eventos de atajos de 1 clic
+    overlay.querySelectorAll(".btn-chip-traspaso").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const origKw = chip.dataset.origen;
+        const destKw = chip.dataset.destino;
+        const cOrig = cuentas.find((c) => (c.nombre || "").toLowerCase().includes(origKw));
+        const cDest = cuentas.find((c) => (c.nombre || "").toLowerCase().includes(destKw));
+        const selOrig = overlay.querySelector("#mt-origen");
+        const selDest = overlay.querySelector("#mt-destino");
+        if (cOrig && selOrig) selOrig.value = cOrig.id;
+        if (cDest && selDest) selDest.value = cDest.id;
+        overlay.querySelector("#mt-importe")?.focus();
+      });
+    });
 
     const form = overlay.querySelector("#form-modal-traspaso");
     const errBox = overlay.querySelector("#modal-traspaso-err");
@@ -2643,8 +2735,9 @@ export function iniciarModalesAcciones() {
       const tarjetaId = btnAccion.dataset.tarjetaId ? Number(btnAccion.dataset.tarjetaId) : null;
       abrirModalLiquidarTarjeta(tarjetaId);
     } else if (accion === "abrir-traspaso") {
-      const cuentaId = btnAccion.dataset.cuentaId ? Number(btnAccion.dataset.cuentaId) : null;
-      abrirModalTraspaso(cuentaId);
+      const cuentaOrigenId = btnAccion.dataset.cuentaOrigenId || btnAccion.dataset.cuentaId || null;
+      const cuentaDestinoId = btnAccion.dataset.cuentaDestinoId || null;
+      abrirModalTraspaso(cuentaOrigenId, cuentaDestinoId);
     }
   });
 }

@@ -72,8 +72,8 @@ function tarjetaCreditoItem(c) {
       ${generarSparklineTarjeta(c.id, c.saldo)}
 
       <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--divider); display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
-        <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso" data-cuenta-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
-          ⇄ Traspaso / Recargar
+        <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso" data-cuenta-origen-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+          ⇄ Traspasar / Recargar a Revolut
         </button>
         <button type="button" class="btn-secondary" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
           💳 Liquidar Recibo en Banco

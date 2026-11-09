@@ -174,11 +174,11 @@ export default vista("inicio", async () => {
         <span class="action-label">Gasto</span>
       </button>
 
-      <button type="button" class="glass-action-circle-btn traspaso" data-accion-fintech="abrir-traspaso" title="Mover dinero entre cuentas (efectivo a banco, etc.)">
+      <button type="button" class="glass-action-circle-btn traspaso" data-accion-fintech="abrir-traspaso" title="Mover dinero entre cuentas o recargar Revolut desde tarjeta DB / Carrefour">
         <div class="action-circle">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/></svg>
         </div>
-        <span class="action-label">Traspaso</span>
+        <span class="action-label">Traspaso / Recarga</span>
       </button>
 
       <a href="/pagos-diarios" class="glass-action-circle-btn diario" style="text-decoration: none;" title="Ver gastos del día a día">

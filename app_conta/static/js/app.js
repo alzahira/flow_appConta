@@ -976,7 +976,7 @@ if (document.readyState === "loading") {
 // Service worker (registro externo para cumplir la CSP sin scripts inline).
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register("/static/sw.js?v=86")
+    .register("/static/sw.js?v=97")
     .then((reg) => reg.update())
     .catch(() => {});
   let refreshing = false;
