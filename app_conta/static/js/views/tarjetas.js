@@ -71,7 +71,10 @@ function tarjetaCreditoItem(c) {
 
       ${generarSparklineTarjeta(c.id, c.saldo)}
 
-      <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--divider); display: flex; justify-content: flex-end;">
+      <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--divider); display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso" data-cuenta-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
+          ⇄ Traspaso / Recargar
+        </button>
         <button type="button" class="btn-secondary" data-accion-fintech="liquidar-tarjeta" data-tarjeta-id="${c.id}" style="font-size: 0.78rem; padding: 0.35rem 0.85rem;">
           💳 Liquidar Recibo en Banco
         </button>
@@ -102,6 +105,11 @@ export default vista("tarjetas", async () => {
     <span class="hero-total-label">Gasto Acumulado en Tarjetas</span>
     <div class="hero-total-amount">${importe(totalGastoDispuesto.toFixed(2))}</div>
     <span class="hero-total-sub">Dinero adelantado pendiente de cobro mensual en banco · ${tarjetas.length} tarjeta(s)</span>
+    <div style="margin-top: 0.95rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <button type="button" class="btn-primary mini" data-accion-fintech="abrir-traspaso" style="gap: 0.45rem; padding: 0.5rem 1.25rem; border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); font-size: 0.85rem;">
+        ⇄ Traspaso / Recarga
+      </button>
+    </div>
   </div>
 
   <!-- 2. Carrusel Horizontal con Scroll-Snap -->

@@ -2071,9 +2071,8 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
     ]);
 
     const items = resCuentas.items || [];
-    const cuentas = items.filter(
-      (c) => c.tipo !== "tarjeta" && !c.nombre.toUpperCase().startsWith("TARJETA")
-    );
+    // Incluimos todas las cuentas activas (bancos, efectivo y tarjetas para recargas/traspasos)
+    const cuentas = items;
     const botes = resBotes.items || [];
 
     if (cuentas.length < 2) {
@@ -2093,13 +2092,58 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
     const cOrigenId = Number(cuentaOrigenDefecto) || cuentas[0].id;
     const cDestinoId = cuentas.find((c) => c.id !== cOrigenId)?.id || cuentas[1].id;
 
+    function renderOpcionesCuentas(idSeleccionada) {
+      const cuentasBancarias = cuentas.filter((c) => c.tipo === "banco" || c.tipo === "efectivo");
+      const tarjetas = cuentas.filter((c) => c.tipo === "tarjeta");
+      const otras = cuentas.filter((c) => c.tipo !== "banco" && c.tipo !== "efectivo" && c.tipo !== "tarjeta");
+
+      let html = "";
+      if (cuentasBancarias.length > 0) {
+        html += `<optgroup label="🏛️ Cuentas Bancarias y Efectivo">`;
+        html += cuentasBancarias
+          .map(
+            (c) => `
+          <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
+            ${c.tipo === "efectivo" ? "💵" : "🏛️"} ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
+          </option>`
+          )
+          .join("");
+        html += `</optgroup>`;
+      }
+      if (tarjetas.length > 0) {
+        html += `<optgroup label="💳 Tarjetas (Crédito, Débito y Recargas)">`;
+        html += tarjetas
+          .map(
+            (c) => `
+          <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
+            💳 ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — Saldo: ${c.saldo} €
+          </option>`
+          )
+          .join("");
+        html += `</optgroup>`;
+      }
+      if (otras.length > 0) {
+        html += `<optgroup label="📦 Otras Cuentas">`;
+        html += otras
+          .map(
+            (c) => `
+          <option value="${c.id}" ${c.id === idSeleccionada ? "selected" : ""}>
+            📦 ${esc(c.nombre)} — ${c.saldo} €
+          </option>`
+          )
+          .join("");
+        html += `</optgroup>`;
+      }
+      return html;
+    }
+
     overlay.innerHTML = `
       <div class="modal-card modal-traspaso">
         <div class="modal-header">
           <div class="modal-title-group">
             <span class="modal-badge-action neutral">⇄ TRASPASO ENTRE CUENTAS</span>
-            <h3 class="modal-title">Mover Dinero entre Cuentas</h3>
-            <p class="modal-subtitle">Pasa fondos de una cuenta a otra (ej. Efectivo a Banco, o entre bancos)</p>
+            <h3 class="modal-title">Mover Dinero / Recargas</h3>
+            <p class="modal-subtitle">Pasa fondos de una cuenta o tarjeta a otra (ej. Recargar Revolut desde tarjeta DB o Carrefour Pass, mover efectivo, etc.)</p>
           </div>
           <button type="button" class="modal-btn-close" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
         </div>
@@ -2115,32 +2159,16 @@ export async function abrirModalTraspaso(cuentaOrigenDefecto = null) {
 
           <div class="modal-grid-fields">
             <div class="modal-field">
-              <label for="mt-origen" class="form-label">Cuenta de origen (Sale) *</label>
+              <label for="mt-origen" class="form-label">Cuenta o tarjeta de origen (Sale) *</label>
               <select id="mt-origen" name="cuenta_origen_id" required>
-                ${cuentas
-                  .map(
-                    (c) => `
-                  <option value="${c.id}" ${c.id === cOrigenId ? "selected" : ""}>
-                    ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
-                  </option>
-                `
-                  )
-                  .join("")}
+                ${renderOpcionesCuentas(cOrigenId)}
               </select>
             </div>
 
             <div class="modal-field">
-              <label for="mt-destino" class="form-label">Cuenta de destino (Entra) *</label>
+              <label for="mt-destino" class="form-label">Cuenta o tarjeta de destino (Entra) *</label>
               <select id="mt-destino" name="cuenta_destino_id" required>
-                ${cuentas
-                  .map(
-                    (c) => `
-                  <option value="${c.id}" ${c.id === cDestinoId ? "selected" : ""}>
-                    ${esc(c.nombre)} ${c.entidad ? `(${esc(c.entidad)})` : ""} — ${c.saldo} €
-                  </option>
-                `
-                  )
-                  .join("")}
+                ${renderOpcionesCuentas(cDestinoId)}
               </select>
             </div>
 
