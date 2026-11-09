@@ -978,7 +978,7 @@ if ("serviceWorker" in navigator) {
   if ("caches" in window) {
     caches.keys().then((keys) => {
       keys.forEach((key) => {
-        if (key !== "app-conta-shell-v98") {
+        if (key !== "app-conta-shell-v99") {
           caches.delete(key);
         }
       });
@@ -986,7 +986,7 @@ if ("serviceWorker" in navigator) {
   }
 
   navigator.serviceWorker
-    .register("/static/sw.js?v=98")
+    .register("/static/sw.js?v=99")
     .then((reg) => reg.update())
     .catch(() => {});
   let refreshing = false;

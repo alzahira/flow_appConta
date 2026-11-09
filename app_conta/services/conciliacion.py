@@ -94,7 +94,24 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         for m in movimientos
         if m.bote_id is not None and any(b.id == m.bote_id for b in botes)
     )
-    sin_asignar = sum(m.importe_centimos for m in movimientos if m.bote_id is None)
+    # Movimientos sin sobre asignado
+    # NOTA: Los adelantos a terceros ("Adelanto deuda:") y devoluciones ("Cobro deuda ")
+    # son traspasos internos de activos entre Bancos y Me Deben dentro del Grupo 2.
+    # No reducen ni aumentan el dinero teórico del hogar (Grupo 1), por lo que se excluyen de sin_asignar.
+    sin_asignar = sum(
+        m.importe_centimos
+        for m in movimientos
+        if m.bote_id is None
+        and not (
+            m.descripcion
+            and (
+                m.descripcion.startswith("Adelanto deuda:")
+                or m.descripcion.startswith("Cobro deuda ")
+                or "adelanto deuda:" in m.descripcion.lower()
+                or "cobro deuda" in m.descripcion.lower()
+            )
+        )
+    )
 
     diferencia = saldo_total_cuentas - saldo_inicial_total - (saldo_total_botes_saldo + sin_asignar)
 
