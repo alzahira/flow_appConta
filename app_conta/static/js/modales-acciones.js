@@ -1,5 +1,5 @@
 // Modales de Acciones Rápidas (+ Ingreso, − Gasto y Reparto de Nómina)
-import { esc, importe, hoy } from "./vistas.js";
+import { esc, importe, hoy, icono } from "./vistas.js";
 import { CATEGORIAS_BOTES } from "./views/botes.js";
 import { esTarjetaRegalo } from "./views/tarjetas-regalo.js";
 
@@ -175,6 +175,7 @@ export async function abrirModalGasto() {
                 <optgroup label="General">
                   <option value="">— Gasto general de cuenta —</option>
                   <option value="es_adelanto">🤝 Es un adelanto / Me lo deben (Anotar en Me Deben)</option>
+                  <option value="prevision">🔁 Factura / Recibo de Previsión Anual (IBI, Seguros, Sellos...)</option>
                 </optgroup>
                 ${renderOpcionesBotesAgrupados(botes)}
                 ${
@@ -312,6 +313,19 @@ export async function abrirModalGasto() {
             cuenta_id: Number(cuentaId),
             concepto: desc || "Pago de cuota de préstamo",
             fecha: fecha,
+          });
+        } else if (boteId === "prevision") {
+          const descFinal =
+            desc && (desc.toLowerCase().startsWith("previsión:") || desc.toLowerCase().startsWith("prevision:") || desc.toLowerCase().startsWith("factura previsión:"))
+              ? desc
+              : `Factura previsión: ${desc || "Recibo anual"}`;
+          await API.post("/movimientos", {
+            fecha: fecha,
+            importe: `-${valor}`,
+            descripcion: descFinal,
+            cuenta_id: Number(cuentaId),
+            bote_id: null,
+            categoria_id: categoriaId ? Number(categoriaId) : null,
           });
         } else {
           await API.post("/movimientos", {
@@ -2930,6 +2944,128 @@ export async function abrirModalEditarCuenta(cuentaId) {
       </div>
     `;
     overlay.querySelector("#btn-cerrar-modal")?.addEventListener("click", cerrarModalActivo);
+  }
+}
+
+// 15. MODAL PAGAR GASTO DE PREVISIÓN ANUAL (IBI, SEGUROS, SELLOS...)
+export async function abrirModalPagarGastoPrevision({ id, concepto, actual = "0.00" }) {
+  cerrarModalActivo();
+
+  try {
+    const resCuentas = await API.get("/cuentas");
+    const cuentas = (resCuentas.items || []).filter((c) => !c.archivada);
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.id = "fintech-modal-overlay";
+
+    const fechaHoy = new Date().toISOString().slice(0, 10);
+
+    const opcionesCuentas = cuentas
+      .map(
+        (c) => `<option value="${c.id}">${esc(c.nombre)} (${c.tipo}) — Saldo: ${importe(c.saldo)}</option>`
+      )
+      .join("");
+
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <header class="modal-header">
+          <div class="modal-icon-brand" style="background: rgba(124, 92, 255, 0.1); color: var(--accent);">
+            ${icono("calendario")}
+          </div>
+          <div class="modal-header-titles">
+            <h3 class="modal-title">Registrar Factura / Recibo</h3>
+            <p class="modal-subtitle">Gasto de Previsión: <strong>${esc(concepto)}</strong></p>
+          </div>
+          <button type="button" class="btn-modal-close" aria-label="Cerrar">&times;</button>
+        </header>
+
+        <form id="form-modal-pagar-prevision" class="modal-form">
+          <div class="modal-grid-1">
+            <div class="form-field">
+              <label for="mpp-importe" class="form-label">Importe del recibo (€) *</label>
+              <input id="mpp-importe" name="importe" type="number" step="0.01" min="0.01" placeholder="Ej. 140.00" required autofocus>
+              <span class="field-hint">Total pagado hasta hoy en este concepto: ${importe(actual)}</span>
+            </div>
+
+            <div class="form-field">
+              <label for="mpp-cuenta" class="form-label">¿De qué cuenta o banco se ha cobrado? *</label>
+              <select id="mpp-cuenta" name="cuenta_id" required>
+                ${opcionesCuentas}
+              </select>
+              <span class="field-hint">Se registrará el movimiento en esta cuenta para que el saldo bancario y el cuadre queden exactos.</span>
+            </div>
+
+            <div class="form-field">
+              <label for="mpp-fecha" class="form-label">Fecha de cobro *</label>
+              <input id="mpp-fecha" name="fecha" type="date" value="${fechaHoy}" required>
+            </div>
+          </div>
+
+          <div class="modal-info-box" style="margin-top: 1rem;">
+            💡 <strong>100% Cuadrado:</strong> Al descontar de la cuenta bancaria correcta, el sistema reduce a la vez tu dinero real del banco y el saldo presupuestado de previsión, manteniendo tu cuadre general a 0,00 €.
+          </div>
+
+          <div id="modal-pagar-prevision-err" class="modal-error-box" style="display: none;"></div>
+
+          <div class="modal-footer" style="margin-top: 1.25rem;">
+            <button type="button" class="btn-secondary" id="btn-cancelar-pagar-prevision">Cancelar</button>
+            <button type="submit" class="btn-primary" id="btn-ejecutar-pagar-prevision">
+              ${icono("check")} Registrar y Descontar del Banco
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const btnCerrar = overlay.querySelector(".btn-modal-close");
+    const btnCancelar = overlay.querySelector("#btn-cancelar-pagar-prevision");
+    const cerrar = () => overlay.remove();
+    btnCerrar?.addEventListener("click", cerrar);
+    btnCancelar?.addEventListener("click", cerrar);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) cerrar();
+    });
+
+    const form = overlay.querySelector("#form-modal-pagar-prevision");
+    const errBox = overlay.querySelector("#modal-pagar-prevision-err");
+    const btnSubmit = overlay.querySelector("#btn-ejecutar-pagar-prevision");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Registrando...";
+
+      const fData = new FormData(form);
+      const importeVal = fData.get("importe");
+      const cuentaId = Number(fData.get("cuenta_id"));
+      const fechaVal = fData.get("fecha");
+
+      try {
+        await API.post(`/prevision-gastos/${id}/pagar`, {
+          importe: importeVal,
+          cuenta_id: cuentaId,
+          fecha: fechaVal,
+          sumar: true,
+        });
+        overlay.remove();
+        if (window.irA) {
+          window.irA("prevision-gastos");
+        } else {
+          location.reload();
+        }
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Registrar y Descontar del Banco";
+        errBox.textContent = err.message || "Error al registrar el pago";
+        errBox.style.display = "block";
+      }
+    });
+  } catch (err) {
+    alert("Error al abrir modal de pago: " + err.message);
   }
 }
 

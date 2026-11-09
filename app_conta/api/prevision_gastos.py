@@ -68,6 +68,8 @@ class PagoFacturaRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     importe: str | int | float
     sumar: bool = True
+    cuenta_id: int | None = None
+    fecha: str | None = None
 
 
 def _formatear_resumen(resumen: dict[str, Any]) -> dict[str, Any]:
@@ -218,7 +220,13 @@ def record_pago(
         if imp_cents is None:
             raise ErrorValidacion("El importe es obligatorio")
         gasto = registrar_pago_factura(
-            db, gasto_id, imp_cents, sumar=payload.sumar, hogar_id=hogar_id
+            db,
+            gasto_id,
+            imp_cents,
+            sumar=payload.sumar,
+            hogar_id=hogar_id,
+            cuenta_id=payload.cuenta_id,
+            fecha=payload.fecha,
         )
     except ErrorNoEncontrado as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

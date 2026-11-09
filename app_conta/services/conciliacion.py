@@ -95,9 +95,12 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         if m.bote_id is not None and any(b.id == m.bote_id for b in botes)
     )
     # Movimientos sin sobre asignado
-    # NOTA: Los adelantos a terceros ("Adelanto deuda:") y devoluciones ("Cobro deuda ")
-    # son traspasos internos de activos entre Bancos y Me Deben dentro del Grupo 2.
-    # No reducen ni aumentan el dinero teórico del hogar (Grupo 1), por lo que se excluyen de sin_asignar.
+    # NOTA:
+    # 1. Los adelantos a terceros ("Adelanto deuda:") y devoluciones ("Cobro deuda ")
+    #    son traspasos internos de activos entre Bancos y Me Deben dentro del Grupo 2.
+    # 2. Las facturas imputadas a Previsión ("Factura previsión:", "Previsión:")
+    #    ya reducen tot_prevision_formula (Grupo 1) y el saldo de la cuenta bancaria (Grupo 2).
+    #    No deben restarse por segunda vez en sin_asignar.
     sin_asignar = sum(
         m.importe_centimos
         for m in movimientos
@@ -109,6 +112,10 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
                 or m.descripcion.startswith("Cobro deuda ")
                 or "adelanto deuda:" in m.descripcion.lower()
                 or "cobro deuda" in m.descripcion.lower()
+                or m.descripcion.lower().startswith("factura previsión:")
+                or m.descripcion.lower().startswith("factura prevision:")
+                or m.descripcion.lower().startswith("previsión:")
+                or m.descripcion.lower().startswith("prevision:")
             )
         )
     )

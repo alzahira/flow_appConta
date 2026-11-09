@@ -8,12 +8,15 @@ pagados/transcurridos y contrastarla con las facturas reales cobradas.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app_conta.models.cuenta import Cuenta
 from app_conta.models.gasto_recurrente import GastoRecurrente, PrevisionGastosConfig
+from app_conta.models.movimiento import Movimiento
 from app_conta.services.errors import ErrorNoEncontrado, ErrorValidacion
 from app_conta.services.hogar import exigir_hogar
 
@@ -412,6 +415,8 @@ def registrar_pago_factura(
     importe_centimos: int,
     sumar: bool = True,
     hogar_id: int | str | None = None,
+    cuenta_id: int | None = None,
+    fecha: date | str | None = None,
 ) -> GastoRecurrente:
     if importe_centimos < 0:
         raise ErrorValidacion("El importe pagado no puede ser negativo")
@@ -424,6 +429,30 @@ def registrar_pago_factura(
         gasto.pagado_real_centimos += importe_centimos
     else:
         gasto.pagado_real_centimos = importe_centimos
+
+    if cuenta_id is not None:
+        cuenta = session.get(Cuenta, cuenta_id)
+        if not cuenta:
+            raise ErrorNoEncontrado(f"Cuenta {cuenta_id} no encontrada")
+        exigir_hogar(cuenta, hogar_id, f"Cuenta {cuenta_id}")
+
+        fec = fecha
+        if isinstance(fec, str):
+            fec = date.fromisoformat(fec)
+        elif fec is None:
+            fec = date.today()
+
+        hid = gasto.hogar_id if isinstance(gasto.hogar_id, int) else int(gasto.hogar_id or 1)
+        mov = Movimiento(
+            hogar_id=hid,
+            cuenta_id=cuenta_id,
+            importe_centimos=-importe_centimos,
+            fecha=fec,
+            descripcion=f"Factura previsión: {gasto.concepto}",
+            marcar_revisar=False,
+            origen="manual",
+        )
+        session.add(mov)
 
     session.commit()
     session.refresh(gasto)

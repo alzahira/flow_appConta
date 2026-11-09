@@ -637,22 +637,8 @@ document.addEventListener("click", async (e) => {
     const id = Number(btnPagarGasto.dataset.id);
     const concepto = btnPagarGasto.dataset.concepto;
     const actual = btnPagarGasto.dataset.actual || "0.00";
-    const imp = prompt(
-      `Registrar factura o recibo cobrado para "${concepto}":\n\nTotal pagado hasta ahora: ${actual} €\n\nIntroduce el importe a sumar (ej: 140.00)\no pon el signo = delante para sustituir el total (ej: =140.00):`
-    );
-    if (!imp) return;
-    try {
-      if (imp.trim().startsWith("=")) {
-        const sustituto = imp.trim().substring(1).replace(",", ".").trim();
-        await API.patch(`/prevision-gastos/${id}`, { pagado_real: sustituto });
-      } else {
-        const aSumar = imp.replace(",", ".").trim();
-        await API.post(`/prevision-gastos/${id}/pagar`, { importe: aSumar, sumar: true });
-      }
-      await navegar();
-    } catch (err) {
-      alert(`No se pudo registrar el pago: ${err.message}`);
-    }
+    const { abrirModalPagarGastoPrevision } = await import("./modales-acciones.js");
+    abrirModalPagarGastoPrevision({ id, concepto, actual });
     return;
   }
 
