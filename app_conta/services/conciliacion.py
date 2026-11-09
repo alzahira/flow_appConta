@@ -44,15 +44,23 @@ ESTADO_REVISAR = "revisar"
 def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str, object]:
     """Calcula el estado de conciliación completo (importes en céntimos enteros).
 
-    Incluye la conciliación contable técnica (por movimientos de cuentas)
-    y la Fórmula Global del Hogar del usuario:
-      Dinero Teórico = Botes + Sin asignar + Previsión - Me Deben - Préstamos
-      Diferencia = Dinero Teórico - Dinero Real en Cuentas y Tarjetas
+    Fórmula Exacta del Hogar:
+      GRUPO 1 (Dinero que debería tener):
+        + Botes generales
+        + Guardado Hipoteca (Botes con 'hipoteca')
+        + Tarjetas (saldo dispuesto de crédito pendiente de liquidar)
+        + Saldo de previsión anual (aportado - pagado)
+        Total Teórico = botes + guardado_hipoteca + tarjetas + prevision
 
-    `sin_asignar` es dinero real en cuentas que aún no está
-    etiquetado en un bote: forma parte del dinero explicado y NO debe
-    contarse como descuadre (si no, meter una nómina con recibos pendientes
-    mostraría un falso desfase).
+      GRUPO 2 (Dinero que tengo real / Activos):
+        + Bancos y Efectivo (cuentas de banco, efectivo y monederos)
+        + Me deben (deudas activas pendientes de cobro)
+        + Préstamos (préstamos internos asumidos de botes de ahorro)
+        + Inversiones (eToro, crypto, fondos)
+        Total Real = bancos_efectivo + me_deben + prestamos + inversiones
+
+      Diferencia = Total Teórico - Total Real
+      (Cuadrado si abs(diferencia) <= 100 céntimos / 1 € por redondeos mensuales)
     """
     stmt_c = select(Cuenta).where(Cuenta.archivada.is_(False))
     stmt_b = select(Bote).where(Bote.archivado.is_(False))
@@ -65,9 +73,6 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
 
     ids_cuentas = [c.id for c in cuentas]
     if ids_cuentas:
-        # Universo de cálculo: movimientos de cuentas activas más los movimientos
-        # de contrapartida de traspasos entre cuentas (para mantener suma neta 0
-        # si una cuenta origen o destino de un traspaso histórico es archivada).
         stmt_m = select(Movimiento).where(
             Movimiento.eliminado.is_(False),
             (
@@ -93,7 +98,18 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
 
     diferencia = saldo_total_cuentas - saldo_inicial_total - (saldo_total_botes_saldo + sin_asignar)
 
-    # 2. Fórmula Global del Hogar (Ajustada según instrucción del usuario)
+    # 1. Cuentas bancarias y tarjetas
+    tot_bancos_efectivo = 0
+    tot_tarjetas_credito = 0
+
+    for c in cuentas:
+        sc = saldo_cuenta(db, c)
+        if c.tipo in ("banco", "efectivo") or (c.tipo == "tarjeta" and sc >= 0):
+            tot_bancos_efectivo += sc
+        elif c.tipo == "tarjeta" and sc < 0:
+            tot_tarjetas_credito += abs(sc)
+
+    # 2. Botes y Guardado Hipoteca
     pares_todos, tot_botes_formula = listar_botes_activos(db)
     if hogar_id is not None:
         botes_activos_pares = [
@@ -105,6 +121,12 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     else:
         botes_activos_pares = pares_todos
 
+    tot_guardado_hipoteca = sum(
+        s for b, s in botes_activos_pares if "hipoteca" in (b.nombre or "").lower()
+    )
+    tot_botes_generales = tot_botes_formula - tot_guardado_hipoteca
+
+    # 3. Saldo Previsión Anual
     hogar_target_id = hogar_id
     if hogar_target_id is None:
         hogar_obj = db.scalars(select(Hogar)).first()
@@ -119,6 +141,7 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
             db.rollback()
             tot_prevision_formula = 0
 
+    # 4. Deudas (Me deben), Préstamos e Inversiones
     stmt_d = select(Deuda).where(Deuda.archivada.is_(False))
     stmt_p = select(Prestamo).where(Prestamo.activo.is_(True))
     stmt_i = select(Inversion).where(Inversion.activo.is_(True))
@@ -140,86 +163,27 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
     inversiones = list(db.scalars(stmt_i))
     tot_inversiones_formula = sum(i.valor_actual_centimos for i in inversiones)
 
-    # Deducciones solicitadas por el usuario para cuadrar con el dinero en bancos/tarjetas:
-    # 1) Inversiones fuera de cuentas bancarias (Etoro + CRO)
-    centimos_inversiones = tot_inversiones_formula
-
-    # 2) Bote emergencias / remanente de efectivo: si el hogar ya tiene cuenta de efectivo
-    # en mano (los ~180 € en cartera), ese dinero ya está en cuentas y no se resta dos veces.
-    tiene_efectivo_mano = any(
-        c.tipo == "efectivo"
-        and "fondo" not in c.nombre.lower()
-        and "guardado" not in c.nombre.lower()
-        for c in cuentas
-    )
-    bote_extras_pair = next(
-        (
-            p
-            for p in botes_activos_pares
-            if "extra" in p[0].nombre.lower()
-            or "emergencia" in p[0].nombre.lower()
-            or p[0].id == 4
-        ),
-        None,
-    )
-    centimos_extras = (
-        0
-        if tiene_efectivo_mano
-        else (
-            min(18600, bote_extras_pair[1])
-            if (bote_extras_pair and bote_extras_pair[1] > 0)
-            else 0
-        )
-    )
-    centimos_redondeo = (abs(tot_prevision_formula) % 100) if tot_prevision_formula else 0
-
-    # Movimientos sin asignar: filtramos líneas de nómina que amortizan préstamos,
-    # cobran deudas (DAZN), compras/adelantos para terceros que están en Me Deben,
-    # o aportan a previsión para evitar doble cómputo con tot_prevision_formula,
-    # tot_prestamos_formula y tot_me_deben_formula.
-    movs_sin_bote = [m for m in movimientos if m.bote_id is None]
-
-    # Colección de conceptos o deudores registrados en deudas activas para matcheo automático
-    palabras_clave_deudas = {"deuda", "cobro", "dazn", "me deben", "adelanto"}
-    for d in deudas:
-        if d.deudor:
-            for palabra in d.deudor.lower().split():
-                if len(palabra) >= 3:
-                    palabras_clave_deudas.add(palabra)
-        if d.concepto:
-            for palabra in d.concepto.lower().split():
-                if len(palabra) >= 3:
-                    palabras_clave_deudas.add(palabra)
-
-    def _es_prev_prestamo_o_deuda(m: Movimiento) -> bool:
-        desc = (m.descripcion or "").lower()
-        es_prev = "previsi" in desc or "seguros e ibi" in desc or "gastos anuales" in desc
-        es_prestamo = "coche" in desc or "prstamo" in desc or "prestamo" in desc or "amortizaci" in desc
-        es_deuda = any(kw in desc for kw in palabras_clave_deudas)
-        return es_prev or es_prestamo or es_deuda
-
-    sin_asignar_formula = sum(
-        m.importe_centimos for m in movs_sin_bote if not _es_prev_prestamo_o_deuda(m)
-    )
-
-    # Total teórico antes de ajustes. Incluye dinero sin asignar
-    # (p. ej. recibos pendientes de liquidar que ya entraron en cuenta):
-    teorico_base = (
+    # GRUPO 1: Total Teórico (Lo que debería tener / asignado y libre para recibos)
+    tot_teorico_formula = (
         tot_botes_formula
-        + sin_asignar_formula
+        + tot_tarjetas_credito
         + tot_prevision_formula
-        - tot_me_deben_formula
-        - tot_prestamos_formula
+        + sin_asignar
     )
 
-    # Total teórico ajustado: quitando inversiones y Bote ahorro extras (con redondeo)
-    tot_teorico_formula = teorico_base - centimos_inversiones - centimos_extras - centimos_redondeo
+    # GRUPO 2: Total Real (Lo que tengo real / Activos)
+    tot_real_formula = (
+        tot_bancos_efectivo
+        + tot_me_deben_formula
+        + tot_prestamos_formula
+        + tot_inversiones_formula
+    )
 
-    dif_formula = tot_teorico_formula - saldo_total_cuentas
-    dif_con_inversiones = tot_teorico_formula - (saldo_total_cuentas + tot_inversiones_formula)
+    # Diferencia de balance
+    dif_formula = tot_teorico_formula - tot_real_formula
 
-    # Cuadre estricto del hogar (tolerancia de 20 céntimos por redondeos de Excel/previsión)
-    estado_formula = "cuadrado" if abs(dif_formula) <= 20 else "revisar"
+    # Cuadre estricto (tolerancia de 1 € por redondeos acumulados en divisiones mensuales)
+    estado_formula = "cuadrado" if abs(dif_formula) <= 100 else "revisar"
 
     return {
         "fecha_calculo": date.today(),
@@ -231,17 +195,22 @@ def calcular_conciliacion(db: Session, hogar_id: int | None = None) -> dict[str,
         "estado": ESTADO_CUADRADO if diferencia == 0 else ESTADO_REVISAR,
         # Fórmula del Usuario
         "total_botes_formula": tot_botes_formula,
+        "botes_generales_formula": tot_botes_generales,
+        "guardado_hipoteca_formula": tot_guardado_hipoteca,
+        "total_tarjetas_formula": tot_tarjetas_credito,
         "total_prevision_formula": tot_prevision_formula,
         "total_me_deben_formula": tot_me_deben_formula,
         "total_prestamos_formula": tot_prestamos_formula,
-        "deduccion_inversiones_formula": centimos_inversiones,
-        "deduccion_etoro_formula": centimos_inversiones,
-        "deduccion_extras_formula": centimos_extras + centimos_redondeo,
-        "total_teorico_base": teorico_base,
-        "total_teorico_formula": tot_teorico_formula,
-        "total_cuentas_formula": saldo_total_cuentas,
         "total_inversiones_formula": tot_inversiones_formula,
+        "total_bancos_formula": tot_bancos_efectivo,
+        "total_real_formula": tot_real_formula,
+        "deduccion_inversiones_formula": tot_inversiones_formula,
+        "deduccion_etoro_formula": tot_inversiones_formula,
+        "deduccion_extras_formula": 0,
+        "total_teorico_base": tot_teorico_formula,
+        "total_teorico_formula": tot_teorico_formula,
+        "total_cuentas_formula": tot_bancos_efectivo,
         "diferencia_formula": dif_formula,
-        "diferencia_con_inversiones": dif_con_inversiones,
+        "diferencia_con_inversiones": dif_formula,
         "estado_formula": estado_formula,
     }

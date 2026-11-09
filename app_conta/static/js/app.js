@@ -523,6 +523,21 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  // Borrar Apunte de Dinero que me deben
+  const btnBorrarDeuda = e.target.closest('[data-accion="borrar-deuda"]');
+  if (btnBorrarDeuda) {
+    const id = Number(btnBorrarDeuda.dataset.id);
+    const deudor = btnBorrarDeuda.dataset.deudor || "este apunte";
+    if (!confirm(`¿Deseas eliminar el apunte de deuda de "${deudor}"?`)) return;
+    try {
+      await API.del(`/deudas/${id}`);
+      await navegar();
+    } catch (err) {
+      alert(`No se pudo eliminar el apunte: ${err.message}`);
+    }
+    return;
+  }
+
   // Editar Cuenta Bancaria / Depósito
   const btnEditCuenta = e.target.closest('[data-accion="editar-cuenta"]');
   if (btnEditCuenta) {

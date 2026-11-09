@@ -1471,49 +1471,75 @@ export async function abrirModalDesgloseCuadre() {
             </div>
           </div>
 
-          <!-- Desglose de la Fórmula -->
-          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main);">
-            Desglose de los Componentes
-          </h4>
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🏛️ <strong>1. Dinero Real en Cuentas y Tarjetas</strong> (Bancos + Efectivo)</span>
-              <strong>${importe(conc.total_cuentas_formula)}</strong>
+          <!-- Desglose de los Dos Grupos -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+            <!-- GRUPO 1: Dinero que debería tener -->
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+                <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--fg); margin: 0;">
+                  🟢 1. Lo que Debería Tener
+                </h4>
+                <strong style="color: #10b981; font-size: 1.05rem;">
+                  ${importe(conc.total_teorico_formula)}
+                </strong>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>📦 Botes de ahorro y gastos</span>
+                  <strong>${importe(conc.botes_generales_formula || conc.total_botes_formula)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>🏠 Guardado Hipoteca</span>
+                  <strong>${importe(conc.guardado_hipoteca_formula || "0.00")}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>💳 Tarjetas (pendiente pagar)</span>
+                  <strong>${importe(conc.total_tarjetas_formula || "0.00")}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>📅 Saldo previsión anual</span>
+                  <strong class="${Number(conc.total_prevision_formula) < 0 ? 'negativo' : ''}">${importe(conc.total_prevision_formula)}</strong>
+                </div>
+              </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📦 <strong>2. Sobres y Botes</strong> (Ahorro, Mes, Ocio, Hipoteca...)</span>
-              <span class="positivo">${importe(conc.total_botes_formula)}</span>
-            </div>
+            <!-- GRUPO 2: Lo que tengo real -->
+            <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+                <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--fg); margin: 0;">
+                  🔵 2. Lo que Tengo Real
+                </h4>
+                <strong style="color: #3b82f6; font-size: 1.05rem;">
+                  ${importe(conc.total_real_formula || conc.total_cuentas_formula)}
+                </strong>
+              </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>💶 <strong>3. Dinero sin asignar</strong> (En cuentas, todavía sin bote)</span>
-              <span class="${Number(conc.sin_asignar) >= 0 ? "positivo" : "negativo"}">${importe(conc.sin_asignar, Number(conc.sin_asignar) < 0 ? "negativo" : "")}</span>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>📅 <strong>4. Bote Gastos Anuales (Previsión)</strong> (Provisión guardada − Facturas pagadas)</span>
-              <span class="${Number(conc.total_prevision_formula) >= 0 ? "positivo" : "negativo"}">${importe(conc.total_prevision_formula, Number(conc.total_prevision_formula) < 0 ? "negativo" : "")}</span>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🤝 <strong>5. Dinero que me deben</strong> (Pendiente de cobro)</span>
-              <span class="negativo">${importe(conc.total_me_deben_formula, "negativo")}</span>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem; background: var(--surface-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span>🚗 <strong>6. Préstamos que debo</strong> (Deuda pendiente)</span>
-              <span class="negativo">${importe(conc.total_prestamos_formula, "negativo")}</span>
+              <div style="display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.86rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>🏛️ Bancos y Efectivo</span>
+                  <strong>${importe(conc.total_bancos_formula || conc.total_cuentas_formula)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>🤝 Me deben</span>
+                  <strong>${importe(conc.total_me_deben_formula)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>🚗 Préstamos (asumidos)</span>
+                  <strong>${importe(conc.total_prestamos_formula)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>📈 Inversiones (eToro / CRO)</span>
+                  <strong>${importe(conc.total_inversiones_formula)}</strong>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Explicación de por qué sale esta cifra concreta -->
           <div style="background: var(--surface-card); border-left: 3px solid #6366f1; border-radius: var(--radius-sm); padding: 0.85rem 1.15rem; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
-            ${
-              Number(conc.total_cuentas_formula) === 0 && Number(conc.total_prevision_formula) < 0
-                ? "💡 <strong>¿Por qué sale esta cifra exacta?</strong> Actualmente tienes las cuentas bancarias vacías (0,00 €), pero en la pantalla de Previsión de Gastos constan facturas pagadas (−1.830,50 €) sin que haya meses de provisión guardada aportados. El sistema avisa de que hay 1.830 € de pagos registrados que no están respaldados por ningún saldo bancario."
-                : "💡 <strong>Fórmula contable:</strong> Dinero en Cuentas = Botes + Sin asignar + Previsión − Deudas − Préstamos. El dinero sin asignar (por ejemplo, para recibos aún pendientes) NO es un descuadre. Cuando ingresas dinero en el banco o ajustas los botes, esta diferencia se actualiza automáticamente."
-            }
+            💡 <strong>Ecuación de cuadre del hogar:</strong> <em>(Botes + Guardado Hipoteca + Tarjetas + Previsión) − (Bancos + Me deben + Préstamos + Inversiones) = 0 €</em>.<br>
+            Tus fondos asignados tienen su respaldo íntegro en dinero líquido, inversiones, adelantos pendientes y préstamos asumidos.
           </div>
 
           <div class="modal-footer" style="padding: 0; display: flex; justify-content: flex-end; gap: 0.75rem;">
