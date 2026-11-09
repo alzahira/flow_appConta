@@ -84,7 +84,7 @@ export default vista("inicio", async () => {
   const dineroPrestamos = conc.total_prestamos_formula || "0.00";
   const dineroDiferencia = conc.diferencia_formula !== undefined ? conc.diferencia_formula : (conc.diferencia || "0.00");
 
-  const esCuadrado = conc.estado_formula === "cuadrado" || Math.abs(Number(dineroDiferencia)) <= 0.20;
+  const esCuadrado = conc.estado_formula === "cuadrado" && Math.abs(Number(dineroDiferencia)) <= 0.20;
 
   // Botes clave: Mes y Ocio
   const botesItems = botes.items || [];
