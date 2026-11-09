@@ -616,21 +616,6 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
-  // Borrar Deuda (Dinero que me deben)
-  const btnBorrarDeuda = e.target.closest('[data-accion="borrar-deuda"]');
-  if (btnBorrarDeuda) {
-    const id = Number(btnBorrarDeuda.dataset.id);
-    const deudor = btnBorrarDeuda.dataset.deudor || "este registro";
-    if (!confirm(`¿Deseas eliminar el registro de dinero que te debe "${deudor}"?`)) return;
-    try {
-      await API.del(`/deudas/${id}`);
-      await navegar();
-    } catch (err) {
-      alert(`No se pudo eliminar la deuda: ${err.message}`);
-    }
-    return;
-  }
-
   // Previsión de Gastos: Ajustar mes (+ / -)
   const btnAjustarMes = e.target.closest('[data-accion="ajustar-mes-prevision"]');
   if (btnAjustarMes) {
