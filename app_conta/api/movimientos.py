@@ -50,6 +50,7 @@ class MovimientoPatch(BaseModel):
     descripcion: str | None = None
     categoria_id: int | None = None
     bote_id: int | None = None
+    cuenta_id: int | None = None
 
 
 class BoteAsignar(BaseModel):

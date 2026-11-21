@@ -265,7 +265,7 @@ def crear_movimiento(
     return mov
 
 
-_CAMPOS_EDITABLES = ("fecha", "importe", "descripcion", "categoria_id", "bote_id")
+_CAMPOS_EDITABLES = ("fecha", "importe", "descripcion", "categoria_id", "bote_id", "cuenta_id")
 
 
 def editar_movimiento(
@@ -322,6 +322,16 @@ def editar_movimiento(
                     exigir_hogar(bote, mov.hogar_id, f"Bote {nuevo}")
                 cambios[campo] = {"anterior": mov.bote_id, "nuevo": nuevo}
                 mov.bote_id = nuevo
+        elif campo == "cuenta_id":
+            if nuevo is None:
+                raise ErrorValidacion("La cuenta es obligatoria")
+            if nuevo != mov.cuenta_id:
+                cuenta = db.get(Cuenta, nuevo)
+                if cuenta is None:
+                    raise ErrorNoEncontrado(f"Cuenta {nuevo} no encontrada")
+                exigir_hogar(cuenta, mov.hogar_id, f"Cuenta {nuevo}")
+                cambios[campo] = {"anterior": mov.cuenta_id, "nuevo": nuevo}
+                mov.cuenta_id = nuevo
 
     if cambios:
         db.add(AuditoriaMovimiento(movimiento_id=mov.id, accion="editado", cambios=cambios))
