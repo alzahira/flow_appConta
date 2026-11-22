@@ -2415,13 +2415,15 @@ export async function abrirModalTraspasoBotes(boteOrigenDefecto = null, boteDest
   `;
 
   try {
-    const [resBotes, resCuentas] = await Promise.all([
+    const [resBotes, resCuentas, resDeudas] = await Promise.all([
       API.get("/botes"),
       API.get("/cuentas"),
+      API.get("/deudas").catch(() => ({ items: [] })),
     ]);
 
     const botes = resBotes.items || [];
     const cuentas = resCuentas.items || [];
+    const deudas = (resDeudas.items || []).filter((d) => d.estado !== "saldado");
 
     if (botes.length < 2) {
       overlay.innerHTML = `
@@ -2493,9 +2495,27 @@ export async function abrirModalTraspasoBotes(boteOrigenDefecto = null, boteDest
             </div>
 
             <div class="modal-field">
-              <label for="mtb-destino" class="form-label">Sobre de destino (Entra) *</label>
+              <label for="mtb-destino" class="form-label">Destino (Sobre o Deuda a saldar) *</label>
               <select id="mtb-destino" name="bote_destino_id" required>
-                ${renderOpcionesBotesSelect(bDestinoId)}
+                <optgroup label="📦 Botes y Sobres de Ahorro">
+                  ${renderOpcionesBotesSelect(bDestinoId)}
+                </optgroup>
+                ${
+                  deudas.length > 0
+                    ? `
+                <optgroup label="🤝 Compensar / Saldar Deuda (Me Deben)">
+                  ${deudas
+                    .map(
+                      (d) => `
+                    <option value="deuda:${d.id}">
+                      🤝 ${esc(d.deudor)}: ${esc(d.concepto)} (${d.importe_pendiente} € pendiente)
+                    </option>`
+                    )
+                    .join("")}
+                </optgroup>
+                `
+                    : ""
+                }
               </select>
             </div>
 
@@ -2557,14 +2577,16 @@ export async function abrirModalTraspasoBotes(boteOrigenDefecto = null, boteDest
       errBox.style.display = "none";
 
       const origenId = Number(overlay.querySelector("#mtb-origen").value);
-      const destinoId = Number(overlay.querySelector("#mtb-destino").value);
+      const destinoVal = overlay.querySelector("#mtb-destino").value;
+      const esDeuda = destinoVal.startsWith("deuda:");
+      const destinoId = esDeuda ? Number(destinoVal.split(":")[1]) : Number(destinoVal);
       const rawImp = parseFloat(overlay.querySelector("#mtb-importe").value || "0");
       const fecha = overlay.querySelector("#mtb-fecha").value;
       const cuentaVal = overlay.querySelector("#mtb-cuenta").value;
       const cuentaId = cuentaVal ? Number(cuentaVal) : null;
       const concepto = overlay.querySelector("#mtb-concepto").value.trim() || null;
 
-      if (origenId === destinoId) {
+      if (!esDeuda && origenId === destinoId) {
         errBox.textContent = "El sobre de origen y de destino no pueden ser el mismo.";
         errBox.style.display = "block";
         return;
@@ -2576,17 +2598,27 @@ export async function abrirModalTraspasoBotes(boteOrigenDefecto = null, boteDest
       }
 
       btnSubmit.disabled = true;
-      btnSubmit.textContent = "Moviendo saldo...";
+      btnSubmit.textContent = esDeuda ? "Compensando deuda..." : "Moviendo saldo...";
 
       try {
-        await API.post("/botes/traspaso", {
-          bote_origen_id: origenId,
-          bote_destino_id: destinoId,
-          importe: rawImp.toFixed(2),
-          fecha: fecha,
-          cuenta_id: cuentaId,
-          concepto: concepto,
-        });
+        if (esDeuda) {
+          await API.post(`/deudas/${destinoId}/cobro`, {
+            importe: rawImp.toFixed(2),
+            bote_id: origenId,
+            cuenta_id: cuentaId,
+            fecha: fecha,
+            descripcion: concepto,
+          });
+        } else {
+          await API.post("/botes/traspaso", {
+            bote_origen_id: origenId,
+            bote_destino_id: destinoId,
+            importe: rawImp.toFixed(2),
+            fecha: fecha,
+            cuenta_id: cuentaId,
+            concepto: concepto,
+          });
+        }
 
         cerrarModalActivo();
         if (window.navegar) await window.navegar();

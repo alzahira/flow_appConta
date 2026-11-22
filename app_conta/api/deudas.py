@@ -38,6 +38,7 @@ class CobroCreate(BaseModel):
 
     importe: str | int | float
     cuenta_id: int | None = None
+    bote_id: int | None = None
     fecha: str | None = None
     descripcion: str | None = None
 
@@ -126,6 +127,7 @@ def post_cobro(
         deuda_id,
         importe=payload.importe,
         cuenta_id=payload.cuenta_id,
+        bote_id=payload.bote_id,
         fecha=payload.fecha,
         descripcion=payload.descripcion,
         hogar_id=hogar_id,

@@ -236,10 +236,20 @@ document.addEventListener("submit", async (e) => {
     } else if (form.dataset.accion === "registrar-cobro-deuda") {
       const deudaId = Number(form.dataset.deudaId);
       const importe = String(datos.get("importe") || "").replace(",", ".").trim();
-      const cuentaId = datos.get("cuenta_id") ? Number(datos.get("cuenta_id")) : null;
+      const destinoVal = (datos.get("destino_cobro") || datos.get("cuenta_id") || "").toString().trim();
+      let cuentaId = null;
+      let boteId = null;
+      if (destinoVal.startsWith("bote:")) {
+        boteId = Number(destinoVal.split(":")[1]);
+      } else if (destinoVal.startsWith("cuenta:")) {
+        cuentaId = Number(destinoVal.split(":")[1]);
+      } else if (destinoVal && !isNaN(destinoVal)) {
+        cuentaId = Number(destinoVal);
+      }
       await API.post(`/deudas/${deudaId}/cobro`, {
         importe: importe,
         cuenta_id: cuentaId,
+        bote_id: boteId,
       });
       await navegar();
     } else if (
@@ -964,7 +974,7 @@ if ("serviceWorker" in navigator) {
   if ("caches" in window) {
     caches.keys().then((keys) => {
       keys.forEach((key) => {
-        if (key !== "app-conta-shell-v99") {
+        if (key !== "app-conta-shell-v100") {
           caches.delete(key);
         }
       });
@@ -972,7 +982,7 @@ if ("serviceWorker" in navigator) {
   }
 
   navigator.serviceWorker
-    .register("/static/sw.js?v=99")
+    .register("/static/sw.js?v=100")
     .then((reg) => reg.update())
     .catch(() => {});
   let refreshing = false;

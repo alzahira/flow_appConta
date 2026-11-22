@@ -33,12 +33,29 @@ function perfilDeuda(d) {
   return PERFILES_DEUDA.persona;
 }
 
-function tarjetaDeudaItem(d, cuentas) {
+function tarjetaDeudaItem(d, cuentas, botes) {
   const saldada = d.estado === "saldado";
   const perfil = perfilDeuda(d);
 
-  const opcionesCuentas = cuentas
-    .map((c) => `<option value="${c.id}">${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
+  const conceptoLower = (d.concepto || "").toLowerCase();
+  const deudorLower = (d.deudor || "").toLowerCase();
+  const opcionesBotes = (botes || [])
+    .filter((b) => !b.archivado && Number(b.saldo || 0) > 0)
+    .sort((a, b) => {
+      const nomA = (a.nombre || "").toLowerCase();
+      const nomB = (b.nombre || "").toLowerCase();
+      const matchA = conceptoLower.includes(nomA) || (nomA.includes("mantecado") && (conceptoLower.includes("mantecado") || deudorLower.includes("mantecado")));
+      const matchB = conceptoLower.includes(nomB) || (nomB.includes("mantecado") && (conceptoLower.includes("mantecado") || deudorLower.includes("mantecado")));
+      if (matchA && !matchB) return -1;
+      if (!matchA && matchB) return 1;
+      return 0;
+    })
+    .map((b) => `<option value="bote:${b.id}">🐷 ${esc(b.nombre)} (${b.saldo} €)</option>`)
+    .join("");
+
+  const opcionesCuentas = (cuentas || [])
+    .filter((c) => !c.archivada)
+    .map((c) => `<option value="cuenta:${c.id}">${c.tipo === "efectivo" ? "💵" : "🏦"} ${esc(c.nombre)} (${esc(c.entidad || c.tipo)})</option>`)
     .join("");
 
   return `
@@ -91,9 +108,12 @@ function tarjetaDeudaItem(d, cuentas) {
             <form data-accion="registrar-cobro-deuda" data-deuda-id="${d.id}" class="fintech-form" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
               <div class="form-grid-2">
                 <input name="importe" inputmode="decimal" placeholder="Importe (€)" value="${d.importe_pendiente}" required style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
-                <select name="cuenta_id" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
-                  <option value="">— Sin ingresar en cuenta —</option>
-                  ${opcionesCuentas}
+                <select name="destino_cobro" style="font-size: 0.82rem; padding: 0.4rem 0.7rem;">
+                  ${opcionesBotes ? `<optgroup label="🐷 Saldar con Sobre / Bote de ahorro">${opcionesBotes}</optgroup>` : ""}
+                  <optgroup label="🏦 Ingresar en Banco / Efectivo">
+                    ${opcionesCuentas}
+                  </optgroup>
+                  <option value="">— Sin ingresar en cuenta (solo saldar apunte) —</option>
                 </select>
               </div>
               <button type="submit" class="btn-primary" style="align-self: flex-end; font-size: 0.78rem; padding: 0.35rem 0.85rem;">
@@ -110,13 +130,15 @@ function tarjetaDeudaItem(d, cuentas) {
 }
 
 export default vista("deben", async () => {
-  const [data, cuentasData] = await Promise.all([
+  const [data, cuentasData, botesData] = await Promise.all([
     API.get("/deudas"),
     API.get("/cuentas"),
+    API.get("/botes"),
   ]);
 
   const items = data.items || [];
   const cuentas = cuentasData.items || [];
+  const botes = botesData.items || [];
   const pendientes = items.filter((d) => d.estado !== "saldado");
 
   return `
@@ -134,7 +156,7 @@ export default vista("deben", async () => {
     <div class="debts-grid">
       ${
         items.length > 0
-          ? items.map((d) => tarjetaDeudaItem(d, cuentas)).join("\n")
+          ? items.map((d) => tarjetaDeudaItem(d, cuentas, botes)).join("\n")
           : `
           <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
             <div class="tarjeta-vacia-icon">${icono("prestamo")}</div>

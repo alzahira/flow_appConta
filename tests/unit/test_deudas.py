@@ -136,3 +136,74 @@ def test_listar_y_eliminar_deuda(db, id_hogar):
 
     with pytest.raises(ErrorNoEncontrado):
         obtener_deuda(db, d2.id)
+
+
+def test_registrar_cobro_compensacion_con_bote(db, id_hogar):
+    from app_conta.services.botes import crear_bote, saldo_bote
+    from app_conta.services.conciliacion import calcular_conciliacion
+    from app_conta.services.movimientos import crear_movimiento, saldo_cuenta
+
+    cuenta = crear_cuenta(
+        db,
+        nombre="Caixa Operativa",
+        tipo="banco",
+        saldo_inicial="100.00",
+        fecha_apertura=date(2026, 1, 1),
+        hogar_id=id_hogar,
+    )
+    bote = crear_bote(
+        db,
+        nombre="Bote Mantecados",
+        tipo="ahorro",
+        categoria="otros",
+        hogar_id=id_hogar,
+    )
+    # Ingreso de 30 € al bote con respaldo en la cuenta
+    crear_movimiento(
+        db,
+        cuenta_id=cuenta.id,
+        bote_id=bote.id,
+        importe="+30.00",
+        fecha="2026-11-20",
+        descripcion="Recogida mantecados familia",
+        hogar_id=id_hogar,
+    )
+    assert saldo_bote(db, bote) == 3000
+    assert saldo_cuenta(db, cuenta) == 13000
+
+    # Crear deuda de 100 €
+    deuda = crear_deuda(
+        db,
+        deudor="Aitor",
+        concepto="Mantecados pedido 1",
+        importe="100.00",
+        fecha="2026-11-20",
+        hogar_id=id_hogar,
+    )
+    assert deuda.importe_inicial_centimos == 10000
+    assert deuda.importe_cobrado_centimos == 0
+
+    # Conciliación antes de la compensación
+    conc_antes = calcular_conciliacion(db, id_hogar)
+
+    # Compensar 30 € de la deuda usando el saldo del bote
+    deuda = registrar_cobro(
+        db,
+        deuda.id,
+        importe="30.00",
+        bote_id=bote.id,
+        fecha="2026-11-22",
+    )
+    assert deuda.importe_cobrado_centimos == 3000
+    assert deuda.estado == "parcial"
+
+    # Saldo del sobre debe ser ahora 0
+    assert saldo_bote(db, bote) == 0
+
+    # Saldo del banco NO debe haber cambiado (se mantiene en 130,00 €)
+    assert saldo_cuenta(db, cuenta) == 13000
+
+    # Conciliación: la diferencia debe ser IDÉNTICA (impacto neto en el balance = 0,00 €)
+    conc_despues = calcular_conciliacion(db, id_hogar)
+    assert conc_despues["diferencia_formula"] == conc_antes["diferencia_formula"]
+

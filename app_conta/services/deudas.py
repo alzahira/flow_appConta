@@ -104,14 +104,19 @@ def registrar_cobro(
     *,
     importe: str | int | float,
     cuenta_id: int | None = None,
+    bote_id: int | None = None,
     fecha: str | date | None = None,
     descripcion: str | None = None,
     hogar_id: int | str | None = None,
 ) -> Deuda:
     """Registra la devolución total o parcial de una deuda.
 
-    Si se proporciona `cuenta_id`, crea automáticamente el movimiento de ingreso
-    en la cuenta correspondiente del hogar.
+    - Si se proporciona `bote_id`: salda la deuda directamente contra el sobre de ahorro
+      mediante partida doble balanceada (salida en sobre, entrada de cobro, neto 0 en banco),
+      manteniendo la conciliación global exactamente cuadrada.
+    - Si se proporciona `cuenta_id`: crea automáticamente el movimiento de ingreso
+      en la cuenta bancaria o de efectivo correspondiente del hogar.
+    - Si no se especifica ni cuenta ni sobre: solo marca el importe cobrado formalmente.
     """
     deuda = obtener_deuda(db, deuda_id, hogar_id)
     centimos_cobro = euros_a_centimos(importe)
@@ -132,12 +137,68 @@ def registrar_cobro(
     else:
         deuda.estado = "parcial"
 
-    if cuenta_id is not None:
-        # Valida que la cuenta de ingreso pertenece al mismo hogar (anti-IDOR).
-        obtener_cuenta(db, cuenta_id, deuda.hogar_id)
-        fecha_str = (
-            fecha.isoformat() if isinstance(fecha, date) else (fecha or date.today().isoformat())
+    fecha_obj = (
+        fecha if isinstance(fecha, date) else (date.fromisoformat(fecha) if fecha else date.today())
+    )
+
+    if bote_id is not None:
+        from app_conta.models.cuenta import Cuenta
+        from app_conta.models.movimiento import Movimiento
+        from app_conta.services.botes import obtener_bote, saldo_bote
+
+        bote = obtener_bote(db, bote_id, deuda.hogar_id)
+        saldo_b = saldo_bote(db, bote)
+        if saldo_b < centimos_cobro:
+            saldo_str = f"{saldo_b / 100:.2f}"
+            cobro_str = f"{centimos_cobro / 100:.2f}"
+            raise ErrorValidacion(
+                f"El sobre {bote.nombre!r} dispone de {saldo_str} €, insuficiente para compensar {cobro_str} €."
+            )
+
+        # Cuenta de respaldo técnico para la partida doble (neto 0 en saldo_cuenta)
+        if cuenta_id is not None:
+            cuenta = obtener_cuenta(db, cuenta_id, deuda.hogar_id)
+        else:
+            cuenta = db.scalar(
+                select(Cuenta)
+                .where(
+                    (Cuenta.hogar_id == str(deuda.hogar_id)) | (Cuenta.hogar_id == deuda.hogar_id),
+                    Cuenta.archivada.is_(False),
+                )
+                .order_by(Cuenta.id)
+            )
+            if not cuenta:
+                raise ErrorValidacion(
+                    "Se requiere al menos una cuenta activa en el hogar para asentar la compensación."
+                )
+
+        desc_compensacion = descripcion or f"Compensación deuda: {deuda.deudor} — {deuda.concepto}"
+        desc_cobro = f"Cobro deuda {deuda.deudor}: {deuda.concepto}"
+
+        # 1. Salida del sobre de ahorro (reduce tot_botes_formula en Grupo 1)
+        mov_bote = Movimiento(
+            hogar_id=int(deuda.hogar_id),
+            cuenta_id=cuenta.id,
+            fecha=fecha_obj,
+            descripcion=desc_compensacion,
+            importe_centimos=-centimos_cobro,
+            bote_id=bote.id,
         )
+        # 2. Entrada de cobro de deuda (excluida de sin_asignar por prefijo Cobro deuda, compensa la cuenta)
+        mov_deuda = Movimiento(
+            hogar_id=int(deuda.hogar_id),
+            cuenta_id=cuenta.id,
+            fecha=fecha_obj,
+            descripcion=desc_cobro,
+            importe_centimos=centimos_cobro,
+            bote_id=None,
+        )
+        db.add(mov_bote)
+        db.add(mov_deuda)
+
+    elif cuenta_id is not None:
+        obtener_cuenta(db, cuenta_id, deuda.hogar_id)
+        fecha_str = fecha_obj.isoformat()
         desc = descripcion or f"Cobro deuda {deuda.deudor}: {deuda.concepto}"
         crear_movimiento(
             db,
