@@ -98,8 +98,18 @@ function tarjetaDeudaItem(d, cuentas, botes) {
       </div>
 
       ${
-        !saldada
+        saldada
           ? `
+        <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px solid var(--divider); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
+            ✓ Totalmente cobrado
+          </span>
+          <button type="button" class="btn-secondary mini" data-accion="borrar-deuda" data-id="${d.id}" data-deudor="${esc(d.deudor)}" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; gap: 0.35rem; color: var(--fg-2);">
+            ${icono("borrar")} Archivar apunte
+          </button>
+        </div>
+      `
+          : `
         <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px solid var(--divider);">
           <details class="loan-pay-details">
             <summary style="font-size: 0.78rem; color: var(--accent-text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500;">
@@ -123,7 +133,6 @@ function tarjetaDeudaItem(d, cuentas, botes) {
           </details>
         </div>
       `
-          : ""
       }
     </article>
   `;
@@ -140,6 +149,7 @@ export default vista("deben", async () => {
   const cuentas = cuentasData.items || [];
   const botes = botesData.items || [];
   const pendientes = items.filter((d) => d.estado !== "saldado");
+  const saldadas = items.filter((d) => d.estado === "saldado");
 
   return `
   ${subnavAhorro("deben")}
@@ -151,22 +161,53 @@ export default vista("deben", async () => {
     <span class="hero-total-sub">${pendientes.length} préstamos pendientes de cobro</span>
   </div>
 
-  <!-- 2. Cuadrícula de Deudas a Favor -->
+  <!-- 2. Deudas Pendientes de Cobro -->
   <section class="section-block" style="margin-bottom: 1.5rem;">
+    <h3 class="section-title" style="margin-bottom: 0.85rem; font-size: 0.95rem; font-weight: 600;">
+      ⏳ Pendientes de cobro (${pendientes.length})
+    </h3>
     <div class="debts-grid">
       ${
-        items.length > 0
-          ? items.map((d) => tarjetaDeudaItem(d, cuentas, botes)).join("\n")
+        pendientes.length > 0
+          ? pendientes.map((d) => tarjetaDeudaItem(d, cuentas, botes)).join("\n")
           : `
           <div class="glass-card tarjeta-vacia" style="grid-column: 1 / -1;">
             <div class="tarjeta-vacia-icon">${icono("prestamo")}</div>
-            <h4>No tienes deudas a tu favor</h4>
-            <p>Nadie te debe dinero actualmente. Añade un apunte si prestas dinero a un conocido o tienes pagos por recuperar.</p>
+            <h4>No tienes deudas pendientes a tu favor</h4>
+            <p>¡Estás al día! Nadie te debe dinero actualmente.</p>
           </div>
           `
       }
     </div>
   </section>
+
+  <!-- 2b. Deudas ya Saldadas (Historial) -->
+  ${
+    saldadas.length > 0
+      ? `
+  <section class="section-block" style="margin-bottom: 1.5rem;">
+    <details class="glass-accordion" open>
+      <summary style="display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer;">
+        <span style="font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+          ✓ Apuntes cobrados y saldados (${saldadas.length})
+        </span>
+        <button type="button" class="btn-secondary mini" data-accion="archivar-todas-saldadas" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; gap: 0.35rem;">
+          ${icono("borrar")} Archivar todos los saldados
+        </button>
+      </summary>
+      <div class="accordion-body">
+        <p style="font-size: 0.78rem; color: var(--fg-2); margin-bottom: 0.85rem;">
+          Estos apuntes ya fueron cobrados en su totalidad. Puedes archivarlos para limpiar la vista. Los movimientos bancarios y de sobres permanecen guardados en tu historial.
+        </p>
+        <div class="debts-grid">
+          ${saldadas.map((d) => tarjetaDeudaItem(d, cuentas, botes)).join("\n")}
+        </div>
+      </div>
+    </details>
+  </section>
+  `
+      : ""
+  }
 
   <!-- 3. Formulario para nuevo apunte -->
   <section class="section-block">

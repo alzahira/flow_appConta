@@ -10,6 +10,7 @@ from app_conta.api.dependencias import obtener_hogar_activo
 from app_conta.db import get_db
 from app_conta.models.deuda import Deuda
 from app_conta.services.deudas import (
+    archivar_deudas_saldadas,
     crear_deuda,
     editar_deuda,
     eliminar_deuda,
@@ -150,6 +151,16 @@ def patch_deuda(
     db.commit()
     db.refresh(deuda)
     return _serializar_deuda(deuda)
+
+
+@router.post("/archivar-saldadas")
+def post_archivar_saldadas(
+    hogar_id: int = Depends(obtener_hogar_activo),
+    db: Session = Depends(get_db),
+) -> dict:
+    count = archivar_deudas_saldadas(db, hogar_id)
+    db.commit()
+    return {"mensaje": f"Se han archivado {count} deudas saldadas.", "archivadas": count}
 
 
 @router.delete("/{deuda_id}", status_code=204)

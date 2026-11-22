@@ -207,3 +207,19 @@ def test_registrar_cobro_compensacion_con_bote(db, id_hogar):
     conc_despues = calcular_conciliacion(db, id_hogar)
     assert conc_despues["diferencia_formula"] == conc_antes["diferencia_formula"]
 
+
+def test_archivar_deudas_saldadas(db, id_hogar):
+    from app_conta.services.deudas import archivar_deudas_saldadas
+
+    d1 = crear_deuda(db, deudor="Saldado 1", concepto="Test 1", importe="40.00", fecha="2026-11-01", hogar_id=id_hogar)
+    d2 = crear_deuda(db, deudor="Pendiente", concepto="Test 2", importe="60.00", fecha="2026-11-01", hogar_id=id_hogar)
+    registrar_cobro(db, d1.id, importe="40.00")
+    assert d1.estado == "saldado"
+    assert d2.estado == "pendiente"
+
+    archivadas = archivar_deudas_saldadas(db, id_hogar)
+    assert archivadas == 1
+    assert d1.archivada is True
+    assert d2.archivada is False
+
+

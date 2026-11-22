@@ -533,17 +533,30 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
-  // Borrar Apunte de Dinero que me deben
+  // Borrar / Archivar Apunte de Dinero que me deben
   const btnBorrarDeuda = e.target.closest('[data-accion="borrar-deuda"]');
   if (btnBorrarDeuda) {
     const id = Number(btnBorrarDeuda.dataset.id);
     const deudor = btnBorrarDeuda.dataset.deudor || "este apunte";
-    if (!confirm(`¿Deseas eliminar el apunte de deuda de "${deudor}"?`)) return;
+    if (!confirm(`¿Deseas archivar el apunte de deuda de "${deudor}"?\n\nLos movimientos bancarios y de sobres asociados permanecerán intactos en tu historial.`)) return;
     try {
       await API.del(`/deudas/${id}`);
       await navegar();
     } catch (err) {
-      alert(`No se pudo eliminar el apunte: ${err.message}`);
+      alert(`No se pudo archivar el apunte: ${err.message}`);
+    }
+    return;
+  }
+
+  // Archivar todas las deudas ya saldadas en bloque
+  const btnArchivarTodasSaldadas = e.target.closest('[data-accion="archivar-todas-saldadas"]');
+  if (btnArchivarTodasSaldadas) {
+    if (!confirm("¿Deseas archivar todas las deudas totalmente saldadas para limpiar la pantalla?\n\nTodos los movimientos de cobros, bancos y sobres permanecerán intactos.")) return;
+    try {
+      await API.post("/deudas/archivar-saldadas");
+      await navegar();
+    } catch (err) {
+      alert(`No se pudieron archivar las deudas saldadas: ${err.message}`);
     }
     return;
   }
@@ -974,7 +987,7 @@ if ("serviceWorker" in navigator) {
   if ("caches" in window) {
     caches.keys().then((keys) => {
       keys.forEach((key) => {
-        if (key !== "app-conta-shell-v100") {
+        if (key !== "app-conta-shell-v101") {
           caches.delete(key);
         }
       });
@@ -982,7 +995,7 @@ if ("serviceWorker" in navigator) {
   }
 
   navigator.serviceWorker
-    .register("/static/sw.js?v=100")
+    .register("/static/sw.js?v=101")
     .then((reg) => reg.update())
     .catch(() => {});
   let refreshing = false;

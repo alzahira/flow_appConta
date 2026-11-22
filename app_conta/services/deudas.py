@@ -216,10 +216,27 @@ def registrar_cobro(
 def eliminar_deuda(
     db: Session, deuda_id: int, hogar_id: int | str | None = None
 ) -> None:
-    """Archiva lógicamente una deuda."""
+    """Archiva lógicamente una deuda. Preserva intactos todos los movimientos asociados en la BD."""
     deuda = obtener_deuda(db, deuda_id, hogar_id)
     deuda.archivada = True
     db.flush()
+
+
+def archivar_deudas_saldadas(db: Session, hogar_id: str | int) -> int:
+    """Archiva lógicamente todas las deudas saldadas del hogar sin alterar movimientos bancarios."""
+    stmt = (
+        select(Deuda)
+        .where(
+            (Deuda.hogar_id == str(hogar_id)) | (Deuda.hogar_id == hogar_id),
+            Deuda.archivada.is_(False),
+            Deuda.estado == "saldado",
+        )
+    )
+    saldadas = list(db.scalars(stmt))
+    for d in saldadas:
+        d.archivada = True
+    db.flush()
+    return len(saldadas)
 
 
 def editar_deuda(
