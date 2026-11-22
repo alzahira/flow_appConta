@@ -227,7 +227,38 @@ Cuando cobras el sueldo a primeros de mes:
 2. Busca la persona en la lista y pulsa **Cobrar / Abonar**.
 3. Elige tu cuenta bancaria y el importe devuelto. El dinero se suma al banco y la deuda de esa persona se reduce.
 
-### Caso 6: "Quiero guardar una copia de seguridad por si acaso"
+### Caso 6: "Quiero saldar una deuda que me deben usando un sobre de ahorro (ej. Mantecados)"
+1. Ve a la pantalla **Dinero que me deben**.
+2. En la deuda pendiente, pulsa el botón de cobro o devolución.
+3. En el desplegable de destino, verás la sección **🐷 Saldar con Sobre / Bote de ahorro**.
+4. Selecciona tu bote (ej. *Mantecados*).
+5. Confirma el cobro. La deuda se reduce (o salda) consumiendo el saldo de tu bote de ahorro, sin alterar las cuentas bancarias y manteniendo la conciliación cuadrada al céntimo.
+
+### Caso 7: "Quiero limpiar o archivar las deudas que ya están pagadas"
+1. En la pantalla **Dinero que me deben**, desplázate hacia abajo hasta la sección **✓ Apuntes cobrados y saldados**.
+2. Para quitar una sola deuda saldada de la vista, pulsa el botón **`🗑️ Archivar apunte`**.
+3. Para limpiarlas todas de golpe, pulsa el botón **`🧹 Archivar todos los saldados`** en la cabecera.
+4. *Tranquilidad*: Todos los movimientos bancarios y cobros históricos quedan 100% intactos en la base de datos; únicamente se oculta la tarjeta de la lista activa.
+
+### Caso 8: "Me ha llegado un recibo anual de la previsión (ej. seguro del coche)"
+1. Ve a **Previsión de Gastos** (desde el menú Extras o Ahorro).
+2. Localiza el gasto previsto correspondiente y pulsa **Pagar Recibo**.
+3. Selecciona la **cuenta bancaria** de la que te han cobrado el recibo (CaixaBank, Deutsche Bank, etc.).
+4. Confirma el importe pagado. El sistema descuenta el gasto de la previsión anual y genera el movimiento bancario sin duplicar gastos ni provocar descuadres en la conciliación.
+
+### Caso 9: "Me equivoqué de cuenta al meter un gasto (ej. era Carrefour Pass y puse CaixaBank)"
+1. Ve a la pestaña **Movimientos**.
+2. Pulsa en el movimiento para editarlo.
+3. Cambia la cuenta bancaria en el selector desplegable (de CaixaBank a Tarjeta Carrefour Pass).
+4. Guarda los cambios. El saldo de ambas cuentas se reajustará automáticamente.
+
+### Caso 10: "Mover dinero de un sobre de ahorro a otro directamente"
+1. Ve a **Ahorro y Botes**.
+2. Pulsa en el botón **`⇄ Traspaso entre Botes`** (o desde los tres puntos de un sobre).
+3. Selecciona el bote de origen, el bote de destino y el importe a transferir.
+4. Confirma. El dinero pasa de un sobre a otro sin tocar tus cuentas bancarias.
+
+### Caso 11: "Quiero guardar una copia de seguridad por si acaso"
 1. Despliega el menú **Extras** y entra en **Copia de Seguridad** (o desde el botón *Copia & Vaciar* de Inicio).
 2. Pulsa en **`Descargar Copia de Seguridad (JSON)`**.
 3. Se descargará un archivo con toda tu contabilidad completa. Guárdalo en tu ordenador, en un pendrive o en la nube.
@@ -240,10 +271,13 @@ Cuando cobras el sueldo a primeros de mes:
 Excel no avisa si borras una fórmula por error, no sabe gestionar tarjetas de crédito con cobro a mes vencido sin descuadrar la caja, y es muy incómodo de consultar desde el móvil en la cola del supermercado. App_Conta está blindada para que las cuentas nunca se rompan.
 
 **¿Se conecta la app a internet o a los bancos?**
-No. App_Conta funciona de forma 100% privada en tu propio ordenador (local-first). Ningún dato bancario viaja a servidores externos ni sale de tu casa.
+No. App_Conta funciona de forma 100% privada en tu propio servidor/ordenador (local-first). Ningún dato bancario viaja a servidores externos de terceros ni sale de tu control.
 
 **¿Qué pasa si me equivoco al meter un gasto?**
-Ve a la pestaña **Movimientos**, busca la fila correspondiente y pulsa el icono de eliminar (papelera). El dinero volverá inmediatamente tanto al banco como al sobre correspondiente, dejándolo todo como estaba.
+Ve a la pestaña **Movimientos**, busca la fila correspondiente y pulsa el icono de eliminar (papelera) o edítalo directamente. El dinero volverá inmediatamente tanto al banco como al sobre correspondiente, dejándolo todo como estaba.
+
+**¿Qué ocurre al archivar un bote o borrar una deuda ya cobrada? ¿Se borran movimientos o se descuadra el banco?**
+No, rotundamente no. El sistema realiza un archivado lógico (`archivada = True`). Todos los movimientos pasados de banco y sobres quedan 100% registrados e intactos en la base de datos para auditoría y extractos, y la conciliación bancaria permanece exactamente igual al céntimo.
 
 ---
 
